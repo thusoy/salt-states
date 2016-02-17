@@ -65,7 +65,7 @@ PermitEmptyPasswords no
 
 # Change to yes to enable challenge-response passwords (beware issues with
 # some PAM modules and threads)
-ChallengeResponseAuthentication yes
+ChallengeResponseAuthentication {{ 'yes' if two_factor_auth else 'no' }}
 
 # Change to no to disable tunnelled clear text passwords
 PasswordAuthentication no

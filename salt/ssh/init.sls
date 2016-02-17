@@ -46,6 +46,8 @@ ssh:
     - name: /etc/ssh/sshd_config
     - source: salt://ssh/sshd_config
     - template: jinja
+    - context:
+      two_factor_auth: {{ two_factor_auth }}
     - require:
       {% if install_from_source %}
       - cmd: openssh-install
