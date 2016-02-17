@@ -1,0 +1,5 @@
+{% for username, values in pillar.get('users', {}).items() -%}
+{% if 'at' in values.get('permit-access-to', []) -%}
+{{ username }}
+{% endif -%}
+{%- endfor -%}
