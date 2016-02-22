@@ -15,22 +15,6 @@ ntp:
 
 
 {% for family in ('ipv4', 'ipv6') %}
-ntp-firewall-{{ family }}:
-    firewall.append:
-        - table: filter
-        - chain: INPUT
-        - family: {{ family }}
-        - proto: udp
-        - sport: 123
-        - dport: 123
-        - match:
-            - state
-            - comment
-        - comment: "ntp: Allow incoming replies to NTP requests"
-        - jump: ACCEPT
-        - connstate: ESTABLISHED
-
-
 ntp-firewall-outgoing-{{ family }}:
     firewall.append:
         - table: filter
