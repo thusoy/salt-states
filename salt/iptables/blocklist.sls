@@ -18,7 +18,6 @@ iptables-blocklist-jump:
         - comment: "iptables.blocklist: Match against manually configured blocks"
         - jump: blocklist
         - order: 2
-        - save: True
         - require:
             - firewall: iptables-blocklist
 
@@ -30,7 +29,6 @@ iptables-blocklist-return:
         - family: ipv4
         - order: last
         - jump: RETURN
-        - save: True
 
 
 {% for blocked_ip in blocklist %}
@@ -44,7 +42,6 @@ iptables-blocklist-{{ blocked_ip }}:
             - comment
         - comment: "iptables.blocklist: Manual block on {{ blocked_ip }}"
         - target: DROP
-        - save: True
         - require:
             - firewall: iptables-blocklist
 {% endfor %}
