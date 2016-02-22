@@ -1,0 +1,12 @@
+{% set locales = pillar.get('locales', [
+    'en_US.UTF-8 UTF-8',
+    'nb_NO.UTF-8 UTF-8',
+]) -%}
+
+#####################################
+# File managed by salt state locale #
+#####################################
+
+{% for locale in locales %}
+{{ locale }}
+{%- endfor %}
