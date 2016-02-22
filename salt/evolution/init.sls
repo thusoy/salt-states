@@ -1,0 +1,2 @@
+evolution:
+    pkg.installed: []
