@@ -20,6 +20,9 @@ include:
 {% else %}
     - nginx.package
 {% endif %}
+{% if nginx.get('dump_to_s3', False) %}
+    - s3-uploader
+{% endif %}
 
 
 nginx-conf:
@@ -202,3 +205,10 @@ nginx-log-dir:
         - name: /var/log/nginx
         - require_in:
             - service: nginx
+
+
+nginx-logrotate-config:
+    file.managed:
+        - name: /etc/logrotate.d/nginx
+        - source: salt://nginx/logrotate.conf
+        - template: jinja
