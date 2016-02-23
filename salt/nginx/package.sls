@@ -6,7 +6,8 @@ nginx:
         - ppa: nginx/stable
     {% endif %}
 
-    pkg.latest:
+    pkg:
+        - latest
         {% if ubuntu %}
         - require:
             - pkgrepo: nginx
