@@ -222,3 +222,13 @@ nginx-logrotate-config:
         - name: /etc/logrotate.d/nginx
         - source: salt://nginx/logrotate.conf
         - template: jinja
+
+
+nginx-cache-dir:
+    file.directory:
+        - name: /var/cache/nginx
+        - require_in:
+            - service: nginx
+        - user: nginx
+        - group: nginx
+        - mode: 775
