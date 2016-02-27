@@ -1,0 +1,25 @@
+upstream {{ server_name }}_backend {
+    server {{ backend }}:{{ backend_port }};
+    keepalive 8;
+}
+
+server {
+  listen [::]:8443 ssl ipv6only=off;
+  server_name {{ server_name }};
+  charset utf-8;
+
+  # This is checked on the public-facing nginx, thus not needed here
+  client_max_body_size 0;
+
+  ssl_certificate ssl/{{ server_name }}.crt;
+  ssl_certificate_key private/{{ server_name }}.key;
+
+  # Verify client side certificates against our trusted roots
+  ssl_client_certificate ssl/client-trusted-roots.pem;
+  ssl_verify_client on;
+
+  location / {
+    proxy_pass http://{{ server_name }}_backend;
+    include proxy_params;
+  }
+}
