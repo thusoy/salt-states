@@ -7,10 +7,10 @@
 {% set nginx_package = source + '/nginx-' + version + '.tar.gz' -%}
 {% set nginx_home     = home + "/nginx-" + version -%}
 
-{% set more_headers_identifier = nginx.get('more_headers_identifier', '0.261 sha256=03d1f5fbecba8565f247d87a38f5e4b6440b0a56d752bdd2b29af2f1c4aea480') %}
+{% set more_headers_identifier = nginx.get('more_headers_identifier', '0.28 sha256=67e5ca6cd9472938333c4530ab8c8b8bc9fe910a8cb237e5e5f1853e14725580') %}
 {% set more_headers_version, more_headers_hash = more_headers_identifier.split() %}
 
-{% set pcre_version_identifier = nginx.get('pcre_version_identifier', '8.36 sha256=ef833457de0c40e82f573e34528f43a751ff20257ad0e86d272ed5637eb845bb') %}
+{% set pcre_version_identifier = nginx.get('pcre_version_identifier', '8.37 sha256=51679ea8006ce31379fb0860e46dd86665d864b5020fc9cd19e71260eef4789d') %}
 {% set pcre_version, pcre_source_hash = pcre_version_identifier.split() %}
 
 {% set pam_auth_version_identifier = nginx.get('pam_auth_version_identifier', '1.4 sha256=095742c5bcb86f2431e215db785bdeb238d594f085a0ac00d16125876a157409') %}
