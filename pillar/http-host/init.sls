@@ -2,47 +2,45 @@ http-host:
     client-trusted-roots: |
         # tls-terminators.internals.megacool.co
         -----BEGIN CERTIFICATE-----
-        MIICdzCCAhygAwIBAgIBATAKBggqhkjOPQQDBDBrMREwDwYDVQQKDAhNZWdhY29v
+        MIICKDCCAc6gAwIBAgIBATAKBggqhkjOPQQDBDBrMREwDwYDVQQKDAhNZWdhY29v
         bDEmMCQGA1UECwwdUHVibGljLWZhY2luZyBUTFMgdGVybWluYXRvcnMxLjAsBgNV
         BAMMJXRscy10ZXJtaW5hdG9ycy5pbnRlcm5hbHMubWVnYWNvb2wuY28wHhcNMTYw
-        MjI2MjAxOTExWhcNMzYwMjIxMjAxOTExWjBrMREwDwYDVQQKDAhNZWdhY29vbDEm
+        MjI3MDA1ODIyWhcNMzYwMjIyMDA1ODIyWjBrMREwDwYDVQQKDAhNZWdhY29vbDEm
         MCQGA1UECwwdUHVibGljLWZhY2luZyBUTFMgdGVybWluYXRvcnMxLjAsBgNVBAMM
         JXRscy10ZXJtaW5hdG9ycy5pbnRlcm5hbHMubWVnYWNvb2wuY28wVjAQBgcqhkjO
-        PQIBBgUrgQQACgNCAAQlCFG/pww7nQIjowoubibfoKM91g5x6V/MpHfuBgvZklad
-        uTsAOXM1vXjO8Z3uYYGWBGwGMfudlKl5UGbaSLiSo4GzMIGwMA4GA1UdDwEB/wQE
-        AwIBBjASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBRQekb9fe2ZeptlU0BZ
-        JT+J85J0PDAfBgNVHSMEGDAWgBRQekb9fe2ZeptlU0BZJT+J85J0PDBKBgNVHR8E
-        QzBBMD+gOaA3hjVodHRwczovL3Rscy10ZXJtaW5hdG9ycy5pbnRlcm5hbHMubWVn
-        YWNvb2wuY28vY3JsLnBlbYECAE0wCgYIKoZIzj0EAwQDSQAwRgIhAN65Ehm1eZor
-        FilANVn3/TMm0ecDlgSuW17naY398WhcAiEA7qC77VAYlk3dFQBxmWmmISzO4Ifq
-        SiBvDNkkQe+C2w4=
+        PQIBBgUrgQQACgNCAAQAky/txQfqbssQWA+iUZEAYozU9MHRnz3AaE84yN6ThF9T
+        spQTOOziWin3rbUiI68oxXd5Ly7KSaHMF/4JuYEOo2YwZDAOBgNVHQ8BAf8EBAMC
+        AQYwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQUuWMDunAdRDVlChRjSvtL
+        XcR5C9UwHwYDVR0jBBgwFoAUuWMDunAdRDVlChRjSvtLXcR5C9UwCgYIKoZIzj0E
+        AwQDSAAwRQIhAI06olC5Yq6s5FnPbTRa0+a2fM7npsXIiXsuXlOj/q9kAiAcEVxB
+        vpm9EKSYCFU/DQQxy3Pmntau97A9p/dfa4+plQ==
         -----END CERTIFICATE-----
+    # client-ca-crl
     meowth:
         key: |
             -----BEGIN EC PARAMETERS-----
             BgUrgQQACg==
             -----END EC PARAMETERS-----
             -----BEGIN EC PRIVATE KEY-----
-            MHQCAQEEINsZ2HIVfhSy48iS+etQJpNFW/Q7ef8n4v9efOqQbBY2oAcGBSuBBAAK
-            oUQDQgAE8Pdnp0W1IPShDIkKrfCcT+4MUi3XP7tIyF5cAOnvp6wR2SQTqXVPokcD
-            gwdg1Q/KZqzMyBEI2C5DDUnWP37a5w==
+            MHQCAQEEIFlYRa7w52Fdew2UlUPDVbyUDcPgzrl1rXOGrOimU2V4oAcGBSuBBAAK
+            oUQDQgAEamYGUojWvxtrB+Jxt32225timlto8XWL1ITc9jTQO7XFi3GLOW4j3uqY
+            CtHAT0OTlSFLbzyAkXSS+4UTwzrObw==
             -----END EC PRIVATE KEY-----
         cert: |
             -----BEGIN CERTIFICATE-----
-            MIICdTCCAhugAwIBAgIBAzAKBggqhkjOPQQDBDBoMREwDwYDVQQKDAhNZWdhY29v
-            bDEoMCYGA1UECwwfSW50ZXJuYWwgaG9zdHMgZm9yIEhUVFAgc2VydmVyczEpMCcG
-            A1UEAwwgaHR0cC1ob3N0cy5pbnRlcm5hbHMubWVnYWNvb2wuY28wHhcNMTYwMjI2
-            MjMzMjM0WhcNMTYwODI0MjMzMjM0WjBvMREwDwYDVQQKDAhNZWdhY29vbDEoMCYG
-            A1UECwwfSW50ZXJuYWwgaG9zdHMgZm9yIEhUVFAgc2VydmVyczEwMC4GA1UEAwwn
-            bWVvd3RoLmh0dHAtaG9zdHMuaW50ZXJuYWxzLm1lZ2Fjb29sLmNvMFYwEAYHKoZI
-            zj0CAQYFK4EEAAoDQgAE8Pdnp0W1IPShDIkKrfCcT+4MUi3XP7tIyF5cAOnvp6wR
-            2SQTqXVPokcDgwdg1Q/KZqzMyBEI2C5DDUnWP37a56OBsTCBrjAOBgNVHQ8BAf8E
-            BAMCBaAwCQYDVR0TBAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIw
-            HQYDVR0OBBYEFB+q1oRWSEH51IE2DhNTSosb9rkxMB8GA1UdIwQYMBaAFJTyllNp
-            r/tTgKfbJBSLUHSv5LECMDIGA1UdEQQrMCmCJ21lb3d0aC5odHRwLWhvc3RzLmlu
-            dGVybmFscy5tZWdhY29vbC5jbzAKBggqhkjOPQQDBANIADBFAiBaobNhfvGXr63C
-            reYRobJ3vCTkVYkST99a1u3C4lI8nQIhAPUibVCSeI5YtY/3aEecivpFgEdgRzlM
-            1YpXGtjXWpuj
+            MIICUTCCAfegAwIBAgIBAzAKBggqhkjOPQQDBDBbMREwDwYDVQQKDAhNZWdhY29v
+            bDEbMBkGA1UECwwSSW50ZXJhbCBIVFRQIEhvc3RzMSkwJwYDVQQDDCBodHRwLWhv
+            c3RzLmludGVybmFscy5tZWdhY29vbC5jbzAeFw0xNjAyMjcwMTIxMDhaFw0xNjA4
+            MjUwMTIxMDhaMGIxETAPBgNVBAoMCE1lZ2Fjb29sMRswGQYDVQQLDBJJbnRlcmFs
+            IEhUVFAgSG9zdHMxMDAuBgNVBAMMJ21lb3d0aC5odHRwLWhvc3RzLmludGVybmFs
+            cy5tZWdhY29vbC5jbzBWMBAGByqGSM49AgEGBSuBBAAKA0IABGpmBlKI1r8bawfi
+            cbd9ttubYppbaPF1i9SE3PY00Du1xYtxizluI97qmArRwE9Dk5UhS288gJF0kvuF
+            E8M6zm+jgacwgaQwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMB
+            MAkGA1UdEwQCMAAwHQYDVR0OBBYEFImfyfGXDS4ciQWLk+VMnalUQSAGMB8GA1Ud
+            IwQYMBaAFFmwt0L+NCUjSeLKHJ5/UK9ZczNmMDIGA1UdEQQrMCmCJ21lb3d0aC5o
+            dHRwLWhvc3RzLmludGVybmFscy5tZWdhY29vbC5jbzAKBggqhkjOPQQDBANIADBF
+            AiEA7x3lAOvIRIMyHqNI9MnVPjB1XzojvwxOPdDwXvprCUoCIEZ4YCY3azs750gk
+            i4xX3QhkuKqkrpUmos80ZUeMyHXu
             -----END CERTIFICATE-----
 
 
@@ -51,31 +49,29 @@ tls-terminator:
         backend: https://internal.megacool.co:8443
         proxy_ca: |
             -----BEGIN CERTIFICATE-----
-            MIICajCCAhGgAwIBAgIBATAKBggqhkjOPQQDBDBoMREwDwYDVQQKDAhNZWdhY29v
-            bDEoMCYGA1UECwwfSW50ZXJuYWwgaG9zdHMgZm9yIEhUVFAgc2VydmVyczEpMCcG
-            A1UEAwwgaHR0cC1ob3N0cy5pbnRlcm5hbHMubWVnYWNvb2wuY28wHhcNMTYwMjI2
-            MjA0NjE5WhcNMzYwMjIxMjA0NjE5WjBoMREwDwYDVQQKDAhNZWdhY29vbDEoMCYG
-            A1UECwwfSW50ZXJuYWwgaG9zdHMgZm9yIEhUVFAgc2VydmVyczEpMCcGA1UEAwwg
-            aHR0cC1ob3N0cy5pbnRlcm5hbHMubWVnYWNvb2wuY28wVjAQBgcqhkjOPQIBBgUr
-            gQQACgNCAARent2n6cX0eu+JCZqqAyBWZVO69K8WTJUCN2npPLZn7SUi1lFnTjZk
-            wOhbSoyKFom/Bag0gLL9GAK87fGoi1L0o4GuMIGrMA4GA1UdDwEB/wQEAwIBBjAS
-            BgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBSU8pZTaa/7U4Cn2yQUi1B0r+Sx
-            AjAfBgNVHSMEGDAWgBSU8pZTaa/7U4Cn2yQUi1B0r+SxAjBFBgNVHR8EPjA8MDqg
-            NKAyhjBodHRwczovL2h0dHAtaG9zdHMuaW50ZXJuYWxzLm1lZ2Fjb29sLmNvL2Ny
-            bC5wZW2BAgBNMAoGCCqGSM49BAMEA0cAMEQCIDI01Ds9PC18w9qh4RtrLRq3jQ6s
-            0Vx4ODYqLZ0Qy6HuAiBEc0HhV6oLbXRTkjBQfkVFKUtlrIbbtMBzeiluyW0dlw==
+            MIICCTCCAa6gAwIBAgIBATAKBggqhkjOPQQDBDBbMREwDwYDVQQKDAhNZWdhY29v
+            bDEbMBkGA1UECwwSSW50ZXJhbCBIVFRQIEhvc3RzMSkwJwYDVQQDDCBodHRwLWhv
+            c3RzLmludGVybmFscy5tZWdhY29vbC5jbzAeFw0xNjAyMjcwMDU4MDRaFw0zNjAy
+            MjIwMDU4MDRaMFsxETAPBgNVBAoMCE1lZ2Fjb29sMRswGQYDVQQLDBJJbnRlcmFs
+            IEhUVFAgSG9zdHMxKTAnBgNVBAMMIGh0dHAtaG9zdHMuaW50ZXJuYWxzLm1lZ2Fj
+            b29sLmNvMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEoNS00mDFwv3GQAYjqxaOG74X
+            Mv1jjVxHR/Fs353u1ClK+Mv2g3z740RG6ipWG+nCGNTmdhI+JEI0Ad2DryEg+KNm
+            MGQwDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYE
+            FFmwt0L+NCUjSeLKHJ5/UK9ZczNmMB8GA1UdIwQYMBaAFFmwt0L+NCUjSeLKHJ5/
+            UK9ZczNmMAoGCCqGSM49BAMEA0kAMEYCIQCfOs7bkDiT3pPfKUjzXtwYeHhm9Nsp
+            K5uJF64Hy/QyjAIhAPElA2Wu/AdNU8FWQfZUakwHeth/dPPrU5zqiYKiwIzF
             -----END CERTIFICATE-----
         proxy_ca_crl: |
             -----BEGIN X509 CRL-----
-            MIIBlzCCAT4CAQEwCgYIKoZIzj0EAwQwaDERMA8GA1UECgwITWVnYWNvb2wxKDAm
-            BgNVBAsMH0ludGVybmFsIGhvc3RzIGZvciBIVFRQIHNlcnZlcnMxKTAnBgNVBAMM
-            IGh0dHAtaG9zdHMuaW50ZXJuYWxzLm1lZ2Fjb29sLmNvFw0xNjAyMjYyMzEwMTBa
-            Fw0xNjAzMTEyMzEwMTBaoIGkMIGhMIGSBgNVHSMEgYowgYeAFJTyllNpr/tTgKfb
-            JBSLUHSv5LECoWykajBoMREwDwYDVQQKDAhNZWdhY29vbDEoMCYGA1UECwwfSW50
-            ZXJuYWwgaG9zdHMgZm9yIEhUVFAgc2VydmVyczEpMCcGA1UEAwwgaHR0cC1ob3N0
-            cy5pbnRlcm5hbHMubWVnYWNvb2wuY2+CAQEwCgYDVR0UBAMCAQEwCgYIKoZIzj0E
-            AwQDRwAwRAIgFo1EjmgV1H+t/UaGDA/W/CZm0PYO1HWL3tKfSLrAUQ8CIA+y2+Qc
-            jPDq5skMdAYI0xrKttBnjT4BRQxaW94iVJZ5
+            MIIBkzCCATgCAQEwCgYIKoZIzj0EAwQwWzERMA8GA1UECgwITWVnYWNvb2wxGzAZ
+            BgNVBAsMEkludGVyYWwgSFRUUCBIb3N0czEpMCcGA1UEAwwgaHR0cC1ob3N0cy5p
+            bnRlcm5hbHMubWVnYWNvb2wuY28XDTE2MDIyNzAxMTkxNVoXDTE2MDMxMjAxMTkx
+            NVowFDASAgECFw0xNjAyMjcwMTE5MDlaoIGVMIGSMIGDBgNVHSMEfDB6gBRZsLdC
+            /jQlI0niyhyef1CvWXMzZqFfpF0wWzERMA8GA1UECgwITWVnYWNvb2wxGzAZBgNV
+            BAsMEkludGVyYWwgSFRUUCBIb3N0czEpMCcGA1UEAwwgaHR0cC1ob3N0cy5pbnRl
+            cm5hbHMubWVnYWNvb2wuY2+CAQEwCgYDVR0UBAMCAQIwCgYIKoZIzj0EAwQDSQAw
+            RgIhANwGvbj9wx+TO/ixx+qGFOy9IOqyHOkbmPfZffhGhkNbAiEA554ZG8v3pxwv
+            LAVvfXG8hNalTwENd3Zv43ghJIZTGd4=
             -----END X509 CRL-----
         proxy_auth:
             key: |
@@ -83,27 +79,26 @@ tls-terminator:
                 BgUrgQQACg==
                 -----END EC PARAMETERS-----
                 -----BEGIN EC PRIVATE KEY-----
-                MHQCAQEEIFxaBU1XIqg17bU2YnPHgmvbSeL6WYXrrXaMP1QCyUI9oAcGBSuBBAAK
-                oUQDQgAEmuaIqubCNaJdCnRngskG7s6BzQtqUIqiawqnwZHGJHDTasYzqA1+2L11
-                s7iwYI6DLwxsi0pbzkjGTKnKtj2q/g==
+                MHQCAQEEIE71/ktBZ97fG0TVD+8+0MnUL7EojwkbADDV0k5E+wJDoAcGBSuBBAAK
+                oUQDQgAEc2KFjbFaq5T28upxPj1d7j9eLFWAacHU+ywqfRiCYhtVCXN+BHk2CijP
+                7JU91VvzyUaTbjteBQtkgzCD9lXrDg==
                 -----END EC PRIVATE KEY-----
             cert: |
                 -----BEGIN CERTIFICATE-----
-                MIICxDCCAmqgAwIBAgIBAjAKBggqhkjOPQQDBDBrMREwDwYDVQQKDAhNZWdhY29v
+                MIICcTCCAhigAwIBAgIBAjAKBggqhkjOPQQDBDBrMREwDwYDVQQKDAhNZWdhY29v
                 bDEmMCQGA1UECwwdUHVibGljLWZhY2luZyBUTFMgdGVybWluYXRvcnMxLjAsBgNV
                 BAMMJXRscy10ZXJtaW5hdG9ycy5pbnRlcm5hbHMubWVnYWNvb2wuY28wHhcNMTYw
-                MjI2MjAyMzI5WhcNMTYwODI0MjAyMzI5WjBuMREwDwYDVQQKDAhNZWdhY29vbDEm
-                MCQGA1UECwwdUHVibGljLWZhY2luZyBUTFMgdGVybWluYXRvcnMxMTAvBgNVBAMM
-                KGV1LnRscy10ZXJtaW5hdG9ycy5pbnRlcm5hbHMubWVnYWNvb2wuY28wVjAQBgcq
-                hkjOPQIBBgUrgQQACgNCAASa5oiq5sI1ol0KdGeCyQbuzoHNC2pQiqJrCqfBkcYk
-                cNNqxjOoDX7YvXWzuLBgjoMvDGyLSlvOSMZMqcq2Par+o4H+MIH7MA4GA1UdDwEB
-                /wQEAwIFoDAJBgNVHRMEAjAAMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcD
-                AjAdBgNVHQ4EFgQUKbc5UHnvVOR1PBNujeiQ3PXt4n0wHwYDVR0jBBgwFoAUUHpG
-                /X3tmXqbZVNAWSU/ifOSdDwwSgYDVR0fBEMwQTA/oDmgN4Y1aHR0cHM6Ly90bHMt
-                dGVybWluYXRvcnMuaW50ZXJuYWxzLm1lZ2Fjb29sLmNvL2NybC5wZW2BAgBNMDMG
-                A1UdEQQsMCqCKGV1LnRscy10ZXJtaW5hdG9ycy5pbnRlcm5hbHMubWVnYWNvb2wu
-                Y28wCgYIKoZIzj0EAwQDSAAwRQIhAKRBXdE9JhdUqYFuBAiVWZ6IxeSZtll/7sUa
-                hySFU2sUAiB6w9dAjnEPnWxvKMccIJM4YRF/eUhlLrZUpRPGb2IVtg==
+                MjI3MDExNTUwWhcNMTYwODI1MDExNTUwWjBwMREwDwYDVQQKDAhNZWdhY29vbDEm
+                MCQGA1UECwwdUHVibGljLWZhY2luZyBUTFMgdGVybWluYXRvcnMxMzAxBgNVBAMM
+                KnNmbzEudGxzLXRlcm1pbmF0b3JzLmludGVybmFscy5tZWdhY29vbC5jbzBWMBAG
+                ByqGSM49AgEGBSuBBAAKA0IABHNihY2xWquU9vLqcT49Xe4/XixVgGnB1PssKn0Y
+                gmIbVQlzfgR5Ngooz+yVPdVb88lGk247XgULZIMwg/ZV6w6jgaowgacwDgYDVR0P
+                AQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMCMAkGA1UdEwQCMAAwHQYDVR0O
+                BBYEFIJLkEdPf9g8/8A1KVu2fT5qeg9YMB8GA1UdIwQYMBaAFLljA7pwHUQ1ZQoU
+                Y0r7S13EeQvVMDUGA1UdEQQuMCyCKnNmbzEudGxzLXRlcm1pbmF0b3JzLmludGVy
+                bmFscy5tZWdhY29vbC5jbzAKBggqhkjOPQQDBANHADBEAiBGxlkiY9z9xO2ORT+x
+                LgaAEdyB5BtDSOdzxDNEdID5+AIgEKGmElnA6RgSIbojyWeObLK1oPTmsT+9J9p+
+                HxemKpw=
                 -----END CERTIFICATE-----
         key: |
             -----BEGIN RSA PRIVATE KEY-----

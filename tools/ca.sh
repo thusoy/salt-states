@@ -47,32 +47,28 @@ EOF
         -notext
 }
 
-function create-server-cert () {
+function create-client-only-cert () {
     if [ $# -ne 2 ]; then
-        stderr "usage: create-server-cert <fqdn-prefix for new server> <fqdn of desired CA>"
+        stderr "usage: create-client-only-cert <fqdn-prefix for new server> <fqdn of desired CA>"
         exit 1
     fi
+    create-cert-with-extension $@ client_only_ext
+}
 
-    local ca_fqdn="$2"
-    local server_fqdn="${1}.${ca_fqdn}"
+function create-server-only-cert () {
+    if [ $# -ne 2 ]; then
+        stderr "usage: create-server-only-cert <fqdn-prefix for new server> <fqdn of desired CA>"
+        exit 1
+    fi
+    create-cert-with-extension $@ server_only_ext
+}
 
-    local private_key=$(_create-new-key)
-    local cert_dn=$(cut -f6 "$PKI_DIR/ca/$ca_fqdn/db/db" | head -1)
-    local organization=$(echo "$cert_dn" | grep -Eo "/O=[^/]+" | sed "s/\/O=//")
-    local service=$(echo "$cert_dn" | grep -Eo "/OU=[^/]+" | sed "s/\/OU=//")
-
-    local csr=$(SERVER_FQDN="$server_fqdn" O="$organization" OU="$service" openssl req \
-                -new \
-                -key <(echo "$private_key") \
-                -config <(get-tls-server-openssl.cnf))
-
-    CA_FQDN="$ca_fqdn" _openssl ca \
-               -in <(echo "$csr") \
-               -out "$PKI_DIR/certs/$server_fqdn.crt" \
-               -extensions server_ext \
-               -notext
-
-    echo "$private_key"
+function create-client-and-server-cert () {
+    if [ $# -ne 2 ]; then
+        stderr "usage: create-client-and-server-cert <fqdn-prefix for new server> <fqdn of desired CA>"
+        exit 1
+    fi
+    create-cert-with-extension $@ client_and_server_ext
 }
 
 function revoke-cert () {
@@ -116,10 +112,32 @@ function show-help () {
     echo "   new-root <fqdn-of-new-root-ca>"
     echo "   create-new-ca <fqdn-of-new-subca>"
     echo "   create-server-cert <FQDN of server>"
-    echo "   create-new-user-request <username>"
     echo "   sign-user-request <csr>"
-    echo "   create-new-user <username>"
     echo "   revoke-user <username>"
+}
+
+function create-cert-with-extension () {
+    local ca_fqdn="$2"
+    local server_fqdn="${1}.${ca_fqdn}"
+    local extensions="$3"
+
+    local private_key=$(_create-new-key)
+    local cert_dn=$(cut -f6 "$PKI_DIR/ca/$ca_fqdn/db/db" | head -1)
+    local organization=$(echo "$cert_dn" | grep -Eo "/O=[^/]+" | sed "s/\/O=//")
+    local service=$(echo "$cert_dn" | grep -Eo "/OU=[^/]+" | sed "s/\/OU=//")
+
+    local csr=$(SERVER_FQDN="$server_fqdn" O="$organization" OU="$service" openssl req \
+                -new \
+                -key <(echo "$private_key") \
+                -config <(get-tls-server-openssl.cnf))
+
+    CA_FQDN="$ca_fqdn" _openssl ca \
+               -in <(echo "$csr") \
+               -out "$PKI_DIR/certs/$server_fqdn.crt" \
+               -extensions "$extensions" \
+               -notext
+
+    echo "$private_key"
 }
 
 function _create-new-ca-directory-structure () {
@@ -261,12 +279,27 @@ basicConstraints        = critical,CA:true,pathlen:0
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always
 
-[ server_ext ]
+[ server_only_ext ]
 keyUsage                = critical,digitalSignature,keyEncipherment
+extendedKeyUsage        = serverAuth
 basicConstraints        = CA:false
-extendedKeyUsage        = serverAuth,clientAuth
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always
+
+[ client_only_ext ]
+keyUsage                = critical,digitalSignature,keyEncipherment
+extendedKeyUsage        = clientAuth
+basicConstraints        = CA:false
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+
+[ client_and_server_ext ]
+keyUsage                = critical,digitalSignature,keyEncipherment
+extendedKeyUsage        = clientAuth,serverAuth
+basicConstraints        = CA:false
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+
 
 [ root_crl_issuer ]
 O = $organization
@@ -290,13 +323,17 @@ case "$1" in
         shift;
         create-new-ca $@
     ;;
-    create-server-cert)
+    create-server-only-cert)
         shift;
-        create-server-cert $@
+        create-server-only-cert $@
     ;;
-    create-new-user)
+    create-client-only-cert)
         shift;
-        create-new-user $@
+        create-client-only-cert $@
+    ;;
+    create-client-and-server-cert)
+        shift;
+        create-client-and-server-cert $@
     ;;
     revoke-cert)
         shift;
