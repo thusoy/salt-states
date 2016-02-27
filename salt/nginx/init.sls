@@ -1,4 +1,5 @@
 {% set nginx = pillar.get('nginx', {}) %}
+{% set install_from_source = nginx.get('install_from_source', True) %}
 
 
 nginx-systemuser:
@@ -15,7 +16,7 @@ nginx-systemuser:
 
 
 include:
-{% if nginx.get('install_from_source') %}
+{% if install_from_source %}
     - nginx.source
 {% else %}
     - nginx.package
@@ -34,7 +35,7 @@ nginx-conf:
         - user: root
         - group: nginx
         - require:
-            {% if nginx.get('install_from_source') %}
+            {% if install_from_source %}
             - cmd: nginx
             {% else %}
             - pkg: nginx
