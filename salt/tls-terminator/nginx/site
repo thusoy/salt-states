@@ -1,0 +1,51 @@
+upstream {{ server_name }}_backend {
+    server {{ backend }}:{{ backend_port }};
+    keepalive 8;
+}
+
+server {
+  listen [::]:80;
+  server_name {{ server_name }};
+  charset utf-8;
+  return 301 https://$server_name$request_uri;
+}
+
+server {
+  listen [::]:443 ssl;
+  server_name {{ server_name }};
+  charset utf-8;
+
+  client_max_body_size 10m;
+
+  ssl_certificate ssl/{{ server_name }}.crt;
+  ssl_certificate_key private/{{ server_name }}.key;
+  add_header Strict-Transport-Security max-age=31536000 always;
+
+  error_page 504 /504-{{ server_name }}.html;
+
+  location / {
+    proxy_pass {{ backend_protocol }}://{{ server_name }}_backend;
+    include proxy_params;
+
+    proxy_ssl_trusted_certificate {{ upstream_ca or '/etc/nginx/ssl/all-certs.pem' }};
+    proxy_ssl_name {{ backend }};
+    {% if proxy_auth_key %}
+    proxy_ssl_certificate {{ proxy_auth_cert }};
+    proxy_ssl_certificate_key {{ proxy_auth_key }};
+    {% endif %}
+
+    {% if proxy_ca_crl %}
+    proxy_ssl_crl {{ proxy_ca_crl }};
+    {% endif %}
+
+    # The verification depth needed for Heroku is currently only 2, but since they might
+    # change CA and certificate layout on a whim we allow a depth of 3.
+    proxy_ssl_verify_depth 1;
+
+  }
+
+  location = /504-{{ server_name }}.html {
+    root html;
+    internal;
+  }
+}
