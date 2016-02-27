@@ -16,6 +16,9 @@ server {
 
   # Verify client side certificates against our trusted roots
   ssl_client_certificate ssl/client-trusted-roots.pem;
+  {% if client_ca_crl %}
+  ssl_crl {{ client_ca_crl }};
+  {% endif %}
   ssl_verify_client on;
 
   location / {

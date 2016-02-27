@@ -6,6 +6,17 @@ include:
 
 
 {% set server_name = 'internal.megacool.co' %}
+
+{% if 'client-ca-crl' in http_host['meowth'] %}
+http-host-meowth-client-ca-crl:
+    file.managed:
+        - name: /etc/nginx/ssl/client-ca-crl.pem
+        - contents_pillar: http-host:meowth:client-ca-crl
+        - watch_in:
+            - service: nginx
+{% endif %}
+
+
 http-host-nginx-site:
     file.managed:
         - name: /etc/nginx/sites-enabled/http-host
@@ -15,6 +26,9 @@ http-host-nginx-site:
             backend: 127.0.0.1
             backend_port: 8000
             server_name: {{ server_name }}
+            {% if 'client-ca-crl' in http_host['meowth'] %}
+            client_ca_crl: /etc/nginx/ssl/client-ca-crl.pem
+            {% endif %}
         - watch_in:
             - service: nginx
 
