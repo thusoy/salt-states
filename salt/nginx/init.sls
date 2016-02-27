@@ -202,29 +202,11 @@ nginx-firewall-{{ family }}:
         - chain: INPUT
         - family: {{ family }}
         - proto: tcp
-        - match: comment
         - dports: 80,443
-        - comment: "nginx: Allow incoming HTTP(S)"
-        - jump: ACCEPT
-
-
-{% for owner in ('root', 'nginx') %}
-nginx-firewall-outgoing-{{ family }}-{{ owner }}:
-    firewall.append:
-        - table: filter
-        - chain: OUTPUT
-        - family: {{ family }}
-        - proto: tcp
-        - sports: 80,443
         - match:
             - comment
-            - owner
-            - state
-        - comment: "nginx: Allow replying to HTTP(S) for {{ owner }}"
-        - uid-owner: {{ owner }}
-        - connstate: ESTABLISHED
+        - comment: "nginx: Allow incoming HTTP(S)"
         - jump: ACCEPT
-{% endfor %}
 {% endfor %}
 
 
