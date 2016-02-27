@@ -1,35 +1,23 @@
 #!/bin/bash
-# Management script for the vpn
 
 set -e
 
 PKI_DIR=/tmp/ca
-
-function _create-new-ca-directory-structure () {
-    local root="$1"
-    mkdir -p $PKI_DIR/certs
-    mkdir -p "$PKI_DIR/ca/$root/"{private,db}
-    echo 01 > "$PKI_DIR/ca/$root/db/serial"
-    echo 01 > "$PKI_DIR/ca/$root/db/crl.srl"
-    touch "$PKI_DIR/ca/$root/db/db"
-}
-
-function _create-new-key () {
-    openssl ecparam -name secp256k1 -genkey
-}
 
 function new-root () {
     if [ $# -ne 1 ]; then
         stderr "usage: new-root <Name of new root>"
         exit 1
     fi
+
     local root_fqdn="$1"
     _create-new-ca-directory-structure "$root_fqdn"
 
-    echo -n "Enter new root CA common name: "
-    read ca_common_name
+    echo -n "Enter service name for this CA: "
+    local service
+    read -r service
     local private_key=$(_create-new-key)
-    export CA_NAME="$ca_common_name"
+    export OU="$service"
     export CA_FQDN="$root_fqdn"
     cat <<EOF
 [INFO] Now we'll create the CSR.
@@ -45,70 +33,18 @@ EOF
        Hint: You can create strong keys by using "openssl rand -base64 30"
 EOF
     echo -n "$private_key" \
-    | openssl pkcs8 \
-        -v2 aes-256-cbc \
-        -topk8 \
-        -out "$PKI_DIR/ca/$root_fqdn/private/$root_fqdn.key"
+    | encrypt_key_to_file "$PKI_DIR/ca/$root_fqdn/private/$root_fqdn.key"
+
     cat <<EOF
 [INFO] We'll now self-sign our root certificate, enter the key you just created again.
 EOF
-    MODE=root _openssl ca -selfsign \
-                         -in <(echo "$csr") \
-                         -out "$PKI_DIR/certs/$root_fqdn.crt" \
-                         -extensions root_ca_ext \
-                         -days 7300 \
-                         -notext
-
-    # Save the root FQDN so that it can be looked up by later commands
-    echo "$root_fqdn" > "$PKI_DIR/root_fqdn"
-}
-
-function get_root_fqdn () {
-    cat "$PKI_DIR/root_fqdn"
-}
-
-function _openssl () {
-    pushd "$PKI_DIR" >/dev/null 2>&1
-    openssl $@ -config <(get-openssl.cnf)
-    popd > /dev/null
-}
-
-function create-new-ca () {
-    if [ $# -ne 1 ]; then
-        stderr "usage: create-new-ca <name of new CA>"
-        exit 1
-    fi
-    local root_fqdn=$(get_root_fqdn)
-    local ca_fqdn="${1}.${root_fqdn}"
-    echo -n "Enter a human-readable name for CA $ca_fqdn: "
-    read ca_common_name
-    _create-new-ca-directory-structure "$ca_fqdn"
-
-    local private_key=$(_create-new-key)
-    local csr=$(CA_NAME="$ca_common_name" CA_FQDN="$ca_fqdn" _openssl req \
-        -new \
-        -key <(echo "$private_key"))
-
-    CA_FQDN="$root_fqdn" _openssl ca \
+    _openssl ca \
+        -selfsign \
         -in <(echo "$csr") \
-        -out "$PKI_DIR/ca/$ca_fqdn.crt" \
-        -extensions signing_ca_ext \
-        -days 3650 \
+        -out "$PKI_DIR/certs/$root_fqdn.crt" \
+        -extensions root_ca_ext \
+        -days 7300 \
         -notext
-
-    local ca_private_dir="$PKI_DIR/ca/$ca_fqdn/private"
-    mkdir -p "$ca_private_dir"
-
-    cat <<EOF
-[INFO] We'll not store the CA's private key to disk, enter a password to encrypt
-       it with.
-EOF
-
-    echo -n "$private_key" \
-    | openssl pkcs8 \
-        -v2 aes-256-cbc \
-        -topk8 \
-        -out "$ca_private_dir/$ca_fqdn.key"
 }
 
 function create-server-cert () {
@@ -125,7 +61,6 @@ function create-server-cert () {
     local organization=$(echo "$cert_dn" | grep -Eo "/O=[^/]+" | sed "s/\/O=//")
     local service=$(echo "$cert_dn" | grep -Eo "/OU=[^/]+" | sed "s/\/OU=//")
 
-
     local csr=$(SERVER_FQDN="$server_fqdn" O="$organization" OU="$service" openssl req \
                 -new \
                 -key <(echo "$private_key") \
@@ -138,44 +73,6 @@ function create-server-cert () {
                -notext
 
     echo "$private_key"
-}
-
-function get-tls-server-openssl.cnf () {
-    cat <<"EOF"
-# This file is used by the openssl req command. The subjectAltName cannot be
-# prompted for and must be specified in the SAN environment variable.
-
-cn = ${ENV::SERVER_FQDN}
-ou = ${ENV::OU}
-o = ${ENV::O}
-
-[ default ]
-SAN                     = DNS:$cn    # Default value
-
-[ req ]
-encrypt_key             = no                    # Protect private key
-default_md              = sha256                # MD to use
-utf8                    = yes                   # Input is UTF-8
-string_mask             = utf8only              # Emit UTF-8 strings
-prompt                  = no                    # Prompt for DN
-distinguished_name      = server_dn             # DN template
-req_extensions          = server_reqext         # Desired extensions
-
-[ server_dn ]
-organizationName                = $o
-organizationalUnitName          = $ou
-commonName                      = $cn
-
-[ server_reqext ]
-keyUsage                = critical,digitalSignature,keyEncipherment
-extendedKeyUsage        = serverAuth
-subjectKeyIdentifier    = hash
-subjectAltName          = DNS:$cn
-EOF
-}
-
-function stderr () {
-    echo >&2 $@
 }
 
 function revoke-cert () {
@@ -225,12 +122,76 @@ function show-help () {
     echo "   revoke-user <username>"
 }
 
+function _create-new-ca-directory-structure () {
+    local root="$1"
+    mkdir -p $PKI_DIR/certs
+    mkdir -p "$PKI_DIR/ca/$root/"{private,db}
+    echo 01 > "$PKI_DIR/ca/$root/db/serial"
+    echo 01 > "$PKI_DIR/ca/$root/db/crl.srl"
+    touch "$PKI_DIR/ca/$root/db/db"
+}
+
+function _create-new-key () {
+    openssl ecparam -name secp256k1 -genkey
+}
+
+function _openssl () {
+    pushd "$PKI_DIR" >/dev/null 2>&1
+    openssl $@ -config <(get-openssl.cnf)
+    popd >/dev/null
+}
+
+function get-tls-server-openssl.cnf () {
+    cat <<"EOF"
+# This file is used by the openssl req command. The subjectAltName cannot be
+# prompted for and must be specified in the SAN environment variable.
+
+cn = ${ENV::SERVER_FQDN}
+ou = ${ENV::OU}
+o = ${ENV::O}
+
+[ default ]
+SAN                     = DNS:$cn    # Default value
+
+[ req ]
+encrypt_key             = no                    # Protect private key
+default_md              = sha512                # MD to use
+utf8                    = yes                   # Input is UTF-8
+string_mask             = utf8only              # Emit UTF-8 strings
+prompt                  = no                    # Prompt for DN
+distinguished_name      = server_dn             # DN template
+req_extensions          = server_reqext         # Desired extensions
+
+[ server_dn ]
+organizationName                = $o
+organizationalUnitName          = $ou
+commonName                      = $cn
+
+[ server_reqext ]
+keyUsage                = critical,digitalSignature,keyEncipherment
+extendedKeyUsage        = serverAuth
+subjectKeyIdentifier    = hash
+subjectAltName          = DNS:$cn
+EOF
+}
+
+function encrypt_key_to_file () {
+    openssl pkcs8 \
+        -v2 aes-256-cbc \
+        -topk8 \
+        -out "$1"
+}
+
+function stderr () {
+    echo >&2 $@
+}
+
 function get-openssl.cnf () {
     cat <<"EOF"
 organization            = "Megacool"
 mode                    = root
-CA_NAME                 = default-ca-name
-ca_name                 = ${ENV::CA_NAME}
+OU                      = "Default service"
+service                 = ${ENV::OU}
 ca                      = ${ENV::CA_FQDN}              # CA name
 dir                     = .                   # Top dir
 
@@ -249,7 +210,7 @@ req_extensions          = ca_reqext             # Desired extensions
 
 [ ca_dn ]
 organizationName        = $organization
-organizationalUnitName  = $ca_name
+organizationalUnitName  = $service
 commonName              = $ca
 
 [ ca_reqext ]
@@ -299,7 +260,6 @@ keyUsage                = critical,keyCertSign,cRLSign
 basicConstraints        = critical,CA:true,pathlen:0
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always
-crlDistributionPoints   = server_crl
 
 [ server_ext ]
 keyUsage                = critical,digitalSignature,keyEncipherment
@@ -307,16 +267,10 @@ basicConstraints        = CA:false
 extendedKeyUsage        = serverAuth,clientAuth
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always
-crlDistributionPoints   = server_crl
-
-[ server_crl ]
-fullname  = URI:https://$ca/crl.pem
-reasons   = superseded, cessationOfOperation, privilegeWithdrawn, keyCompromise
-CRLIssuer = dirName:root_crl_issuer
 
 [ root_crl_issuer ]
 O = $organization
-OU = $ca_name
+OU = $service
 CN = $ca
 
 # CRL extensions exist solely to point to the CA certificate that has issued
