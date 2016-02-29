@@ -146,9 +146,9 @@ nginx-defaults:
             {% endfor %}
 
 
-nginx-www-certificate:
+nginx-default-certificate:
     file.managed:
-        - name: /etc/nginx/ssl/www.thusoy.com.crt
+        - name: /etc/nginx/ssl/default.crt
         - contents_pillar: nginx:default_cert
         - require:
             - file: nginx-certificates-dir
@@ -169,9 +169,9 @@ nginx-config-file-{{ config_file }}:
 {% endfor %}
 
 
-nginx-www-key:
+nginx-default-key:
     file.managed:
-        - name: /etc/nginx/private/www.thusoy.com.key
+        - name: /etc/nginx/private/default.key
         - contents_pillar: nginx:default_key
         - user: root
         - group: nginx
