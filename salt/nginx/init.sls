@@ -16,6 +16,7 @@ nginx-systemuser:
 
 
 include:
+    - .pillar_check
 {% if install_from_source %}
     - nginx.source
 {% else %}
