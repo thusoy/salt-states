@@ -26,6 +26,33 @@ include:
 {% endif %}
 
 
+# Install ca-certificates to let nginx verify upstream certificates
+nginx-ca-certificates:
+    test.succeed_without_changes:
+        - name: ca-certificates
+
+    cmd.run:
+        - name: existing_digest=$(sha1sum /etc/nginx/ssl/all-certs.pem 2>/dev/null
+                                  | cut -d" " -f1 || echo 'no existing file');
+                new_digest=$(find /etc/ssl/certs/ -type f
+                             | sort
+                             | xargs cat
+                             | sha1sum
+                             | cut -d" " -f1);
+                if [ "$new_digest" != "$existing_digest" ]; then
+                    find /etc/ssl/certs/ -type f
+                    | sort
+                    | xargs cat
+                    > /etc/nginx/ssl/all-certs.pem;
+                    echo "changed=yes";
+                fi
+        - stateful: True
+        - require:
+            - file: nginx-conf
+        - watch_in:
+            - service: nginx
+
+
 nginx-conf:
     file.managed:
         - name: /etc/nginx/nginx.conf
