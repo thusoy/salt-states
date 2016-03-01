@@ -114,23 +114,7 @@ ssh-firewall-{{ family }}:
         - dport: {{ ssh.get('port', 22) }}
         - jump: ACCEPT
         - proto: tcp
-        - match: comment
-        - comment: "ssh: Allow incoming SSH"
-
-
-ssh-firewall-outgoing-{{ family }}:
-    firewall.append:
-        - family: {{ family }}
-        - chain: OUTPUT
-        - table: filter
-        - proto: tcp
-        - sport: {{ ssh.get('port', 22) }}
         - match:
             - comment
-            - owner
-            - state
-        - comment: "ssh: Allow replies to SSH connections"
-        - uid-owner: root
-        - connstate: ESTABLISHED
-        - jump: ACCEPT
+        - comment: "ssh: Allow incoming SSH"
 {% endfor %}
