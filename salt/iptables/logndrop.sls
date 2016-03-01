@@ -11,7 +11,10 @@ iptables-logndrop-log-{{ family }}:
         - family: {{ family }}
         - match:
             - comment
+            - limit
         - comment: "iptables.logndrop: Log non-conformant traffic..."
+        - limit: 10/min
+        - log-prefix: 'iptables.logndrop: '
         - jump: LOG
 
 
