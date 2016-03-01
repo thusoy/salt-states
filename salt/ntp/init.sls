@@ -26,8 +26,6 @@ ntp-firewall-outgoing-{{ family }}:
         - match:
             - comment
             - owner
-            - state
-        - connstate: NEW,ESTABLISHED
         - uid-owner: root
         - jump: ACCEPT
         - comment: "ntp: Allow outgoing NTP queries for root"
