@@ -2,6 +2,10 @@
 # introduced by https://github.com/saltstack/salt/pull/29148
 # and resolved by https://github.com/saltstack/salt/pull/31207
 
+include:
+    - patches
+
+
 {% if '2015.8.3' <= grains.saltversion < '2015.8.8' %}
 remove-boto_route53-error-logging:
     file.patch:
