@@ -1,6 +1,6 @@
 61a62,63
 > REQUIRED_BOTO_VERSION = '2.35.0'
->
+> 
 68,71c70
 <     required_boto_version = '2.35.0'
 <     if _LooseVersion(boto.__version__) < _LooseVersion(required_boto_version):
