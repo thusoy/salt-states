@@ -6,3 +6,7 @@ hostname-from-id:
     file.managed:
         - name: /etc/hostname
         - contents: {{ grains.id }}
+
+    host.present:
+        - name: {{ grains.id }}
+        - ip: 127.0.0.1
