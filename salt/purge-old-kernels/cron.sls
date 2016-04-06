@@ -2,7 +2,7 @@
 {% set kernels_to_keep = salt['pillar.get']('purge-old-kernels:kernels_to_keep', 2) %}
 
 include:
-    - .
+    - purge-old-kernels
     - cronic
 
 
