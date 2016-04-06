@@ -5,6 +5,10 @@
 # Public Domain CC0: http://creativecommons.org/publicdomain/zero/1.0/
 # Modified by thusoy to use mktemp for safer temporary file creation
 
+# This script exist to enable scripts to print debug data to stdout and errors
+# to stderr without resulting in a cron email for the presence of data in
+# stdout. Only stderr or exit code != 0 triggers output from this script.
+
 set -eu
 
 OUT=$(mktemp /tmp/cronic.out.XXXXXXXX)
