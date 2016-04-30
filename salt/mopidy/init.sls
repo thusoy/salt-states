@@ -18,9 +18,9 @@ mopidy:
         - name: /etc/mopidy/mopidy.conf
         - source: salt://mopidy/mopidy.conf
         - template: jinja
-        - user: root
-        - group: mopidy
-        - mode: 640
+        - user: mopidy
+        - group: root
+        - mode: 440
         - show_diff: False
         - require:
             - pkg: mopidy
