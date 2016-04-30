@@ -1,3 +1,5 @@
+{% set mopidy = pillar.get('mopidy', {}) %}
+
 include:
     - .pillar_check
 
@@ -29,3 +31,10 @@ mopidy:
             - comment
         - comment: "mopidy: Allow MPD"
         - jump: ACCEPT
+
+
+{% if 'local' in mopidy %}
+mopidy-local-media-dir:
+    file.directory:
+        - name: {{ mopidy.local.media_dir }}
+{% endif %}
