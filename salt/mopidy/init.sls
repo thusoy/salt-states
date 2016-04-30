@@ -19,9 +19,11 @@ mopidy:
         - source: salt://mopidy/mopidy.conf
         - template: jinja
         - user: root
-        - group: root
+        - group: mopidy
         - mode: 640
         - show_diff: False
+        - require:
+            - pkg: mopidy
 
     firewall.append:
         - chain: INPUT
