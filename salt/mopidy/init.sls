@@ -1,3 +1,7 @@
+include:
+    - .pillar_check
+
+
 mopidy:
     pkgrepo.managed:
         - name: deb http://apt.mopidy.com/ jessie main contrib non-free
