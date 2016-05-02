@@ -28,17 +28,17 @@ hardening-remove-unused-system-account-{{ user }}:
 
 hardening-remove-system-account-login-shells:
     cmd.run:
-        - name: cat /etc/passwd |
-                while read line; do
-                    user=$(echo "$line" | cut -d":" -f1);
-                    uid=$(echo "$line" | cut -d":" -f3);
-                    shell=$(echo "$line" | cut -d":" -f7);
-                    if [ "$uid" -lt "1000" ] &&
-                       [ "$uid" -ne "0" ] &&
-                       [ "$user" != "postgres" ] &&
-                       [ "$shell" != "/usr/sbin/nologin" ] &&
-                       [ "$shell" != "/bin/false" ]; then
-                        echo "Removing $shell from $user";
-                        usermod -s /usr/sbin/nologin "$user";
-                    fi;
-                done
+        - name: |
+            import subprocess
+            vulnerable_accounts = []
+            with open('/etc/passwd') as fh:
+                for line in fh:
+                    fields = line.strip().split(':')
+                    user, uid, shell = fields[0], fields[2], fields[6]
+                    if 0 < int(uid) < 1000 and user != 'postgres' and shell not in ('/usr/sbin/nologin', '/bin/false'):
+                        vulnerable_accounts.append(user)
+                        subprocess.call(['usermod', '-s', '/usr/sbin/nologin', user])
+            if vulnerable_accounts:
+                print('changed=yes comment="Removed login shell for %s"' % ', '.join(vulnerable_accounts))
+        - stateful: True
+        - shell: /usr/bin/python
