@@ -29,6 +29,7 @@ hardening-remove-unused-system-account-{{ user }}:
 hardening-remove-system-account-login-shells:
     cmd.run:
         - name: |
+            python -c "
             import subprocess
             vulnerable_accounts = []
             with open('/etc/passwd') as fh:
@@ -39,6 +40,6 @@ hardening-remove-system-account-login-shells:
                         vulnerable_accounts.append(user)
                         subprocess.call(['usermod', '-s', '/usr/sbin/nologin', user])
             if vulnerable_accounts:
-                print('changed=yes comment="Removed login shell for %s"' % ', '.join(vulnerable_accounts))
+                print('changed=yes comment=\"Removed login shell for %s\"' % ', '.join(vulnerable_accounts))
+            "
         - stateful: True
-        - shell: /usr/bin/python
