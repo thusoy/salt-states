@@ -1,3 +1,5 @@
+{% set pip = pillar.get('pip') %}
+
 pip:
     pkg.purged:
         - name: python-pip
@@ -12,7 +14,11 @@ pip:
             - pkg: pip
 
     pip.installed:
+        {% if 'version' in pip %}
+        - name: pip {{ pip.version }}
+        {% else %}
         - name: pip
         - upgrade: True
+        {% endif %}
         - require:
             - cmd: pip
