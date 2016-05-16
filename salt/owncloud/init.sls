@@ -62,6 +62,7 @@ owncloud-php-ini:
     file.managed:
         - name: /etc/php5/fpm/php.ini
         - source: salt://owncloud/php.ini
+        - template: jinja
         - user: root
         - group: root
         - mode: 644
@@ -156,3 +157,16 @@ owncloud-{{ writeable_dir }}-directory:
         - watch:
             - cmd: owncloud
 {% endfor %}
+
+
+# Ensure that the tmp dir exists and is writeable if specified
+# Necessary since otherwise php would use system tmp, which is often
+# mapped to memory and thus will choke entirely on big uploads
+{% if 'upload_tmp_dir' in owncloud %}
+owncloud-upload-tmp-dir:
+    file.directory:
+        - name: {{ owncloud.upload_tmp_dir }}
+        - user: root
+        - group: phpworker
+        - mode: 770
+{% endif %}
