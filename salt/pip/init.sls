@@ -1,4 +1,4 @@
-{% set pip = pillar.get('pip') %}
+{% set pip = pillar.get('pip', {}) %}
 
 pip:
     pkg.purged:
