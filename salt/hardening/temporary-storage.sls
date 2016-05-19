@@ -3,13 +3,14 @@
 
 {% set tmp_size = salt['pillar.get']('os:tmp_size', '1073741824') %}
 
+# TODO: This currently remounts /tmp to tmpfs, that should be configurable.
 {% set tmp_line = 'tmpfs /tmp tmpfs defaults,nodev,nosuid,noexec,mode=1777,size={} 0 0'.format(tmp_size) %}
 hardening-/tmp:
     file.replace:
         - name: /etc/fstab
         - pattern: ^tmpfs[ ]*/tmp .*
         - repl: {{ tmp_line }}
-        - unless: grep "^{{ tmp_line }}$" /etc/fstab #: highlighting
+        - unless: grep "^{{ tmp_line }}$" /etc/fstab
         - append_if_not_found: True
 
 
@@ -19,7 +20,7 @@ hardening-/var/tmp:
         - name: /etc/fstab
         - pattern: ^/tmp
         - repl: {{ var_tmp_line }}
-        - unless: grep "{{ var_tmp_line }}" /etc/fstab #: highlighting
+        - unless: grep "{{ var_tmp_line }}" /etc/fstab
         - append_if_not_found: True
 
 
@@ -29,5 +30,5 @@ hardening-/dev/shm:
         - name: /etc/fstab
         - pattern: ^tmpfs[ ]*/dev/shm
         - repl: {{ shm_line}}
-        - unless: grep "{{ shm_line }}" /etc/fstab #: highlighting
+        - unless: grep "{{ shm_line }}" /etc/fstab
         - append_if_not_found: True

@@ -24,7 +24,6 @@ tomcat:
       {% if salt['pillar.get']('tomcat:security') %}
       - TOMCAT{{ tomcat.version }}_SECURITY={{ salt['pillar.get']('tomcat:security', 'no') }}
       {% endif %}
-    #" syntax highlighting
 
 
 tomcat-webapp-dir:

@@ -5,7 +5,7 @@
     'pcmcia_core',
 ] %}
 
-{% set custom_module_blacklist = salt['pillar.get']('hardening:module_blacklist', []) %} #: highlighting
+{% set custom_module_blacklist = salt['pillar.get']('hardening:module_blacklist', []) %}
 
 
 dma-modules-blacklist:
