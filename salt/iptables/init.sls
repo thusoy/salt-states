@@ -105,6 +105,7 @@ iptables-output-allow-established-{{ family }}:
         - comment: "iptables: Allow established outgoing"
         # RELATED allows FIN-ACKs for closed sockets
         - ctstate: ESTABLISHED,RELATED
+        - order: 2
         - jump: ACCEPT
 
 
