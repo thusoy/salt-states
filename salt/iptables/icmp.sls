@@ -1,13 +1,32 @@
 {% for family in ('ipv4', 'ipv6') %}
-iptables-icmp-chain-{{ family }}:
+iptables-incoming-icmp-chain-{{ family }}:
     firewall.chain_present:
         - name: incoming-icmp
+        - family: {{ family }}
+
+
+iptables-outgoing-icmp-chain-{{ family }}:
+    firewall.chain_present:
+        - name: outgoing-icmp
         - family: {{ family }}
 
 
 iptables-incoming-icmp-chain-last-rule-{{ family }}:
     firewall.append:
         - chain: incoming-icmp
+        - family: {{ family }}
+        - match:
+            - comment
+        - comment: 'iptables.icmp: Reject the rest'
+        - jump: REJECT
+        - order: last
+        - require_in:
+            - firewall: iptables-rules
+
+
+iptables-outgoing-icmp-chain-last-rule-{{ family }}:
+    firewall.append:
+        - chain: outgoing-icmp
         - family: {{ family }}
         - match:
             - comment
@@ -27,6 +46,18 @@ iptables-incoming-icmp-jump-{{ family }}:
         - comment: 'iptables.icmp: Allow a subset of icmp'
         - proto: {{ 'icmp' if family == 'ipv4' else 'icmpv6' }}
         - jump: incoming-icmp
+        - order: 2
+
+
+iptables-outgoing-icmp-jump-{{ family }}:
+    firewall.append:
+        - chain: OUTPUT
+        - family: {{ family }}
+        - match:
+            - comment
+        - comment: 'iptables.icmp: Allow a subset of icmpv6'
+        - proto: {{ 'icmp' if family == 'ipv4' else 'icmpv6' }}
+        - jump: outgoing-icmp
         - order: 2
 {% endfor %}
 
@@ -95,7 +126,7 @@ iptables-allow-incoming-icmpv6-{{ icmp_msg_text }}:
 iptables-allow-incoming-icmpv6-{{ icmp_msg_text }}:
     firewall.append:
         - table: filter
-        - chain: INPUT
+        - chain: incoming-icmp
         - family: ipv6
         - source: fe80::/10
         - destination: fe80::/10
@@ -130,7 +161,7 @@ iptables-allow-incoming-icmpv6-{{ icmp_msg_text }}:
 iptables-allow-outgoing-icmpv6-{{ icmp_msg_text }}:
     firewall.append:
         - family: ipv6
-        - chain: OUTPUT
+        - chain: outgoing-icmp
         - table: filter
         - match:
             - comment
