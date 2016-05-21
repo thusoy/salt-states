@@ -88,6 +88,30 @@ iptables-allow-incoming-icmp-{{ icmp_msg_text }}:
 {% endfor %} # end icmp msgs
 
 
+# Allow a subset of outgoing icmp messages
+{% for icmp_msg_num, icmp_msg_text in {
+        '0': 'echo-reply',
+        '3/1': 'destination-unreachable/host-unreachable',
+        '3/3': 'destination-unreachable/port-unreachable',
+        '3/4': 'destination-unreachable/fragmentation-needed',
+        '8': 'echo-request',
+        '11': 'time-exceeded',
+    }.items() %}
+iptables-allow-outgoing-icmp-{{ icmp_msg_text }}:
+    firewall.append:
+        - table: filter
+        - chain: outgoing-icmp
+        - family: ipv4
+        - match:
+            - icmp
+            - comment
+        - protocol: icmp
+        - icmp-type: {{ icmp_msg_num }}
+        - comment: "iptables: Allow outgoing {{ icmp_msg_text }}"
+        - jump: ACCEPT
+{% endfor %} # end icmp msgs
+
+
 # Allow a subset of icmpv6 messages, as minimum recommended by RFC 4890
 # Ref. http://www.ietf.org/rfc/rfc4890.txt
 {% for icmp_msg_num, icmp_msg_text in {
