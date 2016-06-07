@@ -190,9 +190,7 @@ iptables-allow-outgoing-icmpv6-{{ icmp_msg_text }}:
         - match:
             - comment
             - icmpv6
-            - hl
         - comment: "iptables: Allow outgoing ICMPv6 {{ icmp_msg_text }}"
-        - hl-eq: 255
         - proto: icmpv6
         - icmpv6-type: {{ icmp_msg_num }}
         - jump: ACCEPT
