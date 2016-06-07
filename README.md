@@ -14,4 +14,9 @@ fileserver_backend:
 
 gitfs_remotes:
 	- https://github.com/thusoy/salt-states	
+
+gitfs_env_whitelist:
+    - base
+
+gitfs_root: salt
 ```
