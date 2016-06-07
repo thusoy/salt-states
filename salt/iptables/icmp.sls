@@ -153,7 +153,6 @@ iptables-allow-incoming-icmpv6-{{ icmp_msg_text }}:
         - chain: incoming-icmp
         - family: ipv6
         - source: fe80::/10
-        - destination: fe80::/10
         - match:
             - icmpv6
             - comment
