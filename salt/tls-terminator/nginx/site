@@ -26,7 +26,7 @@ server {
   location / {
     proxy_pass {{ backend_protocol }}://{{ server_name }}_backend;
     include proxy_params;
-    include cache_params;
+    include proxy_cache_params;
 
     # Override the HTTP Host header to the name of the upstream host.
     # (eg. *.herokuapp.com, prevents having to configure Heroku with the
