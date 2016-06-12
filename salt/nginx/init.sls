@@ -147,16 +147,6 @@ nginx-defaults:
             {% endfor %}
 
 
-nginx-default-certificate:
-    file.managed:
-        - name: /etc/nginx/ssl/default.crt
-        - contents_pillar: nginx:default_cert
-        - require:
-            - file: nginx-certificates-dir
-        - watch_in:
-            - service: nginx
-
-
 {% for config_file in (
     'mime.types',
     'fastcgi_params',
