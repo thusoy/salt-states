@@ -1,6 +1,4 @@
-{% set nginx = pillar.get('nginx', {}) %}
-{% set install_from_source = nginx.get('install_from_source', True) %}
-
+{% from 'nginx/map.jinja' import nginx %}
 
 nginx-systemuser:
     user.present:
@@ -17,12 +15,12 @@ nginx-systemuser:
 
 include:
     - .pillar_check
-{% if install_from_source %}
+{% if nginx.install_from_source %}
     - nginx.source
 {% else %}
     - nginx.package
 {% endif %}
-{% if nginx.get('dump_to_s3', False) %}
+{% if nginx.dump_to_s3 %}
     - s3-uploader
 {% endif %}
 
@@ -63,7 +61,7 @@ nginx-conf:
         - user: root
         - group: nginx
         - require:
-            {% if install_from_source %}
+            {% if nginx.install_from_source %}
             - cmd: nginx
             {% else %}
             - pkg: nginx
@@ -82,12 +80,13 @@ nginx-pam-auth:
 nginx-dh-param-default:
     file.symlink:
         - name: /etc/nginx/ssl/dhparam.pem
-        - target: /etc/nginx/ssl/dhparam.{{ nginx.get('dh_keysize', 4096 ) }}.pem
+        - target: /etc/nginx/ssl/dhparam.{{ nginx.dh_keysize }}.pem
         - force: True
         - require:
             - file: nginx-certificates-dir
         - watch_in:
             - service: nginx
+
 
 {% for size in (1024, 2048, 4096) %}
 nginx-dh-param-{{ size }}:
@@ -168,6 +167,16 @@ nginx-config-file-{{ config_file }}:
         - watch_in:
             - service: nginx
 {% endfor %}
+
+
+nginx-default-certificate:
+    file.managed:
+        - name: /etc/nginx/ssl/default.crt
+        - contents_pillar: nginx:default_cert
+        - require:
+            - file: nginx-certificates-dir
+        - watch_in:
+            - service: nginx
 
 
 nginx-default-key:
