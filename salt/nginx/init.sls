@@ -27,7 +27,7 @@ include:
 
 # Install ca-certificates to let nginx verify upstream certificates
 nginx-ca-certificates:
-    test.succeed_without_changes:
+    pkg.installed:
         - name: ca-certificates
 
     cmd.run:
@@ -47,6 +47,7 @@ nginx-ca-certificates:
                 fi
         - stateful: True
         - require:
+            - pkg: nginx-ca-certificates
             - file: nginx-conf
         - watch_in:
             - service: nginx
