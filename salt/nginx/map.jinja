@@ -6,5 +6,7 @@
         'dump_to_s3': False,
         'dh_keysize': 4096,
         'keepalive_timeout': 65,
+        'ssl_cache_size': '100m',
+        'ssl_session_timeout': '120m',
     },
 }, merge=pillar_get('nginx')) %}
