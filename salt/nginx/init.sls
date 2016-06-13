@@ -225,11 +225,13 @@ nginx-logrotate-config:
         - template: jinja
 
 
-nginx-cache-dir:
+{% for cache_target in ('proxy', 'uwsgi') %}
+nginx-{{ cache_target }}-cache-dir:
     file.directory:
-        - name: /var/cache/nginx
+        - name: /var/cache/nginx/{{ cache_target }}
         - require_in:
             - service: nginx
         - user: nginx
         - group: nginx
         - mode: 775
+{% endfor %}
