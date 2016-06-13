@@ -1,0 +1,6 @@
+# Cache upstream responses, but only according to rules from the
+# upstream.
+uwsgi_cache proxy_upstream_cache;
+uwsgi_cache_bypass $http_cache_control;
+uwsgi_cache_use_stale error timeout http_500 http_502 http_503 http_504;
+add_header X-Proxy-Cache $upstream_cache_status;
