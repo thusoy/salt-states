@@ -4,6 +4,16 @@
 {% set tmp_size = salt['pillar.get']('os:tmp_size', '1073741824') %}
 {% set tmp_in_memory = salt['pillar.get']('os:tmp_in_memory', False) %}
 {% if tmp_in_memory %}
+{% set tmp_fs = 'tmpfs' %}
+{% set tmp_options = [
+    'defaults',
+    'nodev',
+    'nosuid',
+    'noexec',
+    'mode=1777',
+    'size={}'.format(tmp_size),
+] %}
+{% else %}
 {% set tmp_fs = 'ext4' %}
 {% set tmp_options = [
     'defaults',
@@ -14,16 +24,6 @@
     'noatime',
     'data=writeback',
     'barrier=0',
-] %}
-{% else %}
-{% set tmp_fs = 'tmpfs' %}
-{% set tmp_options = [
-    'defaults',
-    'nodev',
-    'nosuid',
-    'noexec',
-    'mode=1777',
-    'size={}'.format(tmp_size),
 ] %}
 {% endif %}
 
