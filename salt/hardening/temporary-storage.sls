@@ -2,9 +2,32 @@
 # Ref. NSA RHEL guide section 2.2.1.3
 
 {% set tmp_size = salt['pillar.get']('os:tmp_size', '1073741824') %}
+{% set tmp_in_memory = salt['pillar.get']('os:tmp_in_memory', False) %}
+{% if tmp_in_memory %}
+{% set tmp_fs = 'ext4' %}
+{% set tmp_options = [
+    'defaults',
+    'nodev',
+    'nosuid',
+    'noexec',
+    'mode=1777',
+    'noatime',
+    'data=writeback',
+    'barrier=0',
+] %}
+{% else %}
+{% set tmp_fs = 'tmpfs' %}
+{% set tmp_options = [
+    'defaults',
+    'nodev',
+    'nosuid',
+    'noexec',
+    'mode=1777',
+    'size={}'.format(tmp_size),
+] %}
+{% endif %}
 
-# TODO: This currently remounts /tmp to tmpfs, that should be configurable.
-{% set tmp_line = 'tmpfs /tmp tmpfs defaults,nodev,nosuid,noexec,mode=1777,size={} 0 0'.format(tmp_size) %}
+{% set tmp_line = 'tmpfs /tmp {} {} 0 0'.format(tmp_fs, ','.join(tmp_options)) %}
 hardening-/tmp:
     file.replace:
         - name: /etc/fstab
