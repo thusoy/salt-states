@@ -51,11 +51,16 @@ def get_accounts_to_remove():
 
 
 def remove_system_account_login_shells():
-    whitelisted_system_login_shell_accounts = []
+    whitelisted_system_account_shells = get_whitelisted_system_account_shells()
+    valid_shells = ('/usr/bin/false', '/bin/false', '/usr/sbin/nologin')
     for user, shell in get_system_account_shells():
-        # Allow both /bin/false and /usr/sbin/nologin to prevent unnecessary changes
-        valid_shells = ('/usr/bin/false', '/bin/false', '/usr/sbin/nologin')
-        target_shell = shell if shell in valid_shells else '/usr/sbin/nologin'
+        valid_shells_for_user = list(valid_shells)
+
+        whitelisted_user_shell = whitelisted_system_account_shells.get(user)
+        if whitelisted_user_shell:
+            valid_shells_for_user.append(whitelisted_user_shell)
+
+        target_shell = shell if shell in valid_shells_for_user else '/usr/sbin/nologin'
         yield 'hardening-remove-system-account-login-shells-' + user, {
             'user.present': [
                 {'name': user},
@@ -65,13 +70,19 @@ def remove_system_account_login_shells():
 
 
 def get_whitelisted_system_accounts():
-    whitelist = set()
+    return set(pillar_get('hardening:whitelisted_system_accounts', []))
+
+
+def get_whitelisted_system_account_shells():
+    return pillar_get('hardening:whitelisted_system_account_shells', {})
+
+
+def pillar_get(key, default=None):
     try:
         pillar_get = __salt__['pillar.get']
-        whitelist = set(pillar_get('hardening:whitelisted_system_accounts', []))
+        return pillar_get(key, default)
     except NameError:
-        pass
-    return whitelist
+        return default
 
 
 def get_system_account_shells():
