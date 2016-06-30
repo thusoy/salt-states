@@ -37,9 +37,7 @@ def run():
 
 
 def remove_unused_system_accounts():
-    whitelisted_accounts = get_whitelisted_system_accounts()
-    unused_system_accounts = DEFAULT_UNUSED_SYSTEM_ACCOUNTS - whitelisted_accounts
-    for account in unused_system_accounts:
+    for account in get_accounts_to_remove():
         yield 'hardening-remove-unused-system-account-' + account, {
             'user.absent': [
                 {'name': account},
@@ -47,15 +45,9 @@ def remove_unused_system_accounts():
         }
 
 
-def get_whitelisted_system_accounts():
-    whitelist = set([])
-    try:
-        pillar_get = __salt__['pillar.get']
-        whitelist = set(pillar_get('hardening:whitelisted_accounts', []))
-    except NameError:
-        pass
-    return whitelist
-
+def get_accounts_to_remove():
+    whitelisted_accounts = get_whitelisted_system_accounts()
+    return DEFAULT_UNUSED_SYSTEM_ACCOUNTS - whitelisted_accounts
 
 
 def remove_system_account_login_shells():
@@ -72,24 +64,27 @@ def remove_system_account_login_shells():
         }
 
 
+def get_whitelisted_system_accounts():
+    whitelist = set([])
+    try:
+        pillar_get = __salt__['pillar.get']
+        whitelist = set(pillar_get('hardening:whitelisted_accounts', []))
+    except NameError:
+        pass
+    return whitelist
+
+
 def get_system_account_shells():
     boundaries = get_account_boundaries()
+    accounts_to_remove = set(get_accounts_to_remove())
     for account in pwd.getpwall():
+        if account in accounts_to_remove:
+            # Don't manage the shell for this account if it's going to be removed
+            continue
         username = account.pw_name
         shell = account.pw_shell
         if is_system_account(account.pw_uid, boundaries):
             yield username, shell
-
-
-def is_system_account(uid, boundaries):
-    # If sys_uid_min and sys_uid_max is specified, check that it's within those ranges,
-    # otherwise check that 0 < uid < uid_min
-    sys_uid_min = boundaries.get('sys_uid_min')
-    sys_uid_max = boundaries.get('sys_uid_max')
-    uid_min = boundaries.get('uid_min', 1000)
-    if sys_uid_min and sys_uid_max:
-        return sys_uid_min <= uid <= sys_uid_max
-    return 0 < uid < uid_min
 
 
 def get_account_boundaries():
@@ -118,6 +113,17 @@ def get_account_boundaries():
                 rv[key.lower()] = int(value)
 
     return rv
+
+
+def is_system_account(uid, boundaries):
+    # If sys_uid_min and sys_uid_max is specified, check that it's within those ranges,
+    # otherwise check that 0 < uid < uid_min
+    sys_uid_min = boundaries.get('sys_uid_min')
+    sys_uid_max = boundaries.get('sys_uid_max')
+    uid_min = boundaries.get('uid_min', 1000)
+    if sys_uid_min and sys_uid_max:
+        return sys_uid_min <= uid <= sys_uid_max
+    return 0 < uid < uid_min
 
 
 if __name__ == '__main__':
