@@ -6,6 +6,7 @@
 ] %}
 
 {% set custom_module_blacklist = salt['pillar.get']('hardening:module_blacklist', []) %}
+{% set modules = dma_kernel_modules + custom_module_blacklist %}
 
 
 dma-modules-blacklist:
@@ -18,12 +19,12 @@ dma-modules-blacklist:
         - template: jinja
         - context:
             modules:
-                {% for module in dma_kernel_modules + custom_module_blacklist -%}
+                {% for module in modules -%}
                 - {{ module }}
                 {% endfor %}
 
 
-{% for kernel_module in dma_kernel_modules %}
+{% for kernel_module in modules %}
 dma-disable-{{ kernel_module }}:
 
     # Unload from currently running kernel
