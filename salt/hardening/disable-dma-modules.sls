@@ -9,7 +9,7 @@
 {% set modules = dma_kernel_modules + custom_module_blacklist %}
 
 
-dma-modules-blacklist:
+hardening-dma-modules-blacklist:
 
     # Prevent the modules from loading after reboot and prevent
     # accidental load through dependencies
@@ -25,7 +25,7 @@ dma-modules-blacklist:
 
 
 {% for kernel_module in modules %}
-dma-disable-{{ kernel_module }}:
+hardening-dma-disable-{{ kernel_module }}:
 
     # Unload from currently running kernel
     cmd.run:
