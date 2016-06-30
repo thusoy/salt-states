@@ -38,7 +38,7 @@ def run():
 
 def remove_unused_system_accounts():
     for account in get_accounts_to_remove():
-        yield 'hardening-remove-unused-system-account-' + account, {
+        yield 'hardening-remove-system-account-' + account, {
             'user.absent': [
                 {'name': account},
             ]
@@ -65,10 +65,10 @@ def remove_system_account_login_shells():
 
 
 def get_whitelisted_system_accounts():
-    whitelist = set([])
+    whitelist = set()
     try:
         pillar_get = __salt__['pillar.get']
-        whitelist = set(pillar_get('hardening:whitelisted_accounts', []))
+        whitelist = set(pillar_get('hardening:whitelisted_system_accounts', []))
     except NameError:
         pass
     return whitelist
