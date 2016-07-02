@@ -64,7 +64,8 @@ def remove_system_account_login_shells():
         yield 'hardening-remove-system-account-login-shells-' + user, {
             'user.present': [
                 {'name': user},
-                {'shell': target_shell}
+                {'shell': target_shell},
+                {'remove_groups': False},
             ]
         }
 
