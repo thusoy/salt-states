@@ -5,3 +5,5 @@ include:
 virtualenv:
     pip.installed:
         - name: virtualenv
+        - require:
+            - pip: pip
