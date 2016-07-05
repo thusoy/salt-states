@@ -15,6 +15,9 @@ postgresql-server:
 
   service.running:
     - name: postgresql
+    # Put this fairly early to ensure it's present for states that need to
+    # connect on the same host, but at least after the firewall is up
+    - order: 3
     - require:
       - pkg: postgresql-server
     - watch:
