@@ -50,7 +50,7 @@ powerdns:
             --no-password
             -c "SELECT * FROM domains LIMIT 1"
             --dbname powerdns
-        - user: 'postgres'
+        - runas: 'postgres'
         - require:
             - file: powerdns-db-sql
             - pkg: postgresql-client
