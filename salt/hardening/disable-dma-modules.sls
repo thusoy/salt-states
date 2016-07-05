@@ -28,12 +28,17 @@ hardening-dma-modules-blacklist:
 hardening-dma-disable-{{ kernel_module }}:
 
     # Unload from currently running kernel
+    # First unload all modules dependent on it, then unload the module itself
     cmd.run:
-        - name: lsmod
-                | grep ^{{ kernel_module }}
-                | tr -s ' '
-                | cut -d' ' -f4-
-                | xargs modprobe --remove
+        - name: (
+                    lsmod
+                    | grep ^{{ kernel_module }}
+                    | tr -s ' '
+                    | cut -d' ' -f4-
+                ;
+                    echo {{ kernel_module }}
+                )
+                | xargs --no-run-if-empty modprobe --remove
         - onlyif: lsmod | grep ^{{ kernel_module }}
 
 {% endfor %}
