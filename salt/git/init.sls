@@ -1,6 +1,6 @@
 include:
 {% if pillar.get('git', {}).get('install_from_source') %}
-  - git.source
+    - git.source
 {% else %}
-  - git.package
+    - git.package
 {% endif %}
