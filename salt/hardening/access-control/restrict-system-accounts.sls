@@ -63,7 +63,7 @@ def remove_system_account_login_shells():
         target_shell = shell if shell in valid_shells_for_user else '/usr/sbin/nologin'
         yield 'hardening-remove-system-account-login-shells-' + user, {
             'cmd.run': [
-                {'name': 'usermod -s %s' % target_shell},
+                {'name': 'usermod -s %s %s' % (target_shell, user)},
             ]
         }
 
