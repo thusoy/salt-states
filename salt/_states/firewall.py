@@ -1,4 +1,5 @@
 from collections import defaultdict
+import atexit
 import difflib
 import jinja2
 import json
@@ -40,12 +41,31 @@ COMMIT
 ''')
 
 
+def register_cleanup_of_file(file_path):
+    """ Clean up rules on disk when exiting to prevent them from leaking between runs.
+
+    Since a state run might be aborted before apply() runs we have do it even though
+    it might not have been read.
+    """
+    @atexit.register
+    def cleanup():
+        try:
+            os.remove(file_path)
+        except:
+            pass
+
+
 def _add_rule(target_file, key, rule):
     # Each rule is stored as a single line in the file, as a json
     # object with table -> rule
     object_to_store = {
         key: rule,
     }
+
+    if not 'firewall.scheduled_rule_deletion' in __context__:
+        register_cleanup_of_file(target_file)
+        __context__['firewall.scheduled_rule_deletion'] = True
+
     with open(target_file, 'a') as fh:
         json.dump(object_to_store, fh)
         fh.write('\n')
@@ -110,10 +130,6 @@ def apply(name):
         _get_rules(v4_file_target), 'iptables-restore')
     v6_result, v6_stderr, v6_changes = _apply_rule_for_family('rules.v6',
         _get_rules(v6_file_target), 'ip6tables-restore')
-
-    # Remove temp files on disk to prevent leaking rules between runs
-    for temp_file in (v4_file_target, v6_file_target):
-        os.remove(temp_file)
 
     comment = []
     if v4_stderr:
