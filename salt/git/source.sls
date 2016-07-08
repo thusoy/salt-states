@@ -1,5 +1,5 @@
 {% set git = pillar.get('git', {}) %}
-{% set version_identifier = git.get('version', '2.7.1 sha256=477a8137de342f858d364383266e9551e582718e96b34051a6aaef57606d6bfe') %}
+{% set version_identifier = git.get('version', '2.9.0 sha256=f41fa97949948fbf49af94a43d779e072a5452c6b5039d86ffa41ebab747b409') %}
 {% set version, source_hash = version_identifier.split() %}
 {% set source = git.get('source_root', '/usr/local/src') %}
 {% set prefix = git.get('prefix', '/') %}
