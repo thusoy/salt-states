@@ -62,9 +62,11 @@ def _add_rule(target_file, key, rule):
         key: rule,
     }
 
-    if not 'firewall.scheduled_rule_deletion' in __context__:
+    schduled_deletions = __context__.get('firewall.scheduled_file_deletion', [])
+    if not target_file in schduled_deletions:
         register_cleanup_of_file(target_file)
-        __context__['firewall.scheduled_rule_deletion'] = True
+        schduled_deletions.append(target_file)
+        __context__['firewall.scheduled_file_deletion'] = schduled_deletions
 
     with open(target_file, 'a') as fh:
         json.dump(object_to_store, fh)
