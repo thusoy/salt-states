@@ -1,7 +1,7 @@
 {% from 'macros.jinja' import nginx_site_pillar %}
 
 {% set owncloud = pillar.get('owncloud', {}) %}
-{% set version = owncloud.get('version', '8.1.3') %}
+{% set version = owncloud.get('version', '8.1.9') %}
 {% set hostname = owncloud.site_name %}
 {% set admin_user = owncloud.get('admin_user', 'admin') %}
 {% set admin_pass = owncloud.get('admin_pass') %}
