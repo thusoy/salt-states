@@ -117,7 +117,6 @@ owncloud:
                 find /srv/owncloud{% for writeable_dir in writeable_dirs %} ! -wholename "/srv/owncloud/{{ writeable_dir }}*"{% endfor %} -print0 | xargs -0 chown root:root &&
                 find /srv/owncloud -type f{% for writeable_dir in writeable_dirs %} ! -wholename "/srv/owncloud/{{ writeable_dir }}*"{% endfor %} -print0 | xargs -0 chmod 644 &&
                 find /srv/owncloud -type d{% for writeable_dir in writeable_dirs %} ! -wholename "/srv/owncloud/{{ writeable_dir }}*"{% endfor %} -print0 | xargs -0 chmod 755
-        #" syntax higlighting
         - cwd: /usr/local/src
         - unless: sha1sum -c owncloud-{{ version }}.tar.bz2.sha1
 
