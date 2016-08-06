@@ -9,6 +9,12 @@
 {% set pillar_cert = 'owncloud:web_cert' if 'web_cert' in owncloud else 'nginx:default_cert' %}
 {% set pillar_key = 'owncloud:web_key' if 'web_key' in owncloud else 'nginx:default_key' %}
 
+{% set default_php_version = '5' %}
+{% if grains.os == 'Ubuntu' and grains.osmajorrelease > 16 %}
+    {% set default_php_version = '7.0' %}
+{% endif %}
+{% set php_version = owncloud.get('php_version', default_php_version) %}
+
 {{ nginx_site_pillar(
   hostname,
   "salt://owncloud/nginx/nginx_site",
@@ -28,31 +34,31 @@ nginx-phpworker-group:
         - name: usermod -a -G phpworker nginx
         - unless: grep phpworker:.*:nginx /etc/group
         - require:
-            - user: owncloud-php5-fpm
+            - user: owncloud-php-fpm
         - watch_in:
             - service: nginx
 
 
-owncloud-php5-fpm:
+owncloud-php-fpm:
     pkg.installed:
-        - name: php5-fpm
+        - name: php{{ php_version }}-fpm
 
     file.managed:
-        - name: /etc/php5/fpm/pool.d/www.conf
-        - source: salt://owncloud/php5-fpm-config
+        - name: /etc/php{{ php_version }}/fpm/pool.d/www.conf
+        - source: salt://owncloud/php-fpm-config
         - require:
-            - pkg: php5-fpm
+            - pkg: owncloud-php-fpm
 
     service.running:
-        - name: php5-fpm
+        - name: php{{ php_version }}-fpm
         - require:
-            - user: owncloud-php5-fpm
+            - user: owncloud-php-fpm
         - watch:
-            - file: owncloud-php5-fpm
+            - file: owncloud-php-fpm
 
     user.present:
         - name: phpworker
-        - fullname: PHP5 FPM worker
+        - fullname: PHP{{ php_version }} FPM worker
         - system: True
         - createhome: False
         - shell: /usr/sbin/nologin
@@ -60,16 +66,16 @@ owncloud-php5-fpm:
 
 owncloud-php-ini:
     file.managed:
-        - name: /etc/php5/fpm/php.ini
+        - name: /etc/php{{ php_version }}/fpm/php.ini
         - source: salt://owncloud/php.ini
         - template: jinja
         - user: root
         - group: root
         - mode: 644
         - require:
-            - pkg: owncloud-php5-fpm
+            - pkg: owncloud-php-fpm
         - watch_in:
-            - service: owncloud-php5-fpm
+            - service: owncloud-php-fpm
 
 
 owncloud-deps:
@@ -78,15 +84,20 @@ owncloud-deps:
             - libreoffice-common
             - libreoffice-writer
             - openjdk-7-jre
-            - php5-cli
-            - php5-common
-            - php5-curl
-            - php5-gd
-            - php5-imagick
-            - php5-intl
-            - php5-json
-            - php5-mcrypt
-            - php5-pgsql
+            - php{{ php_version }}-cli
+            - php{{ php_version }}-common
+            - php{{ php_version }}-curl
+            - php{{ php_version }}-gd
+            # The php7 package of imagick is named only php-imagick
+            {% if php_version == '7.0' %}
+            - php-imagick
+            {%  else %}
+            - php{{ php_version }}-imagick
+            {% endif %}
+            - php{{ php_version }}-intl
+            - php{{ php_version }}-json
+            - php{{ php_version }}-mcrypt
+            - php{{ php_version }}-pgsql
 
 
 owncloud:
