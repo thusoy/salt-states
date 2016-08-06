@@ -105,16 +105,22 @@ owncloud-deps:
             - php{{ php_version }}-common
             - php{{ php_version }}-curl
             - php{{ php_version }}-gd
-            # The php7 package of imagick is named only php-imagick
-            {% if php_version == '7.0' %}
-            - php-imagick
-            {%  else %}
-            - php{{ php_version }}-imagick
-            {% endif %}
             - php{{ php_version }}-intl
             - php{{ php_version }}-json
             - php{{ php_version }}-mcrypt
             - php{{ php_version }}-pgsql
+
+            {% if php_version == '7.0' %}
+            # The php7 package of imagick is named only php-imagick
+            - php-imagick
+            # Some other package apparently only needed under php 7.0
+            - php{{ php_version }}-zip
+            - php{{ php_version }}-xml
+            - php{{ php_version }}-mbstring
+            {%  else %}
+            - php{{ php_version }}-imagick
+            {% endif %}
+
 
 
 owncloud:
