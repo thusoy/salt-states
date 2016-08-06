@@ -15,6 +15,8 @@
 {% endif %}
 {% set php_version = owncloud.get('php_version', default_php_version) %}
 
+{% set openjdk_version = owncloud.get('openjdk_version', '8') %}
+
 {{ nginx_site_pillar(
   hostname,
   "salt://owncloud/nginx/nginx_site",
@@ -83,7 +85,7 @@ owncloud-deps:
         - pkgs:
             - libreoffice-common
             - libreoffice-writer
-            - openjdk-7-jre
+            - openjdk-{{ openjdk_version }}-jre
             - php{{ php_version }}-cli
             - php{{ php_version }}-common
             - php{{ php_version }}-curl
