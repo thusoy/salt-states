@@ -46,7 +46,11 @@ owncloud-php-fpm:
         - name: php{{ php_version }}-fpm
 
     file.managed:
+        {% if php_version == '5' %}
         - name: /etc/php{{ php_version }}/fpm/pool.d/www.conf
+        {% else %}
+        - name: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
+        {% endif %}
         - source: salt://owncloud/php-fpm-config
         - require:
             - pkg: owncloud-php-fpm
