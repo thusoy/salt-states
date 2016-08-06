@@ -52,6 +52,9 @@ owncloud-php-fpm:
         - name: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
         {% endif %}
         - source: salt://owncloud/php-fpm-config
+        - template: jinja
+        - context:
+            php_version: {{ php_version }}
         - require:
             - pkg: owncloud-php-fpm
 
@@ -120,7 +123,6 @@ owncloud-deps:
             {%  else %}
             - php{{ php_version }}-imagick
             {% endif %}
-
 
 
 owncloud:
