@@ -21,7 +21,10 @@
   hostname,
   "salt://owncloud/nginx/nginx_site",
   pillar_cert,
-  pillar_key) }}
+  pillar_key,
+  {
+    'php_version': php_version,
+  }) }}
 
 
 include:
