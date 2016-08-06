@@ -70,9 +70,20 @@ owncloud-php-fpm:
         - shell: /usr/sbin/nologin
 
 
+{% if php_version != '5' %}
+owncloud-php-systemd-tmpfiles.d:
+    file.managed:
+        - name: /usr/lib/tmpfiles.d/php
+{% endif %}
+
+
 owncloud-php-ini:
     file.managed:
+        {% if php_version == '5' %}
         - name: /etc/php{{ php_version }}/fpm/php.ini
+        {% else %}
+        - name: /etc/php/{{ php_version }}/fpm/php.ini
+        {% endif %}
         - source: salt://owncloud/php.ini
         - template: jinja
         - user: root
