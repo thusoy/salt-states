@@ -79,7 +79,10 @@ owncloud-php-fpm:
 {% if php_version != '5' %}
 owncloud-php-systemd-tmpfiles.d:
     file.managed:
-        - name: /usr/lib/tmpfiles.d/php
+        - name: /usr/lib/tmpfiles.d/php{{ php_version }}-fpm.conf
+        - contents: |
+            #Type Path        Mode UID      GID      Age Argument
+                d /run/php    0755 phpworker phpworker -   -
 {% endif %}
 
 
