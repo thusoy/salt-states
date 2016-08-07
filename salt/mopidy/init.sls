@@ -21,7 +21,7 @@ mopidy:
         - user: mopidy
         - group: root
         - mode: 440
-        - show_diff: False
+        - show_changes: False
         - require:
             - pkg: mopidy
 

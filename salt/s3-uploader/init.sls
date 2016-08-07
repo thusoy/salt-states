@@ -14,7 +14,7 @@ s3-uploader:
         - user: root
         - group: root
         - mode: 700
-        - show_diff: False
+        - show_changes: False
         - context:
             key: {{ s3_uploader.access_key_id }}
             secret: {{ s3_uploader.secret_access_key }}

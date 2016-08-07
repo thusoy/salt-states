@@ -17,7 +17,7 @@ powerdns:
         - group: pdns
         - mode: 640
         - template: jinja
-        - show_diff: False
+        - show_changes: False
         - require:
             - pkg: powerdns
 

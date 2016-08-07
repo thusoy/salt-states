@@ -82,7 +82,7 @@ def run():
                 {'user': 'root'},
                 {'group': 'nginx'},
                 {'mode': '0640'},
-                {'show_diff': False},
+                {'show_changes': False},
                 {'require': [{'file': 'nginx-private-dir'}]},
                 {'watch_in': [{'service': 'nginx'}]},
             ]

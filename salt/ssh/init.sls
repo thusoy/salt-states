@@ -83,7 +83,7 @@ ssh-host-key-{{ key_type }}:
         - user: root
         - group: root
         - mode: 600
-        - show_diff: False
+        - show_changes: False
         - watch_in:
             - service: ssh
 {% endif %}

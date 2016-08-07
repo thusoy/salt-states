@@ -176,7 +176,7 @@ nginx-default-key:
         - contents_pillar: nginx:default_key
         - user: root
         - group: nginx
-        - show_diff: False
+        - show_changes: False
         - mode: 640
         - require:
             - user: nginx-systemuser
