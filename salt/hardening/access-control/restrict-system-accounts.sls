@@ -52,7 +52,8 @@ def get_accounts_to_remove():
 
 def remove_system_account_login_shells():
     whitelisted_system_account_shells = get_whitelisted_system_account_shells()
-    valid_shells = ('/usr/bin/false', '/bin/false', '/usr/sbin/nologin')
+    nologin = '/usr/sbin/nologin'
+    valid_shells = ('/usr/bin/false', '/bin/false', nologin)
     for user, shell in get_system_account_shells():
         valid_shells_for_user = list(valid_shells)
 
@@ -60,11 +61,19 @@ def remove_system_account_login_shells():
         if whitelisted_user_shell:
             valid_shells_for_user.append(whitelisted_user_shell)
 
-        target_shell = shell if shell in valid_shells_for_user else '/usr/sbin/nologin'
+        target_shell = shell if shell in valid_shells_for_user else nologin
+        no_change_comment = "\nchanged=no"
+        did_change_comment = "\nchanged=yes comment='Changed shell from {} to {}'".format(
+            shell, nologin)
+        cmd = ' | '.join([
+            'usermod -s {} {} 2>&1'.format(target_shell, user),
+            'grep "no changes" && echo "{}" || echo "{}"'.format(no_change_comment, did_change_comment),
+        ])
         yield 'hardening-remove-system-account-login-shells-' + user, {
-            'cmd.run': [
-                {'name': 'usermod -s %s %s' % (target_shell, user)},
-            ]
+            'cmd.run': [{
+                'name': cmd,
+                'stateful': True,
+            }]
         }
 
 
