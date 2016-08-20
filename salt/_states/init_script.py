@@ -30,7 +30,7 @@ def managed(name, **kwargs):
                 kwargs['user_script'], name)
             kwargs['makedirs'] = True
         else:
-            kwargs['name'] = '/lib/systemd/system/%s.service' % name
+            kwargs['name'] = '/etc/systemd/system/%s.service' % name
         kwargs['mode'] = '0644'
 
     file_source = kwargs.pop(init_system, None)
