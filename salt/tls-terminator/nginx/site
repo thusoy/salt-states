@@ -1,7 +1,10 @@
-upstream {{ server_name }}_backend {
-    server {{ backend }}:{{ backend_port }};
+{% for _, backend in backends.items() -%}
+upstream {{ backend.upstream_identifier }} {
+    server {{ backend.hostname }}:{{ backend.port }};
     keepalive 8;
 }
+
+{% endfor -%}
 
 server {
   listen [::]:80;
@@ -23,23 +26,26 @@ server {
 
   error_page 504 /504-{{ server_name }}.html;
 
-  location / {
-    proxy_pass {{ backend_protocol }}://{{ server_name }}_backend;
+  {% for url, backend in backends.items() -%}
+  location {{ url }} {
+    proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
     include proxy_params;
     include cache_params;
 
     # Override the HTTP Host header to the name of the upstream host.
     # (eg. *.herokuapp.com, prevents having to configure Heroku with the
     # correct hostname)
-    proxy_set_header Host "{{ backend }}";
+    proxy_set_header Host "{{ backend.hostname }}";
 
-    proxy_ssl_trusted_certificate {{ upstream_ca|default('/etc/nginx/ssl/all-certs.pem') }};
-    proxy_ssl_name {{ backend }};
+    proxy_ssl_trusted_certificate '/etc/nginx/ssl/all-certs.pem';
+    proxy_ssl_name {{ backend.hostname }};
 
     # The verification depth needed for Heroku is currently only 2, but since they might
     # change CA and certificate layout on a whim we allow a depth of 3.
     proxy_ssl_verify_depth 3;
   }
+
+  {% endfor -%}
 
   location = /504-{{ server_name }}.html {
     root html;

@@ -1,5 +1,8 @@
 #!py
 
+import hashlib
+import re
+import unicodedata
 import urlparse
 
 
@@ -8,10 +11,8 @@ def run():
 
     sites = __pillar__.get('tls-terminator', {})
 
-
     ret = {
         "include": [
-            ".pillar_check",
             "nginx"
         ]
     }
@@ -23,9 +24,39 @@ def run():
 
     for site, values in sites.items():
         backend = values.get('backend')
-        if not backend:
-            raise ValueError('TLS-terminator site "%s" is missing required property backend' %
+        backends = values.get('backends', {})
+        if not (backend or backends):
+            raise ValueError('TLS-terminator site "%s" is missing one of the required properties backend/backends' %
                 site)
+
+        if backend and backends:
+            raise ValueError('TLS-terminator site "%s" specifies both backend and backends, must only specify one' %
+                site)
+
+        if backend:
+            backends['/'] = backend
+
+        parsed_backends = {}
+        for url, backend in backends.items():
+            normalized_backend = '//' + backend if not '://' in backend else backend
+            parsed_backend = urlparse.urlparse(normalized_backend)
+            protocol = parsed_backend.scheme or 'http'
+            port = parsed_backend.port or ('443' if protocol == 'https' else 80)
+            upstream_identifier = get_upstream_identifier_for_backend(parsed_backend.hostname,
+                url)
+
+            if protocol == 'https':
+                # If backend is https it's going out over the network, thus allow it through
+                # the firewall
+                outgoing_firewall_ports.add(port)
+
+            parsed_backends[url] = {
+                'hostname': parsed_backend.hostname,
+                'protocol': protocol,
+                'port': port,
+                'upstream_identifier': upstream_identifier,
+            }
+
         site_504_page = [
             {'name': '/usr/local/nginx/html/504-' + site + '.html'},
             {'source': 'salt://tls-terminator/nginx/504.html'},
@@ -39,16 +70,7 @@ def run():
 
         cert = values.get('cert', default_cert)
         key = values.get('key', default_key)
-        normalized_backend = '//' + backend if not '://' in backend else backend
-        parsed_backend = urlparse.urlparse(normalized_backend)
-        backend_protocol = parsed_backend.scheme or 'http'
-        backend_port = parsed_backend.port or ('443' if backend_protocol == 'https' else 80)
-        backend_without_protocol = parsed_backend.hostname
 
-        # If backend is https it's going out over the network, thus allow it through
-        # the firewall
-        if backend_protocol == 'https':
-            outgoing_firewall_ports.add(backend_port)
 
         ret['tls-terminator-%s-nginx-site' % site] = {
             'file.managed': [
@@ -59,9 +81,7 @@ def run():
                 {'watch_in': [{'service': 'nginx'}]},
                 {'context': {
                     'server_name': site,
-                    'backend': backend_without_protocol,
-                    'backend_protocol': backend_protocol,
-                    'backend_port': backend_port,
+                    'backends': parsed_backends,
                 }}
             ]
         }
@@ -107,3 +127,25 @@ def run():
             }
 
     return ret
+
+
+def get_upstream_identifier_for_backend(hostname, url):
+    # Slashes are invalid in upstream identifiers, and we can't just replace them with _ or - since that might cause conflicts with other urls (/api/old and /api-old would resolve to the same upstream). We could use just a digest, but that would be bad for readability, thus we construct a hybrid identifier incorporating the hostname, a slugified url and a truncated digest of the url.
+    url_slug = '-root' if url == '/' else slugify(url)
+    url_digest = hashlib.sha256(url).hexdigest()[:6]
+    return '%s%s_%s' % (hostname, url_slug, url_digest)
+
+
+def slugify(value):
+    """
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces to hyphens.
+    Remove characters that aren't alphanumerics, underscores, or hyphens.
+    Convert to lowercase. Also strip leading and trailing whitespace.
+
+    Compared to most other slugify functions this one also converts slashes to
+    hyphens.
+    """
+    value = unicode(value)
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s/-]', '', value).strip().lower()
+    return re.sub(r'[-\s/]+', '-', value)
