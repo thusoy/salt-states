@@ -1,5 +1,5 @@
 {% set sublime = pillar.get('sublime-text', {}) %}
-{% set build_def = sublime.get('build', '3114 sha256=53729a6d4fbbef56ffa25ab2eca3a351a5475ed971045551763fdde65dcdfeb2') %}
+{% set build_def = sublime.get('build', '3124 sha256=d4645cbe909cf5ebff1ad5585e8cc19df9741d2379cb1d8c634dc9ecd538f4fd') %}
 {% set build, build_hash = build_def.split() %}
 
 sublime-text:
