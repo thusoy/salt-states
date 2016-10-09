@@ -9,7 +9,7 @@ def run():
     for username, user_values in __pillar__.get('users', {}).items():
         for filename, dotfile_spec in user_values.get('dotfiles', {}).items():
             file_managed = {
-                'name': '/home/%s/%s' % (username, filename),
+                'name': '~%s/%s' % (username, filename),
                 'user': username,
                 'group': username,
                 'makedirs': True,
