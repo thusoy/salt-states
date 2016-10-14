@@ -99,7 +99,8 @@ nginx-home:
 nginx:
     cmd.wait:
         - cwd: {{ nginx_home }}
-        - name: ./configure --conf-path=/etc/nginx/nginx.conf
+        - name: ./configure
+            --conf-path=/etc/nginx/nginx.conf
             --add-module={{ source }}/ngx_http_auth_pam_module-{{ pam_auth_version }}
             --add-module={{ source }}/headers-more-nginx-module-{{ more_headers_version }}
             --sbin-path=/usr/sbin/nginx
@@ -124,8 +125,8 @@ nginx:
             --with-pcre={{ source }}/pcre-{{ pcre_version }}
             --with-pcre-jit
             --with-ipv6
-            --with-cc-opt='-g -O2 -fstack-protector-all --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2'
-            --with-ld-opt='-Wl,-z,relro,-z,now -Wl,--as-needed'
+            --with-cc-opt='-g -O2 -fstack-protector-all -fPIE --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2'
+            --with-ld-opt='-Wl,-z,relro,-z,now -Wl,--as-needed,-fPIE -pie'
             --with-http_ssl_module &&
             make -j{{ grains.num_cpus }} &&
             checkinstall
