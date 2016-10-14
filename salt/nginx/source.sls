@@ -134,6 +134,10 @@ nginx:
                 --pkgname nginx
                 --pkgversion 10:{{ version }}
                 make install
+        - env:
+            # Need to set these as envflags for them to propagate to pcre compilation
+            CFLAGS: ' -fPIE -PIC'
+            LDFLAGS: ' -fPIE -pie'
         - watch:
             - cmd: get-nginx
             - cmd: get-pam-auth-module
