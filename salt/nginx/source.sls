@@ -125,7 +125,7 @@ nginx:
             --with-pcre={{ source }}/pcre-{{ pcre_version }}
             --with-pcre-jit
             --with-ipv6
-            --with-cc-opt='-g -O2 -fstack-protector-all -fPIE --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2'
+            --with-cc-opt='-g -O2 -fstack-protector-all -fPIE -fPIC --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2'
             --with-ld-opt='-Wl,-z,relro,-z,now -Wl,--as-needed,-fPIE -pie'
             --with-http_ssl_module &&
             make -j{{ grains.num_cpus }} &&
