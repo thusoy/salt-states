@@ -27,7 +27,7 @@ get-nginx:
 
     file.managed:
         - name: {{ nginx_package }}
-        - source: http://nginx.org/download/nginx-{{ version }}.tar.gz
+        - source: https://nginx.org/download/nginx-{{ version }}.tar.gz
         - source_hash: {{ checksum }}
 
     cmd.wait:
