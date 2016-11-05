@@ -139,17 +139,17 @@ def apply(name):
     if v6_stderr:
         comment.append(v6_stderr)
 
-    changes = []
+    changes = {}
     if v4_changes:
-        changes.append(v4_changes)
+        changes['ipv4'] = v4_changes
     if v6_changes:
-        changes.append(v6_changes)
+        changes['ipv6'] = v6_changes
 
     return {
         'name': name,
         'comment': '\n'.join(comment),
         'result': True if v4_result is 0 and v6_result is 0 else False,
-        'changes': '\n'.join(changes),
+        'changes': changes,
     }
 
 
@@ -176,8 +176,7 @@ def _apply_rule_for_family(filename, context, restore_command):
         fh.write(rendered_rules)
 
     new_content = [line + '\n' for line in rendered_rules[:-1].split('\n')]
-    changes = ''.join(difflib.unified_diff(old_content, new_content,
-        fromfile=target_file, tofile=target_file))
+    changes = ''.join(difflib.unified_diff(old_content, new_content))
 
     restore_process = subprocess.Popen([restore_command], stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
