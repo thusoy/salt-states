@@ -1,0 +1,10 @@
+{% set certbot = salt['grains.filter_by']({
+    'Ubuntu': {
+        'package': 'letsencrypt',
+        'binary': 'letsencrypt',
+    },
+    'default': {
+        'package': 'certbot',
+        'binary': 'certbot',
+    },
+}, grain='os', merge=salt['pillar.get']('certbot')) %}
