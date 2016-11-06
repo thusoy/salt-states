@@ -21,7 +21,6 @@ get-nginx:
     pkg.installed:
         - names:
             - build-essential
-            - checkinstall
             - libssl-dev
             - libpam0g-dev
 
@@ -128,11 +127,7 @@ nginx:
             --with-ld-opt='-Wl,-z,relro,-z,now -Wl,--as-needed'
             --with-http_ssl_module &&
             make -j{{ grains.num_cpus }} &&
-            checkinstall
-                -y
-                --pkgname nginx
-                --pkgversion 10:{{ version }}
-                make install
+            make install
         - watch:
             - cmd: get-nginx
             - cmd: get-pam-auth-module
