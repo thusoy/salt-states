@@ -114,6 +114,7 @@ def run():
                     'backends': parsed_backends,
                     'cert': cert,
                     'key': key,
+                    'extra_server_config': values.get('extra_server_config', {}),
                 }}
             ]
         }
