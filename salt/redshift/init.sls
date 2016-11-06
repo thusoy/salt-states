@@ -1,0 +1,2 @@
+redshift:
+    pkg.installed: []
