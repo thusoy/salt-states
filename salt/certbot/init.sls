@@ -1,7 +1,9 @@
-{% set certbot = pillar.get('certbot', {}) %}
+{% from 'certbot/map.jinja' import certbot with context %}
+
 
 include:
     - .pillar_check
+
 
 {% set needs_backport = grains.get('oscodename') == 'jessie' %}
 certbot:
@@ -12,6 +14,7 @@ certbot:
 
     pkg:
         - installed
+        - name: {{ certbot.package }}
         {% if needs_backport %}
         - fromrepo: jessie-backports
         - require:
@@ -22,7 +25,7 @@ certbot:
 {% for site in certbot.get('sites', []) %}
 certbot-update-{{ site }}:
     cron.present:
-        - name: certbot certonly
+        - name: {{ certbot.binary }} certonly
                 --standalone
                 --pre-hook 'service nginx stop'
                 --post-hook 'service nginx start'

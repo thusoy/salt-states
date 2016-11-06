@@ -18,3 +18,9 @@ certbot:
 The different sites will each get their own certificate in
 `/etc/letsencrypt/live/<site>/fullchain.pem` and a key in
 `/etc/letsencrypt/live/<site>/privkey.pem`.
+
+
+Compatibility
+-------------
+
+This state is compatible with at least Debian Jessie and later and Ubuntu Xenial and later.
