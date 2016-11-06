@@ -17,9 +17,6 @@ def run():
         ]
     }
 
-    default_cert = __salt__['pillar.get']('nginx:default_cert')
-    default_key = __salt__['pillar.get']('nginx:default_key')
-
     outgoing_firewall_ports = set()
 
     for site, values in sites.items():
@@ -68,8 +65,41 @@ def run():
         ]
         ret['tls-terminator-timeout-page-' + site] = {'file.managed': site_504_page}
 
-        cert = values.get('cert', default_cert)
-        key = values.get('key', default_key)
+        use_acme_certs = values.get('acme')
+        if use_acme_certs:
+            # The actual certs will be managed by the certbot state (or equivalent)
+            cert = '/etc/letsencrypt/live/%s/fullchain.pem' % site
+            key = '/etc/letsencrypt/live/%s/privkey.pem' % site
+        elif 'cert' in values and 'key' in values:
+            # Custom certs, create them on disk
+            cert = '/etc/nginx/ssl/%s.crt' % site
+            key = '/etc/nginx/private/%s.key' % site
+
+            ret['tls-terminator-%s-tls-cert' % site] = {
+                'file.managed': [
+                    {'name': cert},
+                    {'contents': values.get('cert')},
+                    {'require': [{'file': 'nginx-certificates-dir'}]},
+                    {'watch_in': [{'service': 'nginx'}]},
+                ]
+            }
+
+            ret['tls-terminator-%s-tls-key' % site] = {
+                'file.managed': [
+                    {'name': key},
+                    {'contents': values.get('key')},
+                    {'user': 'root'},
+                    {'group': 'nginx'},
+                    {'mode': '0640'},
+                    {'show_changes': False},
+                    {'require': [{'file': 'nginx-private-dir'}]},
+                    {'watch_in': [{'service': 'nginx'}]},
+                ]
+            }
+        else:
+            # Using the default certs from the nginx state
+            cert = '/etc/nginx/ssl/default.crt'
+            key = '/etc/nginx/private/default.key'
 
 
         ret['tls-terminator-%s-nginx-site' % site] = {
@@ -82,31 +112,12 @@ def run():
                 {'context': {
                     'server_name': site,
                     'backends': parsed_backends,
+                    'cert': cert,
+                    'key': key,
                 }}
             ]
         }
 
-        ret['tls-terminator-%s-tls-cert' % site] = {
-            'file.managed': [
-                {'name': '/etc/nginx/ssl/%s.crt' % site},
-                {'contents': cert},
-                {'require': [{'file': 'nginx-certificates-dir'}]},
-                {'watch_in': [{'service': 'nginx'}]},
-            ]
-        }
-
-        ret['tls-terminator-%s-tls-key' % site] = {
-            'file.managed': [
-                {'name': '/etc/nginx/private/%s.key' % site},
-                {'contents': key},
-                {'user': 'root'},
-                {'group': 'nginx'},
-                {'mode': '0640'},
-                {'show_changes': False},
-                {'require': [{'file': 'nginx-private-dir'}]},
-                {'watch_in': [{'service': 'nginx'}]},
-            ]
-        }
 
     for port in outgoing_firewall_ports:
         for family in ('ipv4', 'ipv6'):
