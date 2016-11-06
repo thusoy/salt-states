@@ -20,7 +20,7 @@ cleanup () {
     rm -rf "$temp_dir"
 }
 
-trap cleanup EXIT
+trap cleanup INT TERM EXIT
 
 find "$state_dir/keys/" -type f -name "*.asc" -print0 | while read -d $'\0' key; do
     key_name=$(basename "$key")
