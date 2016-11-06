@@ -145,6 +145,10 @@ def apply(name):
     if v6_changes:
         changes['ipv6'] = v6_changes
 
+    # Clear out the rules on disk (will also be done on exit if run stops before applying the rules)
+    os.remove(v4_file_target)
+    os.remove(v6_file_target)
+
     return {
         'name': name,
         'comment': '\n'.join(comment),
