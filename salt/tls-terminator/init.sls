@@ -42,7 +42,7 @@ def run():
             parsed_backend = urlparse.urlparse(normalized_backend)
             protocol = parsed_backend.scheme or 'http'
             port = parsed_backend.port or ('443' if protocol == 'https' else 80)
-            upstream_identifier = get_upstream_identifier_for_backend(parsed_backend.hostname,
+            upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
                 url)
 
             if protocol == 'https':
@@ -129,11 +129,15 @@ def run():
     return ret
 
 
-def get_upstream_identifier_for_backend(hostname, url):
-    # Slashes are invalid in upstream identifiers, and we can't just replace them with _ or - since that might cause conflicts with other urls (/api/old and /api-old would resolve to the same upstream). We could use just a digest, but that would be bad for readability, thus we construct a hybrid identifier incorporating the hostname, a slugified url and a truncated digest of the url.
+def get_upstream_identifier_for_backend(site, hostname, url):
+    # Slashes are invalid in upstream identifiers, and we can't just replace them with _ or - since
+    # that might cause conflicts with other urls (/api/old and /api-old would resolve to the same
+    # upstream). We could use just a digest, but that would be bad for readability, thus we
+    # construct a hybrid identifier incorporating the hostname, a slugified url and a truncated
+    # digest of the url.
     url_slug = '-root' if url == '/' else slugify(url)
     url_digest = hashlib.sha256(url).hexdigest()[:6]
-    return '%s%s_%s' % (hostname, url_slug, url_digest)
+    return '%s-%s%s_%s' % (slugify(site), hostname, url_slug, url_digest)
 
 
 def slugify(value):
