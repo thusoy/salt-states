@@ -26,6 +26,10 @@ server {
 
   error_page 504 /504-{{ server_name }}.html;
 
+  {% for key, value in extra_server_config.items() %}
+  {{ key }} {{ value }};
+  {% endfor %}
+
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
