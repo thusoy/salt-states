@@ -31,10 +31,19 @@ def run():
                 site)
 
         if backend:
-            backends['/'] = backend
+            backends['/'] = {
+                'upstream': backend,
+            }
+
+        for url, backend_config in backends.items():
+            if not isinstance(backend_config, dict):
+                backends[url] = {
+                    'upstream': backend_config,
+                }
 
         parsed_backends = {}
-        for url, backend in backends.items():
+        for url, backend_config in backends.items():
+            backend = backend_config['upstream']
             normalized_backend = '//' + backend if not '://' in backend else backend
             parsed_backend = urlparse.urlparse(normalized_backend)
             protocol = parsed_backend.scheme or 'http'
@@ -47,11 +56,25 @@ def run():
                 # the firewall
                 outgoing_firewall_ports.add(port)
 
+            upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
+            if 'upstream_trust_root' in backend_config:
+                upstream_trust_root = '/etc/nginx/ssl/%s-upstream-root.pem' % upstream_identifier
+                ret['tls-terminator-%s-upstream-trust-root' % upstream_identifier] = {
+                    'file.managed': [
+                        {'name': upstream_trust_root},
+                        {'contents': backend_config.get('upstream_trust_root')},
+                        {'require_in': [
+                            {'file': 'tls-terminator-%s-nginx-site' % site},
+                        ]},
+                    ]
+                }
+
             parsed_backends[url] = {
                 'hostname': parsed_backend.hostname,
                 'protocol': protocol,
                 'port': port,
                 'upstream_identifier': upstream_identifier,
+                'upstream_trust_root': upstream_trust_root,
             }
 
         site_504_page = [

@@ -31,4 +31,16 @@ tls-terminator:
             /api: https://api-app.herokuapp.com
 ```
 
-As you might have guessed, `backend: <url>` is just a convenient alias for `backends: {"/": <url>}`.
+A HTTPS backend is validated against the system trust root if no explicit trust root is given. To set a trust root:
+
+```
+tls-terminator:
+    example.com:
+        backends:
+            /:
+                upstream: https://example-app.herokuapp.com
+                upstream_trust_root: |
+                    <upstream-cert>
+```
+
+As you might have guessed, `backend: <url>` is just a convenient alias for `backends: {"/": {"upstream": <url>}}`.
