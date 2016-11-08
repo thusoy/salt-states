@@ -39,7 +39,7 @@ server {
     # Override the HTTP Host header to the name of the upstream host.
     # (eg. *.herokuapp.com, prevents having to configure Heroku with the
     # correct hostname)
-    proxy_set_header Host "{{ backend.hostname }}";
+    proxy_set_header Host "{{ backend.upstream_hostname }}";
 
     proxy_ssl_trusted_certificate '{{ backend.upstream_trust_root }}';
     proxy_ssl_name {{ backend.hostname }};
