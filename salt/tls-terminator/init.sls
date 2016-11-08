@@ -69,8 +69,15 @@ def run():
                     ]
                 }
 
+            upstream_hostname = parsed_backend.hostname
+            if 'upstream_hostname' in backend_config:
+                upstream_hostname = backend_config.get('upstream_hostname')
+                if upstream_hostname == 'site':
+                    upstream_hostname = site
+
             parsed_backends[url] = {
                 'hostname': parsed_backend.hostname,
+                'upstream_hostname': upstream_hostname,
                 'protocol': protocol,
                 'port': port,
                 'upstream_identifier': upstream_identifier,
