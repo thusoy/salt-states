@@ -74,6 +74,8 @@ def run():
                 upstream_hostname = backend_config.get('upstream_hostname')
                 if upstream_hostname == 'site':
                     upstream_hostname = site
+                elif upstream_hostname == 'request':
+                    upstream_hostname = '$http_host'
 
             extra_location_config = backend_config.get('extra_location_config', [])
             if isinstance(extra_location_config, dict):
