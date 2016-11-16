@@ -1,5 +1,5 @@
-{% set nginx = pillar.get('nginx', {}) %}
-{% set install_from_source = nginx.get('install_from_source', True) %}
+{% from 'nginx/map.jinja' import nginx with context %}
+{% set install_from_source = nginx['install_from_source'] %}
 
 
 nginx-systemuser:
@@ -62,6 +62,8 @@ nginx-conf:
         - mode: 640
         - user: root
         - group: nginx
+        - context:
+            keepalive_timeout: {{ nginx.keepalive_timeout }}
         - require:
             {% if install_from_source %}
             - cmd: nginx
