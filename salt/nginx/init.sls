@@ -72,6 +72,12 @@ nginx-conf:
                 {% for log_file, format in nginx.log_files.items() %}
                 {{ log_file }}: '{{ format }}'
                 {% endfor %}
+            extra_http:
+                {% for extra_http_dict in nginx.extra_http %}
+                {% for key, value in extra_http_dict.items() %}
+                - {{ key }}: '{{ value }}'
+                {% endfor %}
+                {% endfor %}
         - require:
             {% if install_from_source %}
             - cmd: nginx
