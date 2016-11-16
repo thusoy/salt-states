@@ -44,8 +44,14 @@ gpg \
     --verify *.asc \
     2>/dev/null
 
+get_sha256 () {
+    local digest
+    digest=$(which sha256sum >/dev/null && sha256sum "$1" || shasum -a 256 "$1")
+    echo "sha256=$digest"
+}
+
 if [ $? -eq 0 ]; then
     echo
-    digest=$(sha256sum "$source_file" | cut -d' ' -f1)
-    echo "$version sha256=$digest"
+    digest=$(get_sha256 "$source_file" | cut -d' ' -f1)
+    echo "$version $digest"
 fi
