@@ -32,11 +32,12 @@ server {
   {% endfor -%}
   {% endfor %}
 
+  include proxy_params;
+  include cache_params;
+
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
-    include proxy_params;
-    include cache_params;
 
     {% if backend.pam_auth -%}
     # Restrict access to users on this machine with PAM
