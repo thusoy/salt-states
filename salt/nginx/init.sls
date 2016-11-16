@@ -64,6 +64,14 @@ nginx-conf:
         - group: nginx
         - context:
             keepalive_timeout: {{ nginx.keepalive_timeout }}
+            log_formats:
+                {% for log_format, format in nginx.log_formats.items() %}
+                {{ log_format }}: '{{ format }}'
+                {% endfor %}
+            log_files:
+                {% for log_file, format in nginx.log_files.items() %}
+                {{ log_file }}: '{{ format }}'
+                {% endfor %}
         - require:
             {% if install_from_source %}
             - cmd: nginx
