@@ -136,6 +136,19 @@ def run():
         if isinstance(extra_server_config, dict):
             extra_server_config = [extra_server_config]
 
+        # Add X-Request-Id header both ways if the nginx version supports it
+        nginx_version_raw = __salt__['pillar.get']('nginx:version', '')
+        nginx_version = tuple(int(num) for num in nginx_version_raw.split('.'))
+        if nginx_version and nginx_version >= (1, 11, 0):
+            extra_server_config.append({
+                # Add to the response from the proxy
+                'add_header': 'X-Request-Id $request_id always',
+            })
+            extra_server_config.append({
+                # Add to the request before it reaches the proxy
+                'proxy_set_header': 'X-Request-Id $request_id',
+            })
+
         ret['tls-terminator-%s-nginx-site' % site] = {
             'file.managed': [
                 {'name': '/etc/nginx/sites-enabled/%s' % site},
