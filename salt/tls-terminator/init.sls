@@ -1,9 +1,11 @@
 #!py
 
 import hashlib
+import socket
 import re
 import unicodedata
 import urlparse
+from collections import defaultdict
 
 
 def run():
@@ -17,7 +19,8 @@ def run():
         ]
     }
 
-    outgoing_firewall_ports = set()
+    outgoing_ipv4_firewall_ports = defaultdict(set)
+    outgoing_ipv6_firewall_ports = defaultdict(set)
 
     for site, values in sites.items():
         backend = values.get('backend')
@@ -51,10 +54,14 @@ def run():
             upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
                 url)
 
-            if protocol == 'https':
-                # If backend is https it's going out over the network, thus allow it through
-                # the firewall
-                outgoing_firewall_ports.add(port)
+            # If backend is https it's going out over the network, thus allow it through
+            # the firewall
+            target_ip, target_port, remote, family = parse_backend(backend)
+            if remote:
+                if family in ('ipv4', 'both'):
+                    outgoing_ipv4_firewall_ports[target_ip].add(port)
+                if family in ('ipv6', 'both'):
+                    outgoing_ipv6_firewall_ports[target_ip].add(port)
 
             upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
             if 'upstream_trust_root' in backend_config:
@@ -160,14 +167,18 @@ def run():
         }
 
 
-    for port in outgoing_firewall_ports:
-        for family in ('ipv4', 'ipv6'):
+    for ruleset, family in [
+        (outgoing_ipv4_firewall_ports, 'ipv4'),
+        (outgoing_ipv6_firewall_ports, 'ipv6')]:
+        for target_ip, ports in ruleset.items():
+            port_key = 'dport' if len(ports) == 1 else 'dports'
             ret['tls-terminator-outgoing-port-%s-%s' % (port, family)] = {
                 'firewall.append': [
                     {'chain': 'OUTPUT'},
                     {'family': family},
                     {'protocol': 'tcp'},
-                    {'dport': port},
+                    {'destination': target_ip},
+                    {port_key: ','.join(str(port) for port in ports)},
                     {'match': [
                         'comment',
                         'owner',
@@ -205,3 +216,54 @@ def slugify(value):
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s/.\*-]', '', value).strip().lower()
     return re.sub(r'[-\s/]+', '-', value)
+
+
+def parse_backend(url):
+    # We classify it as external if either the address is specified as a hostname
+    # and not an IP, and if it's an IP if it's outside the local range (127/8)
+    parsed_url = urlparse.urlparse(url)
+
+    packed_ip = get_packed_ip(parsed_url.hostname)
+    port = parsed_url.port or (80 if parsed_url.scheme == 'http' else 443)
+    remote = True
+    normalized_ip = '0/0'
+    family = 'both'
+
+    if packed_ip and len(packed_ip) == 4:
+        remote = packed_ip[0] != '\x7f'
+        normalized_ip = socket.inet_ntop(socket.AF_INET, packed_ip)
+        family = 'ipv4'
+    elif packed_ip:
+        ipv6_local_address = '\x00'*15 + '\x01'
+        remote = packed_ip != ipv6_local_address
+        normalized_ip = socket.inet_ntop(socket.AF_INET6, packed_ip)
+        family = 'ipv6'
+
+    return (normalized_ip, port, remote, family)
+
+
+def get_packed_ip(address):
+    packed_v4 = get_packed_ipv4(address)
+    if packed_v4:
+        return packed_v4
+    else:
+        return get_packed_ipv6(address)
+
+
+def get_packed_ipv4(address):
+    try:
+        return socket.inet_pton(socket.AF_INET, address)
+    except AttributeError:  # no inet_pton here, sorry
+        try:
+            return socket.inet_aton(address)
+        except socket.error:
+            return None
+    except socket.error:  # not a valid address
+        return None
+
+
+def get_packed_ipv6(address):
+    try:
+        return socket.inet_pton(socket.AF_INET6, address)
+    except socket.error:  # not a valid address
+        return None
