@@ -1,0 +1,6 @@
+{% set nginx = salt['grains.filter_by']({
+    'default': {
+        'keepalive_timeout': 120,
+        'install_from_source': True,
+    },
+}, merge=salt['pillar.get']('nginx')) %}
