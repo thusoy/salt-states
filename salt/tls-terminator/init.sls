@@ -171,23 +171,23 @@ def run():
         (outgoing_ipv4_firewall_ports, 'ipv4'),
         (outgoing_ipv6_firewall_ports, 'ipv6')]:
         for target_ip, ports in ruleset.items():
-            port_key = 'dport' if len(ports) == 1 else 'dports'
-            ret['tls-terminator-outgoing-port-%s-%s' % (port, family)] = {
-                'firewall.append': [
-                    {'chain': 'OUTPUT'},
-                    {'family': family},
-                    {'protocol': 'tcp'},
-                    {'destination': target_ip},
-                    {port_key: ','.join(str(port) for port in ports)},
-                    {'match': [
-                        'comment',
-                        'owner',
-                    ]},
-                    {'comment': 'tls-terminator: Allow outgoing to upstream'},
-                    {'uid-owner': 'nginx'},
-                    {'jump': 'ACCEPT'},
-                ]
-            }
+            for port_set in get_port_sets(ports):
+                ret['tls-terminator-outgoing-%s-port-%s' % (family, port_set)] = {
+                    'firewall.append': [
+                        {'chain': 'OUTPUT'},
+                        {'family': family},
+                        {'protocol': 'tcp'},
+                        {'destination': target_ip},
+                        {'dports': port_set},
+                        {'match': [
+                            'comment',
+                            'owner',
+                        ]},
+                        {'comment': 'tls-terminator: Allow outgoing to upstream'},
+                        {'uid-owner': 'nginx'},
+                        {'jump': 'ACCEPT'},
+                    ]
+                }
 
     return ret
 
@@ -267,3 +267,55 @@ def get_packed_ipv6(address):
         return socket.inet_pton(socket.AF_INET6, address)
     except socket.error:  # not a valid address
         return None
+
+
+def get_port_sets(ports):
+    '''
+    Compress the set of ports down to ranges acceptable by iptables' multiport.
+
+    The return value will be a list of strings, using the minimal amout of ports.
+    This is needed since the multiport option to iptables only supports 15 different
+    ports.
+    '''
+    all_ports = []
+    start_of_range = None
+    previous_port = None
+    for port in sorted(ports):
+        if previous_port is not None and previous_port == port - 1:
+            if start_of_range is None:
+                start_of_range = previous_port
+        else:
+            if start_of_range is not None:
+                all_ports.append((start_of_range, previous_port))
+                start_of_range = None
+            elif previous_port is not None:
+                all_ports.append(previous_port)
+        previous_port = port
+    if start_of_range:
+        all_ports.append((start_of_range, previous_port))
+    elif previous_port:
+        all_ports.append(previous_port)
+
+    sets = []
+    this_set = []
+    set_count = 0
+    for item in all_ports:
+        weight = 1 if isinstance(item, int) else 2
+        if set_count <= 15 - weight:
+            this_set.append(format_item(item))
+            set_count += weight
+        else:
+            sets.append(','.join(this_set))
+            this_set = [format_item(item)]
+            set_count = weight
+    if this_set:
+        sets.append(','.join(this_set))
+
+    return sets
+
+
+def format_item(item):
+    if isinstance(item, int):
+        return str(item)
+    else:
+        return '%d:%d' % item
