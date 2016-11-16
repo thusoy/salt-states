@@ -132,6 +132,10 @@ def run():
             key = '/etc/nginx/private/default.key'
 
 
+        extra_server_config = values.get('extra_server_config', [])
+        if isinstance(extra_server_config, dict):
+            extra_server_config = [extra_server_config]
+
         ret['tls-terminator-%s-nginx-site' % site] = {
             'file.managed': [
                 {'name': '/etc/nginx/sites-enabled/%s' % site},
@@ -144,7 +148,7 @@ def run():
                     'backends': parsed_backends,
                     'cert': cert,
                     'key': key,
-                    'extra_server_config': values.get('extra_server_config', {}),
+                    'extra_server_config': extra_server_config,
                 }}
             ]
         }
