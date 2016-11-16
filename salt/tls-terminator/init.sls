@@ -137,6 +137,8 @@ def run():
         if site.startswith('*'):
             https_redirect = '$http_host'
 
+        client_max_body_size = values.get('client_max_body_size', '10m')
+
         ret['tls-terminator-%s-nginx-site' % site] = {
             'file.managed': [
                 {'name': '/etc/nginx/sites-enabled/%s' % site},
@@ -150,6 +152,7 @@ def run():
                     'cert': cert,
                     'key': key,
                     'https_redirect': https_redirect,
+                    'client_max_body_size': client_max_body_size,
                     'extra_server_config': values.get('extra_server_config', {}),
                 }}
             ]
