@@ -26,8 +26,10 @@ server {
 
   error_page 504 /504-{{ server_name }}.html;
 
-  {% for key, value in extra_server_config.items() %}
+  {% for extra_server_dict in extra_server_config -%}
+  {% for key, value in extra_server_dict.items() -%}
   {{ key }} {{ value }};
+  {% endfor -%}
   {% endfor %}
 
   {% for url, backend in backends.items() -%}
