@@ -133,6 +133,9 @@ def run():
             cert = '/etc/nginx/ssl/default.crt'
             key = '/etc/nginx/private/default.key'
 
+        https_redirect = '$server_name'
+        if site.startswith('*'):
+            https_redirect = '$http_host'
 
         ret['tls-terminator-%s-nginx-site' % site] = {
             'file.managed': [
@@ -146,6 +149,7 @@ def run():
                     'backends': parsed_backends,
                     'cert': cert,
                     'key': key,
+                    'https_redirect': https_redirect,
                     'extra_server_config': values.get('extra_server_config', {}),
                 }}
             ]
