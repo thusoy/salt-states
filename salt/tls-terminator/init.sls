@@ -155,6 +155,8 @@ def run():
         if site.startswith('*'):
             https_redirect = '$http_host'
 
+        client_max_body_size = values.get('client_max_body_size', '10m')
+
         extra_server_config = values.get('extra_server_config', [])
         if isinstance(extra_server_config, dict):
             extra_server_config = [extra_server_config]
@@ -172,6 +174,7 @@ def run():
                     'cert': cert,
                     'key': key,
                     'https_redirect': https_redirect,
+                    'client_max_body_size': client_max_body_size,
                     'extra_server_config': extra_server_config,
                 }}
             ]
