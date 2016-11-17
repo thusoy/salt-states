@@ -1,7 +1,8 @@
 nginx
 =====
 
-Installs nginx. Through pillar you can customize HTTP keepalive time and custom log formats and log files.
+Installs nginx. Through pillar you can customize HTTP keepalive time and custom log formats and log
+files. Arbitrary additions to the http block is also possible.
 
 Pillar example:
 
@@ -18,3 +19,18 @@ nginx:
 This will set up two log formats, `main` and `cache` (main is always present if you don't specify
 it), and two differnet log files in `/var/log/nginx/`, `access.log` (uses the `main` format by
 default), and `cache.log`, using the `cache` format.
+
+To add to the http block, say adding a `$do_error_log` variable that will hold whether the response
+was client error (HTTP status 4xx):
+
+```yaml
+nginx:
+    extra_http:
+        - map: |
+            $status $client_error {
+                ~^4 1;
+                default 0;
+            }
+    log_files:
+        client_error.log: main if=$client_error;
+```
