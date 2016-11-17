@@ -137,7 +137,7 @@ def run():
             extra_server_config = [extra_server_config]
 
         # Add X-Request-Id header both ways if the nginx version supports it
-        nginx_version_raw = __salt__['pillar.get']('nginx:version', '')
+        nginx_version_raw = __salt__['pillar.get']('nginx:version', '0.0.0')
         nginx_version = tuple(int(num) for num in nginx_version_raw.split('.'))
         if nginx_version and nginx_version >= (1, 11, 0):
             extra_server_config.append({
