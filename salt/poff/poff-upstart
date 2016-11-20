@@ -1,0 +1,11 @@
+description "Poff daemon"
+
+start on startup
+stop on runlevel [016]
+
+setuid poff
+setgid poff
+
+respawn
+
+exec /srv/poff/venv/bin/poff serve --config-file /etc/poff.rc --log-config /etc/poff_log_conf.yml

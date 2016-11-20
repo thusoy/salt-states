@@ -1,0 +1,5 @@
+{% set poff = pillar['poff'] -%}
+
+SQLALCHEMY_DATABASE_URI = "postgres://poff:{{ poff.db_password }}@{{ pillar.get('postgres.host', '') }}/powerdns"
+
+SECRET_KEY = "{{ poff.secret_key }}"

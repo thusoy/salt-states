@@ -1,0 +1,12 @@
+[Unit]
+Description=Poff job config
+After=network.target
+
+[Service]
+ExecStart=/srv/poff/venv/bin/poff serve --config-file /etc/poff.rc --log-config /etc/poff_log_conf.yml
+Restart=on-failure
+User=poff
+Group=poff
+
+[Install]
+WantedBy=multi-user.target
