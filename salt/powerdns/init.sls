@@ -59,6 +59,18 @@ powerdns:
             - postgres_user: powerdns
 
 
+powerdns-local-pgsql-conf:
+    file.managed:
+        - name: /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
+        - source: salt://powerdns/pdns.local.gpgsql.conf
+        - template: jinja
+        - show_changes: False
+        - require:
+            - pkg: powerdns
+        - watch_in:
+            - service: powerdns
+
+
 powerdns-db-sql:
     file.managed:
         - name: /etc/powerdns/postgres.sql
