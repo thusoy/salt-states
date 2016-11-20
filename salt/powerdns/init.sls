@@ -1,6 +1,7 @@
 {% set powerdns = pillar.get('powerdns', {}) -%}
 
 include:
+    - .pillar_check
     - postgres.client
 
 
@@ -29,7 +30,7 @@ powerdns:
 
     postgres_user.present:
         - name: pdns
-        - password: {{ powerdns.db_password }}
+        - password: {{ powerdns.get('db_password') }}
         - refresh_password: True
 
     postgres_database.present:
