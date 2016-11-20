@@ -59,6 +59,35 @@ powerdns:
             - postgres_user: powerdns
 
 
+{% for table in (
+    'comments',
+    'comments_id_seq',
+    'cryptokeys',
+    'cryptokeys_id_seq',
+    'domainmetadata',
+    'domainmetadata_id_seq',
+    'domains',
+    'domains_id_seq',
+    'records',
+    'records_id_seq',
+    'supermasters',
+    'tsigkeys',
+    'tsigkeys_id_seq',
+) %}
+powerdns-privilege-{{ table }}:
+    postgres_privileges.present:
+        - name: pdns
+        - object_name: {{ table }}
+        - object_type: {{ 'sequence' if table.endswith('_seq') else 'table' }}
+        - maintenance_db: powerdns
+        - privileges:
+            - ALL
+        - require:
+            - postgres_user: powerdns
+            - postgres_database: powerdns
+{% endfor %}
+
+
 powerdns-local-pgsql-conf:
     file.managed:
         - name: /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
