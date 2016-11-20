@@ -36,6 +36,13 @@ server {
   location {{ url }} {
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
 
+    {% if backend.pam_auth -%}
+    # Restrict access to users on this machine with PAM
+    auth_pam "Restricted";
+    auth_pam_service_name "nginx";
+
+    {% endif -%}
+
     {% for extra_location_dict in backend.extra_location_config -%}
     {% for key, value in extra_location_dict.items() -%}
     {{ key }} {{ value }};

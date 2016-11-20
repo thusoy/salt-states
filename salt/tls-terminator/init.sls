@@ -101,6 +101,7 @@ def run():
                 'port': port,
                 'upstream_identifier': upstream_identifier,
                 'upstream_trust_root': upstream_trust_root,
+                'pam_auth': backend_config.get('pam_auth', values.get('pam_auth')),
                 'extra_location_config': extra_location_config,
             }
 
