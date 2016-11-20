@@ -6,6 +6,10 @@ include:
 
 
 powerdns:
+    pkgrepo.managed:
+        - name: deb http://repo.powerdns.com/debian jessie-auth-40 main
+        - key_url: salt://powerdns/release-key.asc
+
     pkg.installed:
         - pkgs:
             - pdns-server
