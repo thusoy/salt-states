@@ -36,6 +36,13 @@ server {
     include proxy_params;
     include cache_params;
 
+    {% if backend.pam_auth -%}
+    # Restrict access to users on this machine with PAM
+    auth_pam "Restricted";
+    auth_pam_service_name "nginx";
+
+    {% endif -%}
+
     proxy_set_header Host "{{ backend.upstream_hostname }}";
 
     proxy_ssl_trusted_certificate '{{ backend.upstream_trust_root }}';
