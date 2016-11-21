@@ -32,9 +32,6 @@ server {
   {% endfor -%}
   {% endfor %}
 
-  include proxy_params;
-  include cache_params;
-
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
@@ -45,6 +42,15 @@ server {
     auth_pam_service_name "nginx";
 
     {% endif -%}
+
+    {% for extra_location_dict in backend.extra_location_config -%}
+    {% for key, value in extra_location_dict.items() -%}
+    {{ key }} {{ value }};
+    {% endfor -%}
+    {% endfor %}
+
+    include proxy_params;
+    include cache_params;
 
     proxy_set_header Host "{{ backend.upstream_hostname }}";
 
