@@ -32,16 +32,19 @@ server {
   {% endfor -%}
   {% endfor %}
 
-  include proxy_params;
-  include cache_params;
-
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
 
-    # Override the HTTP Host header to the name of the upstream host.
-    # (eg. *.herokuapp.com, prevents having to configure Heroku with the
-    # correct hostname)
+    {% for extra_location_dict in backend.extra_location_config -%}
+    {% for key, value in extra_location_dict.items() -%}
+    {{ key }} {{ value }};
+    {% endfor -%}
+    {% endfor %}
+
+    include proxy_params;
+    include cache_params;
+
     proxy_set_header Host "{{ backend.upstream_hostname }}";
 
     proxy_ssl_trusted_certificate '{{ backend.upstream_trust_root }}';

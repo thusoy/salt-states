@@ -75,6 +75,23 @@ def run():
                 if upstream_hostname == 'site':
                     upstream_hostname = site
 
+            extra_location_config = backend_config.get('extra_location_config', [])
+            if isinstance(extra_location_config, dict):
+                extra_location_config = [extra_location_config]
+
+            # Add X-Request-Id header both ways if the nginx version supports it
+            nginx_version_raw = __salt__['pillar.get']('nginx:version', '0.0.0')
+            nginx_version = tuple(int(num) for num in nginx_version_raw.split('.'))
+            if nginx_version and nginx_version >= (1, 11, 0):
+                extra_location_config.append({
+                    # Add to the response from the proxy
+                    'add_header': 'X-Request-Id $request_id always',
+                })
+                extra_location_config.append({
+                    # Add to the request before it reaches the proxy
+                    'proxy_set_header': 'X-Request-Id $request_id',
+                })
+
             parsed_backends[url] = {
                 'hostname': parsed_backend.hostname,
                 'upstream_hostname': upstream_hostname,
@@ -82,6 +99,7 @@ def run():
                 'port': port,
                 'upstream_identifier': upstream_identifier,
                 'upstream_trust_root': upstream_trust_root,
+                'extra_location_config': extra_location_config,
             }
 
         site_504_page = [
@@ -135,19 +153,6 @@ def run():
         extra_server_config = values.get('extra_server_config', [])
         if isinstance(extra_server_config, dict):
             extra_server_config = [extra_server_config]
-
-        # Add X-Request-Id header both ways if the nginx version supports it
-        nginx_version_raw = __salt__['pillar.get']('nginx:version', '0.0.0')
-        nginx_version = tuple(int(num) for num in nginx_version_raw.split('.'))
-        if nginx_version and nginx_version >= (1, 11, 0):
-            extra_server_config.append({
-                # Add to the response from the proxy
-                'add_header': 'X-Request-Id $request_id always',
-            })
-            extra_server_config.append({
-                # Add to the request before it reaches the proxy
-                'proxy_set_header': 'X-Request-Id $request_id',
-            })
 
         ret['tls-terminator-%s-nginx-site' % site] = {
             'file.managed': [
