@@ -1,41 +1,92 @@
-{% set version = pillar.get('postgres.version', '9.4') -%}
+{% from 'postgres/map.jinja' import postgres %}
+{% set version = postgres.version %}
 
-postgresql-server:
-  pkg.installed:
-    - name: postgresql-{{ version }}
-
-  file.managed:
-    - name: /etc/postgresql/{{ version }}/main/pg_hba.conf
-    - source: salt://postgres/pg_hba.conf
-    - user: postgres
-    - group: postgres
-    - mode: 640
-    - require:
-      - pkg: postgresql-server
-
-  service.running:
-    - name: postgresql
-    # Put this fairly early to ensure it's present for states that need to
-    # connect on the same host, but at least after the firewall is up
-    - order: 3
-    - require:
-      - pkg: postgresql-server
-    - watch:
-      - file: postgresql-server
+include:
+    - .pillar_check
 
 
-# Create on-disk dumps of the postgres db so that it can be backed up by other utilities
-# (the on-disk pg format is not reliable for backup unless you can take atomic snapshots,
-# which we can't guarantee unless we're using btrfs or zfs to do the backup)
-postgresql-server-backups:
-    file.directory:
-        - name: /var/backups/postgres
+postgres-server-deps:
+    pkg.installed:
+        - name: apt-transport-https
+
+
+postgres-server:
+    pkgrepo.managed:
+        - name: deb https://apt.postgresql.org/pub/repos/apt/ {{ grains.oscodename }}-pgdg main
+        - key_url: salt://postgres/release-key.asc
+        - require:
+            - pkg: postgres-server-deps
+
+    pkg.installed:
+        - name: postgresql-{{ version }}
+        - require:
+            - pkgrepo: postgres-server
+
+    file.managed:
+        - name: /etc/postgresql/{{ version }}/main/pg_hba.conf
+        - source: salt://postgres/pg_hba.conf
+        - template: jinja
+        - context:
+            internal: {{ postgres.internal }}
+            cert_auth: {{ postgres.cert_auth }}
+        - user: postgres
+        - group: postgres
+        - mode: 640
+        - require:
+            - pkg: postgres-server
+
+    service.running:
+        - name: postgresql
+        - require:
+            - pkg: postgres-server
+        - watch:
+            - file: postgres-server
+            - file: postgres-server-config
+
+
+postgres-server-config:
+    file.managed:
+        - name: /etc/postgresql/{{ version }}/main/postgresql.conf
+        - source: salt://postgres/postgresql.conf
+        - template: jinja
+        - watch_in:
+            - service: postgres-server
+
+
+{% if not postgres.internal %}
+
+{% for family in ('ipv4', 'ipv6') %}
+postgres-server-iptables-allow-incoming-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - table: filter
+        - proto: tcp
+        - match:
+            - comment
+        - comment: 'postgresql: Allow incoming'
+        - dport: 5432
+        - jump: ACCEPT
+        - save: True
+{% endfor %}
+
+
+postgres-server-cert:
+    file.managed:
+        - name: /etc/postgresql/{{ version }}/main/cert.crt
+        - contents_pillar: postgres:cert
+        - watch_in:
+            - service: postgres-server
+
+
+postgres-server-key:
+    file.managed:
+        - name: /etc/postgresql/{{ version }}/main/key.key
+        - contents_pillar: postgres:key
         - user: root
         - group: postgres
-        - mode: 775
+        - mode: 640
+        - watch_in:
+            - service: postgres-server
 
-    cron.present:
-        - name: cronic sh -c 'cd /tmp; sudo -u postgres pg_dumpall | gzip > /var/backups/postgres/dump.sql.gz'
-        - identifier: postgresql-server-backups
-        - minute: random
-        - hour: 1
+{% endif %}
