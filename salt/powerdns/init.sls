@@ -28,64 +28,6 @@ powerdns:
             - file: powerdns
             - postgres_user: powerdns
 
-    postgres_user.present:
-        - name: pdns
-        - password: {{ powerdns.get('db_password') }}
-        - refresh_password: True
-
-    postgres_database.present:
-        - name: powerdns
-        - owner: pdns
-        - require:
-            - postgres_user: powerdns
-
-    # Add postgres schema
-    cmd.run:
-        - name: psql
-            --no-readline
-            --no-password
-            -f /etc/powerdns/postgres.sql
-            --dbname powerdns
-        - unless: psql
-            --no-readline
-            --no-password
-            -c "SELECT * FROM domains LIMIT 1"
-            --dbname powerdns
-        - runas: 'postgres'
-        - require:
-            - file: powerdns-db-sql
-            - pkg: postgresql-client
-            - postgres_database: powerdns
-            - postgres_user: powerdns
-
-
-{% for table in (
-    'comments',
-    'comments_id_seq',
-    'cryptokeys',
-    'cryptokeys_id_seq',
-    'domainmetadata',
-    'domainmetadata_id_seq',
-    'domains',
-    'domains_id_seq',
-    'records',
-    'records_id_seq',
-    'supermasters',
-    'tsigkeys',
-    'tsigkeys_id_seq',
-) %}
-powerdns-privilege-{{ table }}:
-    postgres_privileges.present:
-        - name: pdns
-        - object_name: {{ table }}
-        - object_type: {{ 'sequence' if table.endswith('_seq') else 'table' }}
-        - maintenance_db: powerdns
-        - privileges:
-            - ALL
-        - require:
-            - postgres_user: powerdns
-            - postgres_database: powerdns
-{% endfor %}
 
 
 powerdns-local-pgsql-conf:
@@ -98,14 +40,6 @@ powerdns-local-pgsql-conf:
             - pkg: powerdns
         - watch_in:
             - service: powerdns
-
-
-powerdns-db-sql:
-    file.managed:
-        - name: /etc/powerdns/postgres.sql
-        - source: salt://powerdns/postgres.sql
-        - require:
-            - pkg: powerdns
 
 
 {% for family in ('ipv4', 'ipv6') %}
