@@ -1,0 +1,10 @@
+{% set pillar_get = salt['pillar.get'] %}
+
+{% set postgres = salt['grains.filter_by']({
+    'default': {
+        'version': '9.4',
+        'internal': True,
+        'shared_buffers': '128MB',
+        'cert_auth': False,
+    },
+}, merge=pillar_get('postgres')) %}
