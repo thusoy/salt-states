@@ -2,16 +2,20 @@
 
 include:
     - .pillar_check
+    - postgres.server
 
 powerdns-database-host:
     postgres_user.present:
         - name: pdns
         - password: {{ powerdns.get('db_password') }}
+        - require:
+            - pkg: postgres-server
 
     postgres_database.present:
         - name: powerdns
         - owner: pdns
         - require:
+            - pkg: postgres-server
             - postgres_user: powerdns-database-host
 
     file.managed:

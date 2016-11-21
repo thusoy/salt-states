@@ -3,6 +3,7 @@
 
 include:
     - .pillar_check
+    - postgres.server
     - powerdns.database_host
 
 
@@ -10,6 +11,8 @@ poff-database-host:
     postgres_user.present:
         - name: poff
         - password: {{ poff.get('db_password') }}
+        - require:
+            - pkg: postgres-server
 
     file.managed:
         - name: /etc/poff/postgres-schema.sql
