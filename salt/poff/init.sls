@@ -40,6 +40,8 @@ poff:
 
     cmd.wait:
         - name: POFF_CONFIG_FILE=/etc/poff.rc /srv/poff/venv/bin/poff init
+        - require:
+            - postgres_user: poff
         - watch:
             - pip: poff
 
