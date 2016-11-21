@@ -38,13 +38,6 @@ poff:
             - pkg: poff-deps
             - virtualenv: poff
 
-    cmd.wait:
-        - name: POFF_CONFIG_FILE=/etc/poff.rc /srv/poff/venv/bin/poff init
-        - require:
-            - postgres_user: poff
-        - watch:
-            - pip: poff
-
     file.managed:
         - name: /etc/poff.rc
         - source: salt://poff/poff_config
@@ -69,39 +62,6 @@ poff:
             - init_script: poff
             - file: poff_log_config
             - pip: poff
-
-    postgres_user.present:
-        - name: poff
-        - password: {{ poff.get('db_password') }}
-
-
-{% for table in (
-    'comments',
-    'comments_id_seq',
-    'cryptokeys',
-    'cryptokeys_id_seq',
-    'domainmetadata',
-    'domainmetadata_id_seq',
-    'domains',
-    'domains_id_seq',
-    'records',
-    'records_id_seq',
-    'supermasters',
-    'tsigkeys',
-    'tsigkeys_id_seq',
-) %}
-poff-database-privilege-{{ table }}:
-    postgres_privileges.present:
-        - name: poff
-        - object_name: {{ table }}
-        - object_type: {{ 'sequence' if table.endswith('_seq') else 'table' }}
-        - maintenance_db: powerdns
-        - privileges:
-            - ALL
-        - require:
-            - postgres_user: poff
-            - postgres_database: powerdns
-{% endfor %}
 
 
 poff_log_dir:
