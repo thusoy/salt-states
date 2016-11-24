@@ -1,4 +1,4 @@
-# salt-states
+# salt-states [![Build Status](https://travis-ci.org/thusoy/salt-states.svg?branch=master)](https://travis-ci.org/thusoy/salt-states)
 
 Because sharing is caring.
 
