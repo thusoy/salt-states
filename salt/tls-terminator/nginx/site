@@ -1,4 +1,4 @@
-{% for _, backend in backends.items() -%}
+{% for backend in backends.values() -%}
 upstream {{ backend.upstream_identifier }} {
     server {{ backend.hostname }}:{{ backend.port }};
     keepalive 8;
