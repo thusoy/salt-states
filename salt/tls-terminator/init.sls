@@ -50,7 +50,7 @@ def run():
             normalized_backend = '//' + backend if not '://' in backend else backend
             parsed_backend = urlparse.urlparse(normalized_backend)
             protocol = parsed_backend.scheme or 'http'
-            port = parsed_backend.port or ('443' if protocol == 'https' else 80)
+            port = parsed_backend.port or (443 if protocol == 'https' else 80)
             upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
                 url)
 
