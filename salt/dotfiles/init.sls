@@ -23,8 +23,7 @@ def run():
                 file_managed['contents_pillar'] = dotfile_spec
             else:
                 # Assume it's a dict, overwrite all default values with the given ones
-                for key, value in dotfile_spec.items():
-                    file_managed[key] = value
+                file_managed.update(dotfile_spec)
 
             file_managed_list = []
             for key, value in file_managed.items():
