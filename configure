@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -eu
+
+main () {
+    virtualenv venv
+    ./venv/bin/pip install watchdog mock pytest
+}
+
+main
