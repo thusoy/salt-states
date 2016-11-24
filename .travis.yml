@@ -1,0 +1,6 @@
+sudo: false  # http://docs.travis-ci.com/user/migrating-from-legacy/
+language: python
+python:
+  - 2.7
+install: ./configure
+script: ./test
