@@ -26,7 +26,7 @@ def managed(name, **kwargs):
         kwargs['mode'] = '0755'
     elif init_system == 'systemd':
         if 'user_script' in kwargs:
-            kwargs['name'] = '/home/%s/.config/systemd/user/%s.service' % (
+            kwargs['name'] = '~%s/.config/systemd/user/%s.service' % (
                 kwargs['user_script'], name)
             kwargs['makedirs'] = True
         else:
