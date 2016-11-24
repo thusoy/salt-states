@@ -23,7 +23,7 @@ ssh-pam-config:
 {% if 'google-authenticator-config' in values %}
 google-authenticator-config-{{ user }}:
     file.managed:
-        - name: /home/{{ user }}/.google_authenticator
+        - name: ~{{ user }}/.google_authenticator
         - contents_pillar: users:{{ user }}:google-authenticator-config
         - user: {{ user }}
         - group: {{ user }}
