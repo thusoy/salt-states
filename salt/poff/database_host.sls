@@ -47,6 +47,8 @@ poff-database-host:
     'domainmetadata_id_seq',
     'domains',
     'domains_id_seq',
+    'dyn_dns_client',
+    'dyn_dns_client_id_seq',
     'records',
     'records_id_seq',
     'supermasters',
