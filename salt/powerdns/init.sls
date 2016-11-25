@@ -26,8 +26,6 @@ powerdns:
         - name: pdns
         - watch:
             - file: powerdns
-            - postgres_user: powerdns
-
 
 
 powerdns-local-pgsql-conf:
