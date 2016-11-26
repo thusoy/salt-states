@@ -6,6 +6,14 @@ include:
 
 
 powerdns:
+    {% if powerdns.repo %}
+    pkgrepo.managed:
+        - name: deb http://repo.powerdns.com/{{ grains.osfullname.lower() }} {{ grains.oscodename }}-{{ powerdns.repo }} main
+        - key_url: salt://powerdns/release-key.asc
+        - require_in:
+            - pkg: powerdns
+    {% endif %}
+
     pkg.installed:
         - pkgs:
             - pdns-server
