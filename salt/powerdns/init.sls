@@ -6,7 +6,7 @@ include:
 
 
 powerdns:
-    {% if powerdns.repo %}
+    {% if powerdns.get('repo') %}
     pkgrepo.managed:
         - name: deb http://repo.powerdns.com/{{ grains.osfullname.lower() }} {{ grains.oscodename }}-{{ powerdns.repo }} main
         - key_url: salt://powerdns/release-key.asc
