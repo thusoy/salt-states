@@ -16,10 +16,10 @@ powerdns-digital-ocean-floating-ip-exit-{{ protocol }}-{{ replica }}:
             - comment
         - comment: 'powerdns: Exit to DNS replicas through Floating IP'
         - dport: 53
-        - destination: {{ anchor_ip }}
+        - destination: {{ replica }}
         - out-interface: eth0
         - jump: SNAT
-        - to-source: {{ replica }}
+        - to-source: {{ anchor_ip }}
 {% endfor %}
 {% endfor %}
 {% endif %}
