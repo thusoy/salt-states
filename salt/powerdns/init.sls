@@ -36,6 +36,17 @@ powerdns:
             - file: powerdns
 
 
+{% for sample_file in (
+    'bindbackend.conf',
+    'pdns.d/pdns.simplebind.conf',
+    'pdns.d/pdns.local.conf',
+) %}
+powerdns-default-absent-{{ sample_file }}:
+    file.absent:
+        - name: /etc/powerdns/{{ sample_file }}
+{% endfor %}
+
+
 powerdns-local-pgsql-conf:
     file.managed:
         - name: /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
