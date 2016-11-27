@@ -4,7 +4,6 @@ include:
     - .pillar_check
     - pip
     - postgres.client
-    - powerdns
     - virtualenv
 
 
