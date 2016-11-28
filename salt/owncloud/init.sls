@@ -45,9 +45,6 @@ nginx-phpworker-group:
 
 
 owncloud-php-fpm:
-    pkg.installed:
-        - name: php{{ php_version }}-fpm
-
     file.managed:
         {% if php_version == '5' %}
         - name: /etc/php{{ php_version }}/fpm/pool.d/www.conf
@@ -55,11 +52,19 @@ owncloud-php-fpm:
         - name: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
         {% endif %}
         - source: salt://owncloud/php-fpm-config
+        - makedirs: True
         - template: jinja
         - context:
             php_version: {{ php_version }}
+        - watch_in:
+            - service: owncloud-php-fpm
+
+    pkg.installed:
+        - name: php{{ php_version }}-fpm
+        # Ensure the config file exists first since otherwise we'd try to start with
+        # the non-existent www-data user
         - require:
-            - pkg: owncloud-php-fpm
+            - file: owncloud-php-fpm
 
     service.running:
         - name: php{{ php_version }}-fpm
