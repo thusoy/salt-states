@@ -34,6 +34,7 @@ ssh:
     - watch:
        - file: ssh
 
+  {% if install_from_source %}
   init_script.managed:
     - systemd: salt://ssh/ssh-systemd
     - sysvinit: salt://ssh/ssh-sysvinit
@@ -41,6 +42,7 @@ ssh:
     - template: jinja
     - context:
         install_from_source: {{ install_from_source }}
+  {% endif %}
 
   file.managed:
     - name: /etc/ssh/sshd_config
