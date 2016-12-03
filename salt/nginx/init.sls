@@ -59,7 +59,7 @@ nginx-conf:
         - name: /etc/nginx/nginx.conf
         - source: salt://nginx/nginx.conf
         - template: jinja
-        - mode: 640
+        - mode: 644
         - user: root
         - group: nginx
         - context:
