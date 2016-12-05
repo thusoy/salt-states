@@ -143,6 +143,7 @@ nginx-params:
     file.recurse:
         - name: /etc/nginx
         - source: salt://nginx/conf.d
+        - template: jinja
 
 
 # Disable defaults
