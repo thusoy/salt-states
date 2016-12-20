@@ -11,4 +11,6 @@ purge-old-kernels-cron:
         - name: cronic /usr/local/bin/purge-old-kernels -y --keep {{ kernels_to_keep }}
         - identifier: purge-old-kernels-regularly
         - daymonth: '{{ cron_day_spec }}'
+        - minute: random
+        - hour: random
 
