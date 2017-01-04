@@ -1,0 +1,11 @@
+{% set cachish = pillar.get('cachish', {}) -%}
+{% set auth = {'auth': cachish.get('auth', {})} -%}
+{% set items = {'items': cachish.get('items', {})} -%}
+
+######################################
+# File managed by salt state cachish #
+######################################
+
+{{ auth|yaml(False) }}
+
+{{ items|yaml(False) }}
