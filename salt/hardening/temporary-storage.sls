@@ -29,6 +29,6 @@ hardening-/dev/shm:
     file.replace:
         - name: /etc/fstab
         - pattern: ^tmpfs[ ]*/dev/shm
-        - repl: {{ shm_line}}
+        - repl: {{ shm_line }}
         - unless: grep "{{ shm_line }}" /etc/fstab
         - append_if_not_found: True
