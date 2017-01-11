@@ -11,6 +11,12 @@ cachish:
         - name: /etc/cachish.yml
         - source: salt://cachish/config.yml
         - template: jinja
+        - show_changes: False
+        - user: root
+        - group: cachish
+        - mode: 640
+        - require:
+            - pkg: cachish
 
     service.running:
         - watch:
