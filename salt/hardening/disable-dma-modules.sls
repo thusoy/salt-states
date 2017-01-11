@@ -1,4 +1,4 @@
-# Try to prevent DMA-based attacks by disabling DMA ports like firewire and pcmia
+# Try to prevent DMA-based attacks by disabling DMA kernel modules like firewire and pcmcia
 
 {% set dma_kernel_modules = [
     'firewire_core',
@@ -24,21 +24,24 @@ hardening-dma-modules-blacklist:
                 {% endfor %}
 
 
+
+hardening-disable-dma-modules-helper-script:
+    file.managed:
+        - name: /usr/local/bin/print-dependent-modules
+        - source: salt://hardening/print_dependent_modules.py
+        - mode: 755
+
+
 {% for kernel_module in modules %}
 hardening-dma-disable-{{ kernel_module }}:
 
     # Unload from currently running kernel
     # First unload all modules dependent on it, then unload the module itself
     cmd.run:
-        - name: (
-                    lsmod
-                    | grep ^{{ kernel_module }}
-                    | tr -s ' '
-                    | cut -d' ' -f4-
-                ;
-                    echo {{ kernel_module }}
-                )
+        - name: /usr/local/bin/print-dependent-modules {{ kernel_module }}
                 | xargs --no-run-if-empty modprobe --remove
         - onlyif: lsmod | grep ^{{ kernel_module }}
+        - require:
+            - file: hardening-disable-dma-modules-helper-script
 
 {% endfor %}

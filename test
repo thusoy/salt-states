@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./venv/bin/py.test \
+    salt/tls-terminator/test.py \
+    salt/hardening/test_print_dependent_modules.py
