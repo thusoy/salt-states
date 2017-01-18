@@ -6,24 +6,24 @@ import collections
 import pwd
 
 DEFAULT_UNUSED_SYSTEM_ACCOUNTS = set([
-    'bin',
-    'sys',
-    'sync',
-    'games',
-    'lp',
-    'news',
-    'uucp',
-    'www-data',
     'backup',
-    'list',
-    'irc',
-    'gnats',
+    'bin',
     'colord',
     'dnsmasq',
+    'games',
+    'gnats',
+    'irc',
+    'list',
+    'lp',
+    'news',
     'pulse',
     'saned',
+    'sync',
+    'sys',
     'usbmux',
+    'uucp',
     'uuidd',
+    'www-data',
 ])
 
 
