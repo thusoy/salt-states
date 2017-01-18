@@ -21,7 +21,6 @@ DEFAULT_UNUSED_SYSTEM_ACCOUNTS = set([
     'sync',
     'sys',
     'usbmux',
-    'uucp',
     'uuidd',
     'www-data',
 ])
