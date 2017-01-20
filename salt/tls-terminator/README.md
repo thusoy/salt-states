@@ -5,7 +5,7 @@ Configures nginx as TLS terminator for a http(s) backend.
 
 Sample pillar config:
 
-```
+```yaml
 tls-terminator:
     example.com:
         backend: https://example-app.herokuapp.com
@@ -23,7 +23,7 @@ tls-terminator:
 
 If you want to have different backends for different URLs, you can set the `backends` parameter instead:
 
-```
+```yaml
 tls-terminator:
     otherexample.com:
         backends:
@@ -33,7 +33,7 @@ tls-terminator:
 
 A HTTPS backend is validated against the system trust root if no explicit trust root is given. To set a trust root:
 
-```
+```yaml
 tls-terminator:
     example.com:
         backends:
