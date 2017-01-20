@@ -184,6 +184,7 @@ def run():
                     'https_redirect': https_redirect,
                     'client_max_body_size': client_max_body_size,
                     'extra_server_config': extra_server_config,
+                    'extra_locations': values.get('extra_locations', {}),
                 }}
             ]
         }

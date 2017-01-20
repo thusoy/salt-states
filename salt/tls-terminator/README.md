@@ -44,3 +44,18 @@ tls-terminator:
 ```
 
 As you might have guessed, `backend: <url>` is just a convenient alias for `backends: {"/": {"upstream": <url>}}`.
+
+You can add extra location blocks if needed:
+
+```yaml
+tls-terminator:
+    example.com:
+        backend: https://example-app.herokuapp.com
+        extra_locations:
+            /.well-known/assetlinks.json: |
+                return 200 '[{ "namespace": "android_app",
+                   "package_name": "org.digitalassetlinks.example",
+                   "sha256_cert_fingerprints":
+                     ["14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:"
+                      "A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5"]}]';
+```
