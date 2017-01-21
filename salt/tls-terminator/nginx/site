@@ -32,6 +32,10 @@ server {
   {% endfor -%}
   {% endfor %}
 
+  {% if redirect -%}
+  return {{ redirect }};
+  {% endif %}
+
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
