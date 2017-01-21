@@ -25,13 +25,11 @@ def run():
     for site, values in sites.items():
         backend = values.get('backend')
         backends = values.get('backends', {})
-        if not (backend or backends):
-            raise ValueError('TLS-terminator site "%s" is missing one of the required properties backend/backends' %
-                site)
-
-        if backend and backends:
-            raise ValueError('TLS-terminator site "%s" specifies both backend and backends, must only specify one' %
-                site)
+        redirect = values.get('redirect')
+        required_properties_given = len([prop for prop in (backend, backends, redirect) if prop])
+        if required_properties_given != 1:
+            raise ValueError('TLS-terminator site "%s" is has none or too many of the required '
+                'properties backend/backends/redirect' % site)
 
         if backend:
             backends['/'] = {
@@ -185,6 +183,7 @@ def run():
                     'client_max_body_size': client_max_body_size,
                     'extra_server_config': extra_server_config,
                     'extra_locations': values.get('extra_locations', {}),
+                    'redirect': redirect,
                 }}
             ]
         }
