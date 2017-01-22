@@ -65,7 +65,7 @@ You can also add a redirect to another site:
 ```yaml
 tls-terminator:
     www.example.com:
-        redirect: 301 https://example.com/$request_url
+        redirect: 301 https://example.com/$request_uri
 
     example.com:
         backend: https://example-app.herokuapp.com
