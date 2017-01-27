@@ -57,6 +57,18 @@ certbot-firewall-outgoing-https-{{ family }}:
         - jump: ACCEPT
 
 
+certbot-firewall-incoming-https-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - protocol: tcp
+        - dport: 443
+        - match:
+            - comment
+        - comment: 'certbot: Allow incoming HTTPS'
+        - jump: ACCEPT
+
+
 {% for protocol in ('udp', 'tcp') %}
 certbot-firewall-outgoing-dns-{{ protocol }}-{{ family }}:
     firewall.append:
