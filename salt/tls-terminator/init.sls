@@ -19,6 +19,8 @@ def run():
         ]
     }
 
+    has_any_acme_sites = False
+
     outgoing_ipv4_firewall_ports = defaultdict(set)
     outgoing_ipv6_firewall_ports = defaultdict(set)
 
@@ -120,12 +122,13 @@ def run():
             }}
         ]
         ret['tls-terminator-timeout-page-' + site] = {'file.managed': site_504_page}
-
         use_acme_certs = values.get('acme')
         if use_acme_certs:
             # The actual certs will be managed by the certbot state (or equivalent)
             cert = '/etc/letsencrypt/live/%s/fullchain.pem' % site
             key = '/etc/letsencrypt/live/%s/privkey.pem' % site
+
+            has_any_acme_sites = True
         elif 'cert' in values and 'key' in values:
             # Custom certs, create them on disk
             cert = '/etc/nginx/ssl/%s.crt' % site
@@ -210,6 +213,9 @@ def run():
                         {'jump': 'ACCEPT'},
                     ]
                 }
+
+    if has_any_acme_sites:
+        ret['include'].append('certbot')
 
     return ret
 
