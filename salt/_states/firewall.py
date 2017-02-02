@@ -81,8 +81,7 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
     partial_rule = __salt__['iptables.build_rule'](**kwargs)
     full_rule = '-A %s %s' % (chain, partial_rule)
 
-    cachedir = __opts__['cachedir']
-    file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family[-2:])
+    file_target = get_cached_rule_file_for_family(family[-2:])
     _add_rule(file_target, '%s_rules' % table, full_rule)
 
     return {
@@ -97,8 +96,7 @@ def chain_present(name, table='filter', family='ipv4', **kwargs):
     assert table in ('filter', 'nat')
     assert family in ('ipv4', 'ipv6')
 
-    cachedir = __opts__['cachedir']
-    file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family[-2:])
+    file_target = get_cached_rule_file_for_family(family[-2:])
     _add_rule(file_target, '%s_chains' % table, name)
 
     return {
@@ -107,6 +105,13 @@ def chain_present(name, table='filter', family='ipv4', **kwargs):
         'changes': '',
         'comment': '',
     }
+
+
+def get_cached_rule_file_for_family(family):
+    assert family in ('v4', 'v6')
+    cachedir = __opts__['cachedir']
+    file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family)
+    return file_target
 
 
 def _get_rules(path):
@@ -124,9 +129,8 @@ def _get_rules(path):
 
 
 def apply(name):
-    cachedir = __opts__['cachedir']
-    v4_file_target = os.path.join(cachedir, 'firewall-rules-v4.json')
-    v6_file_target = os.path.join(cachedir, 'firewall-rules-v6.json')
+    v4_file_target = get_cached_rule_file_for_family('v4')
+    v6_file_target = get_cached_rule_file_for_family('v6')
 
     v4_result, v4_stderr, v4_changes = _apply_rule_for_family('rules.v4',
         _get_rules(v4_file_target), 'iptables-restore')
