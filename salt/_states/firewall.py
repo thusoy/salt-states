@@ -129,34 +129,31 @@ def _get_rules(path):
 
 
 def apply(name):
-    v4_file_target = get_cached_rule_file_for_family('v4')
-    v6_file_target = get_cached_rule_file_for_family('v6')
-
-    v4_result, v4_stderr, v4_changes = _apply_rule_for_family('rules.v4',
-        _get_rules(v4_file_target), 'iptables-restore')
-    v6_result, v6_stderr, v6_changes = _apply_rule_for_family('rules.v6',
-        _get_rules(v6_file_target), 'ip6tables-restore')
-
     comment = []
-    if v4_stderr:
-        comment.append(v4_stderr)
-    if v6_stderr:
-        comment.append(v6_stderr)
-
     changes = {}
-    if v4_changes:
-        changes['ipv4'] = v4_changes
-    if v6_changes:
-        changes['ipv6'] = v6_changes
+    success = True
+    for family in ('v4', 'v6'):
+        file_target = get_cached_rule_file_for_family(family)
 
-    # Clear out the rules on disk (will also be done on exit if run stops before applying the rules)
-    os.remove(v4_file_target)
-    os.remove(v6_file_target)
+        result, stderr, rule_changes = _apply_rule_for_family('rules.%s' % family,
+            _get_rules(file_target), 'ip%stables-restore' % ('' if family == 'v4' else '6'))
+
+        if stderr:
+            comment.append(stderr)
+
+        if rule_changes:
+            changes['ip%s' % family] = rule_changes
+
+        if result != 0:
+            success = False
+
+        # Clear out the rules on disk (will also be done on exit if run stops before applying the rules)
+        os.remove(file_target)
 
     return {
         'name': name,
         'comment': '\n'.join(comment),
-        'result': True if v4_result is 0 and v6_result is 0 else False,
+        'result': success,
         'changes': changes,
     }
 
