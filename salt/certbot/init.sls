@@ -26,12 +26,12 @@ certbot-update-{{ site }}:
     cron.present:
         - name: {{ certbot.binary }} certonly
                 --standalone
-                {% if 'pre_hook' in certbot %}
+                {% if 'pre_hook' in certbot -%}
                 --pre-hook '{{ certbot.pre_hook }}'
-                {% endif %}
-                {% if 'post_hook' in certbot %}
+                {% endif -%}
+                {% if 'post_hook' in certbot -%}
                 --post-hook '{{ certbot.post_hook }}'
-                {% endif %}
+                {% endif -%}
                 --domain {{ site }}
                 --quiet
                 --email {{ certbot.administrative_contact }}
