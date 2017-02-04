@@ -20,7 +20,7 @@ postgres-server:
     pkg.installed:
         - pkgs:
             - postgresql-{{ version }}
-            - postgres-contrib-{{ version }}
+            - postgresql-contrib-{{ version }}
         - require:
             - pkgrepo: postgres-server
 
