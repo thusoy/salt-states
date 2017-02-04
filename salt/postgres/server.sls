@@ -18,7 +18,9 @@ postgres-server:
             - pkg: postgres-server-deps
 
     pkg.installed:
-        - name: postgresql-{{ version }}
+        - pkgs:
+            - postgresql-{{ version }}
+            - postgres-contrib-{{ version }}
         - require:
             - pkgrepo: postgres-server
 
