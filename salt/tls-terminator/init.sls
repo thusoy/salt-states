@@ -175,7 +175,7 @@ def run():
                 {'name': '/etc/nginx/sites-enabled/%s' % site},
                 {'source': 'salt://tls-terminator/nginx/site'},
                 {'template': 'jinja'},
-                {'require': [{'file': 'nginx-sites-enabled'}]},
+                {'require': [{'pkg': 'nginx'}]},
                 {'watch_in': [{'service': 'nginx'}]},
                 {'context': {
                     'server_name': site,
