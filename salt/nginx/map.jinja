@@ -12,5 +12,6 @@
         'package': 'nginx',
         'repo': 'deb https://nginx.org/packages/mainline/debian/ jessie nginx',
         'repo_key_url': 'https://nginx.org/keys/nginx_signing.key',
+        'dh_keysize': 4096,
     },
 }, merge=salt['pillar.get']('nginx')) %}

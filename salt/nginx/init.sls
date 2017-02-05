@@ -105,7 +105,7 @@ nginx-pam-auth:
 nginx-dh-param-default:
     file.symlink:
         - name: /etc/nginx/ssl/dhparam.pem
-        - target: /etc/nginx/ssl/dhparam.{{ nginx.get('dh_keysize', 4096 ) }}.pem
+        - target: /etc/nginx/ssl/dhparam.{{ nginx.dh_keysize }}.pem
         - force: True
         - require:
             - file: nginx-certificates-dir
