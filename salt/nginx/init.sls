@@ -34,7 +34,7 @@ nginx-ca-certificates:
                 fi
         - stateful: True
         - require:
-            - file: nginx
+            - file: nginx-certificates-dir
         - watch_in:
             - service: nginx
 
