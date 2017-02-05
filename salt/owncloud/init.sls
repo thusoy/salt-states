@@ -16,6 +16,9 @@
 {% set php_version = owncloud.get('php_version', default_php_version) %}
 
 {% set openjdk_version = owncloud.get('openjdk_version', '8') %}
+{% set acme = owncloud.get('acme', False) %}
+{% set ssl_cert = '/etc/letsencrypt/live/' + hostname + '/fullchain.pem' if acme else 'ssl/' + hostname + '.crt' %}
+{% set ssl_key = '/etc/letsencrypt/live/' + hostname + '/privkey.pem' if acme else 'private/' + hostname + '.key' %}
 
 {{ nginx_site_pillar(
   hostname,
@@ -24,6 +27,8 @@
   pillar_key,
   {
     'php_version': php_version,
+    'ssl_cert': ssl_cert,
+    'ssl_key': ssl_key,
   }) }}
 
 
