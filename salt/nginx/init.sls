@@ -143,6 +143,11 @@ nginx-params:
     file.recurse:
         - name: /etc/nginx
         - source: salt://nginx/conf.d
+        - template: jinja
+        - require:
+            - pkg: nginx
+        - watch_in:
+            - service: nginx
 
 
 # Disable defaults
@@ -171,19 +176,6 @@ nginx-default-certificate:
             - file: nginx-certificates-dir
         - watch_in:
             - service: nginx
-
-
-{% for config_file in (
-    'mime.types',
-    'fastcgi_params',
-    ) %}
-nginx-config-file-{{ config_file }}:
-    file.managed:
-        - name: /etc/nginx/{{ config_file}}
-        - source: salt://nginx/{{ config_file }}
-        - watch_in:
-            - service: nginx
-{% endfor %}
 
 
 nginx-default-key:
