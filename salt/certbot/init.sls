@@ -10,8 +10,7 @@ certbot:
         - name: deb http://ftp.debian.org/debian {{ grains.get('oscodename') }}-backports main
     {% endif %}
 
-    pkg:
-        - installed
+    pkg.installed:
         {% if needs_backport %}
         - fromrepo: jessie-backports
         - require:
@@ -24,8 +23,12 @@ certbot-update-{{ site }}:
     cron.present:
         - name: certbot certonly
                 --standalone
-                --pre-hook 'service nginx stop'
-                --post-hook 'service nginx start'
+                {% if 'pre_hook' in certbot -%}
+                --pre-hook '{{ certbot.pre_hook }}'
+                {% endif -%}
+                {% if 'post_hook' in certbot -%}
+                --post-hook '{{ certbot.post_hook }}'
+                {% endif -%}
                 --domain {{ site }}
                 --quiet
                 --email {{ certbot.administrative_contact }}
@@ -48,6 +51,18 @@ certbot-firewall-outgoing-https-{{ family }}:
             - owner
         - comment: 'certbot: Allow outgoing https'
         - uid-owner: root
+        - jump: ACCEPT
+
+
+certbot-firewall-incoming-https-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - protocol: tcp
+        - dport: 443
+        - match:
+            - comment
+        - comment: 'certbot: Allow incoming HTTPS'
         - jump: ACCEPT
 
 

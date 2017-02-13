@@ -32,6 +32,10 @@ server {
   {% endfor -%}
   {% endfor %}
 
+  {% if redirect -%}
+  return {{ redirect }};
+  {% endif %}
+
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
@@ -63,6 +67,12 @@ server {
   }
 
   {% endfor -%}
+
+  {% for extra_location, block in extra_locations.items() %}
+  location {{ extra_location }} {
+    {{ block }}
+  }
+  {% endfor %}
 
   location = /504-{{ server_name }}.html {
     root html;

@@ -1,37 +1,22 @@
 {% from 'nginx/map.jinja' import nginx with context %}
-{% set install_from_source = nginx['install_from_source'] %}
-
-
-nginx-systemuser:
-    user.present:
-        - name: nginx
-        - fullname: nginx worker
-        - system: True
-        - createhome: False
-        - shell: /usr/sbin/nologin
-        - groups:
-            - shadow
-        - optional_groups:
-            - phpworker
 
 
 include:
     - .pillar_check
-{% if install_from_source %}
-    - nginx.source
-{% else %}
-    - nginx.package
-{% endif %}
 {% if nginx.get('dump_to_s3', False) %}
     - s3-uploader
 {% endif %}
 
 
+nginx-deps:
+    pkg.installed:
+        - pkgs:
+            - apt-transport-https
+            - ca-certificates
+
+
 # Install ca-certificates to let nginx verify upstream certificates
 nginx-ca-certificates:
-    test.succeed_without_changes:
-        - name: ca-certificates
-
     cmd.run:
         - name: existing_digest=$(sha1sum /etc/nginx/ssl/all-certs.pem 2>/dev/null
                                   | cut -d" " -f1 || echo 'no existing file');
@@ -49,12 +34,36 @@ nginx-ca-certificates:
                 fi
         - stateful: True
         - require:
-            - file: nginx-conf
+            - file: nginx-certificates-dir
         - watch_in:
             - service: nginx
 
 
-nginx-conf:
+nginx:
+    # The nginx user is created by the packages, but ensure that it has access to
+    # shadow files to enable pam auth, and optionally php
+    user.present:
+        - name: nginx
+        - fullname: nginx worker
+        - system: True
+        - createhome: False
+        - shell: /usr/sbin/nologin
+        - groups:
+            - shadow
+        - optional_groups:
+            - phpworker
+
+    {% if nginx.repo %}
+    pkgrepo.managed:
+        - name: {{ nginx.repo }}
+        - key_url: {{ nginx.repo_key_url }}
+        - require_in:
+            - pkg: nginx
+    {% endif %}
+
+    pkg.installed:
+        - name: {{ nginx.package }}
+
     file.managed:
         - name: /etc/nginx/nginx.conf
         - source: salt://nginx/nginx.conf
@@ -79,14 +88,12 @@ nginx-conf:
                 {% endfor %}
                 {% endfor %}
         - require:
-            {% if install_from_source %}
-            - cmd: nginx
-            {% else %}
             - pkg: nginx
-            {% endif %}
-            - user: nginx-systemuser
-        - watch_in:
-            - service: nginx
+            - user: nginx
+
+    service.running:
+        - watch:
+            - file: nginx
 
 
 nginx-pam-auth:
@@ -98,12 +105,13 @@ nginx-pam-auth:
 nginx-dh-param-default:
     file.symlink:
         - name: /etc/nginx/ssl/dhparam.pem
-        - target: /etc/nginx/ssl/dhparam.{{ nginx.get('dh_keysize', 4096 ) }}.pem
+        - target: /etc/nginx/ssl/dhparam.{{ nginx.dh_keysize }}.pem
         - force: True
         - require:
             - file: nginx-certificates-dir
         - watch_in:
             - service: nginx
+
 
 {% for size in (1024, 2048, 4096) %}
 nginx-dh-param-{{ size }}:
@@ -124,8 +132,8 @@ nginx-certificates-dir:
         - group: nginx
         - file_mode: 755
         - require:
-            - file: nginx-conf
-            - user: nginx-systemuser
+            - file: nginx
+            - user: nginx
 
 
 nginx-private-dir:
@@ -135,14 +143,19 @@ nginx-private-dir:
         - group: nginx
         - mode: 750
         - require:
-            - file: nginx-conf
-            - user: nginx-systemuser
+            - file: nginx
+            - user: nginx
 
 
 nginx-params:
     file.recurse:
         - name: /etc/nginx
         - source: salt://nginx/conf.d
+        - template: jinja
+        - require:
+            - pkg: nginx
+        - watch_in:
+            - service: nginx
 
 
 # Disable defaults
@@ -161,6 +174,8 @@ nginx-defaults:
             {% for default_file in default_files %}
             - /etc/nginx/{{ default_file }}.default
             {% endfor %}
+        - require_in:
+            - service: nginx
 
 
 nginx-default-certificate:
@@ -173,19 +188,6 @@ nginx-default-certificate:
             - service: nginx
 
 
-{% for config_file in (
-    'mime.types',
-    'fastcgi_params',
-    ) %}
-nginx-config-file-{{ config_file }}:
-    file.managed:
-        - name: /etc/nginx/{{ config_file}}
-        - source: salt://nginx/{{ config_file }}
-        - watch_in:
-            - service: nginx
-{% endfor %}
-
-
 nginx-default-key:
     file.managed:
         - name: /etc/nginx/private/default.key
@@ -195,21 +197,10 @@ nginx-default-key:
         - show_changes: False
         - mode: 640
         - require:
-            - user: nginx-systemuser
+            - user: nginx
             - file: nginx-private-dir
         - watch_in:
             - service: nginx
-
-
-nginx-sites-enabled:
-    file.directory:
-        - name: /etc/nginx/sites-enabled
-        - user: root
-        - group: nginx
-        - mode: 755
-        - require:
-            - file: nginx-conf
-            - user: nginx-systemuser
 
 
 {% for family in ('ipv4', 'ipv6') %}
@@ -219,19 +210,12 @@ nginx-firewall-{{ family }}:
         - chain: INPUT
         - family: {{ family }}
         - proto: tcp
-        - dports: 80,443
+        - dports: {{ '80' if nginx['allow_plaintext'] else '' }},443
         - match:
             - comment
         - comment: "nginx: Allow incoming HTTP(S)"
         - jump: ACCEPT
 {% endfor %}
-
-
-nginx-log-dir:
-    file.directory:
-        - name: /var/log/nginx
-        - require_in:
-            - service: nginx
 
 
 nginx-logrotate-config:

@@ -19,19 +19,19 @@ def run():
         ]
     }
 
+    has_any_acme_sites = False
+
     outgoing_ipv4_firewall_ports = defaultdict(set)
     outgoing_ipv6_firewall_ports = defaultdict(set)
 
     for site, values in sites.items():
         backend = values.get('backend')
         backends = values.get('backends', {})
-        if not (backend or backends):
-            raise ValueError('TLS-terminator site "%s" is missing one of the required properties backend/backends' %
-                site)
-
-        if backend and backends:
-            raise ValueError('TLS-terminator site "%s" specifies both backend and backends, must only specify one' %
-                site)
+        redirect = values.get('redirect')
+        required_properties_given = len([prop for prop in (backend, backends, redirect) if prop])
+        if required_properties_given != 1:
+            raise ValueError('TLS-terminator site "%s" is has none or too many of the required '
+                'properties backend/backends/redirect' % site)
 
         if backend:
             backends['/'] = {
@@ -122,12 +122,13 @@ def run():
             }}
         ]
         ret['tls-terminator-timeout-page-' + site] = {'file.managed': site_504_page}
-
         use_acme_certs = values.get('acme')
         if use_acme_certs:
             # The actual certs will be managed by the certbot state (or equivalent)
             cert = '/etc/letsencrypt/live/%s/fullchain.pem' % site
             key = '/etc/letsencrypt/live/%s/privkey.pem' % site
+
+            has_any_acme_sites = True
         elif 'cert' in values and 'key' in values:
             # Custom certs, create them on disk
             cert = '/etc/nginx/ssl/%s.crt' % site
@@ -174,7 +175,7 @@ def run():
                 {'name': '/etc/nginx/sites-enabled/%s' % site},
                 {'source': 'salt://tls-terminator/nginx/site'},
                 {'template': 'jinja'},
-                {'require': [{'file': 'nginx-sites-enabled'}]},
+                {'require': [{'pkg': 'nginx'}]},
                 {'watch_in': [{'service': 'nginx'}]},
                 {'context': {
                     'server_name': site,
@@ -184,6 +185,8 @@ def run():
                     'https_redirect': https_redirect,
                     'client_max_body_size': client_max_body_size,
                     'extra_server_config': extra_server_config,
+                    'extra_locations': values.get('extra_locations', {}),
+                    'redirect': redirect,
                 }}
             ]
         }
@@ -210,6 +213,9 @@ def run():
                         {'jump': 'ACCEPT'},
                     ]
                 }
+
+    if has_any_acme_sites:
+        ret['include'].append('certbot')
 
     return ret
 
