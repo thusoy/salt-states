@@ -34,3 +34,16 @@ nginx:
     log_files:
         client_error.log: main if=$client_error;
 ```
+
+To enable only whitelisted IPs access to the instance:
+
+```yaml
+nginx:
+    allow_sources_v4:
+        - 1.2.3.4
+        - 5.6.7.8
+    allow_sources_v6:
+        - 2a03::c001
+```
+
+By default the instance will be publicly accessible.
