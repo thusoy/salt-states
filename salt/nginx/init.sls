@@ -210,7 +210,7 @@ nginx-firewall-{{ family }}:
         - chain: INPUT
         - family: {{ family }}
         - proto: tcp
-        - dports: {{ '80' if nginx['allow_plaintext'] else '' }},443
+        - dports: {{ '80,' if nginx['allow_plaintext'] else '' }}443
         - match:
             - comment
         - comment: "nginx: Allow incoming HTTP(S)"
