@@ -1,12 +1,13 @@
 include:
     - pip
 
-python-gnupg:
+
+python-gnupg-ng:
     pkg.installed:
         - name: gnupg
 
     pip.installed:
         - name: gnupg
         - require:
-            - pkg: python-gnupg
+            - pkg: python-gnupg-ng
             - pip: pip
