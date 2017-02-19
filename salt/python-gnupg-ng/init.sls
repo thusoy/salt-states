@@ -5,7 +5,7 @@ include:
 python-gnupg-ng:
     pkg.installed:
         - pkgs:
-            - gnupg
+            - gnupg2
             - python-dev
 
     pip.installed:
