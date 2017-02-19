@@ -1,5 +1,5 @@
 include:
-    - pip
+    - python-pip
 
 
 python-gnupg-ng:
@@ -10,4 +10,3 @@ python-gnupg-ng:
         - name: gnupg
         - require:
             - pkg: python-gnupg-ng
-            - pip: pip
