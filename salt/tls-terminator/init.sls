@@ -113,7 +113,7 @@ def run():
             }
 
         site_504_page = [
-            {'name': '/usr/local/nginx/html/504-' + site + '.html'},
+            {'name': '/etc/nginx/html/504-' + site + '.html'},
             {'source': 'salt://tls-terminator/nginx/504.html'},
             {'makedirs': True},
             {'template': 'jinja'},
