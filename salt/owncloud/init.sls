@@ -1,5 +1,3 @@
-{% from 'macros.jinja' import nginx_site_pillar %}
-
 {% set owncloud = pillar.get('owncloud', {}) %}
 {% set version = owncloud.get('version', '8.2.7') %}
 {% set hostname = owncloud.site_name %}
@@ -19,17 +17,6 @@
 {% set acme = owncloud.get('acme', False) %}
 {% set ssl_cert = '/etc/letsencrypt/live/' + hostname + '/fullchain.pem' if acme else 'ssl/' + hostname + '.crt' %}
 {% set ssl_key = '/etc/letsencrypt/live/' + hostname + '/privkey.pem' if acme else 'private/' + hostname + '.key' %}
-
-{{ nginx_site_pillar(
-  hostname,
-  "salt://owncloud/nginx/nginx_site",
-  pillar_cert,
-  pillar_key,
-  {
-    'php_version': php_version,
-    'ssl_cert': ssl_cert,
-    'ssl_key': ssl_key,
-  }) }}
 
 
 include:
@@ -220,4 +207,46 @@ owncloud-upload-tmp-dir:
         - user: root
         - group: phpworker
         - mode: 770
+{% endif %}
+
+
+owncloud-nginx-site:
+    file.managed:
+        - name: /etc/nginx/sites-enabled/{{ hostname }}
+        - source: salt://owncloud/nginx/site
+        - template: jinja
+        - require:
+            - pkg: nginx
+        - watch_in:
+            - service: nginx
+        - context:
+            server_name: {{ hostname }}
+            php_version: php_version
+            ssl_cert: ssl_cert
+            ssl_key: ssl_key
+
+
+{% if not acme %}
+owncloud-nginx-cert:
+    file.managed:
+        - name: /etc/nginx/ssl/{{ hostname }}.crt
+        - contents_pillar: {{ pillar_cert }}
+        - require:
+            - file: nginx-certificates-dir
+        - watch_in:
+            - service: nginx
+
+
+owncloud-nginx-key:
+    file.managed:
+        - name: /etc/nginx/private/{{ hostname }}.key
+        - contents_pillar: {{ pillar_key }}
+        - user: root
+        - group: nginx
+        - mode: 640
+        - show_changes: False
+        - require:
+            - file: nginx-private-dir
+        - watch_in:
+            - service: nginx
 {% endif %}
