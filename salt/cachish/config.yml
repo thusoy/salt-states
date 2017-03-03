@@ -1,6 +1,7 @@
 {% set cachish = pillar.get('cachish', {}) -%}
 {% set auth = {'auth': cachish.get('auth', {})} -%}
 {% set items = {'items': cachish.get('items', {})} -%}
+{% set log_config = {'log_config': cachish.get('log_config', {})} -%}
 
 ######################################
 # File managed by salt state cachish #
@@ -9,3 +10,7 @@
 {{ auth|yaml(False) }}
 
 {{ items|yaml(False) }}
+
+{% if log_config['log_config'] -%}
+{{ log_config|yaml(False) }}
+{% endif %}
