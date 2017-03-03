@@ -213,7 +213,7 @@ owncloud-upload-tmp-dir:
 owncloud-nginx-site:
     file.managed:
         - name: /etc/nginx/sites-enabled/{{ hostname }}
-        - source: salt://owncloud/nginx/site
+        - source: salt://owncloud/nginx/nginx_site
         - template: jinja
         - require:
             - pkg: nginx
