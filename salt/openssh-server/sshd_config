@@ -1,0 +1,107 @@
+{% from 'openssh-server/map.jinja' import openssh_server with context -%}
+
+#############################################
+# File managed by salt state openssh-server #
+#############################################
+
+# What port we listen to
+Port {{ openssh_server.port }}
+
+# Use these options to restrict which interfaces/protocols sshd will bind to
+{% for listen_address in openssh_server.listen_addresses %}
+ListenAddress {{ listen_address }}
+{% else %}
+#ListenAddress ::
+#ListenAddress 0.0.0.0
+{% endfor %}
+
+Protocol 2
+
+# HostKeys for protocol version 2
+{% for key in ('ed25519', 'rsa', 'ecdsa') if 'host_%s_key' % key in openssh_server -%}
+HostKey /etc/ssh/ssh_host_{{ key }}_key
+{% endfor %}
+
+#Privilege Separation is turned on for security
+UsePrivilegeSeparation sandbox
+
+# Limit key exchange to safe algos
+KexAlgorithms {{ ','.join(openssh_server.kex_algorithms) }}
+
+# Restrict offered ciphers to a secure subset
+Ciphers {{ ','.join(openssh_server.ciphers) }}
+
+# Secure subset of MACs
+MACs {{ ','.join(openssh_server.macs) }}
+
+{% if openssh_server.allow_groups %}
+# Only allow login for users in whitelisted groups
+AllowGroups {{ ' '.join(openssh_server.allow_groups) }}
+{% endif %}
+
+{% if openssh_server.allow_users %}
+# Only allow login for whitelisted users
+AllowUsers {{ ' '.join(openssh_server.allow_users) }}
+{% endif %}
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Log IPs, not DNS names
+UseDNS no
+
+# Authentication:
+LoginGraceTime 60
+PermitRootLogin no
+StrictModes yes
+
+PubkeyAuthentication yes
+#AuthorizedKeysFile     %h/.ssh/authorized_keys
+
+# Don't read the user's ~/.rhosts and ~/.shosts files
+IgnoreRhosts yes
+
+HostbasedAuthentication no
+
+# Connection timeout values
+ClientAliveInterval 100
+ClientAliveCountMax 3
+
+# To enable empty passwords, change to yes (NOT RECOMMENDED)
+PermitEmptyPasswords no
+
+# Change to yes to enable challenge-response passwords (beware issues with
+# some PAM modules and threads)
+ChallengeResponseAuthentication no
+
+# Change to no to disable tunnelled clear text passwords
+PasswordAuthentication no
+
+X11Forwarding no
+X11DisplayOffset 10
+PrintMotd no
+PrintLastLog yes
+TCPKeepAlive no
+UseLogin no
+
+#MaxStartups 10:30:60
+#Banner /etc/issue.net
+
+# Allow client to pass locale environment variables
+AcceptEnv LANG LC_*
+
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+# Set this to 'yes' to enable PAM authentication, account processing,
+# and session processing. If this is enabled, PAM authentication will
+# be allowed through the ChallengeResponseAuthentication and
+# PasswordAuthentication.  Depending on your PAM configuration,
+# PAM authentication via ChallengeResponseAuthentication may bypass
+# the setting of "PermitRootLogin without-password".
+# If you just want the PAM account and session checks to run without
+# PAM authentication, then enable this but set PasswordAuthentication
+# and ChallengeResponseAuthentication to 'no'.
+UsePAM no
+
+MaxAuthTries 5
