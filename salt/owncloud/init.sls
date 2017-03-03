@@ -221,9 +221,9 @@ owncloud-nginx-site:
             - service: nginx
         - context:
             server_name: {{ hostname }}
-            php_version: php_version
-            ssl_cert: ssl_cert
-            ssl_key: ssl_key
+            php_version: {{ php_version }}
+            ssl_cert: {{ ssl_cert }}
+            ssl_key: {{ ssl_key }}
 
 
 {% if not acme %}
