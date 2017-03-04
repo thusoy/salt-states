@@ -22,11 +22,7 @@ powerdns:
     file.managed:
         - name: /etc/powerdns/pdns.conf
         - source: salt://powerdns/pdns.conf
-        - user: root
-        - group: pdns
-        - mode: 640
         - template: jinja
-        - show_changes: False
         - require:
             - pkg: powerdns
 
@@ -52,6 +48,9 @@ powerdns-local-pgsql-conf:
         - name: /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
         - source: salt://powerdns/pdns.local.gpgsql.conf
         - template: jinja
+        - user: root
+        - group: pdns
+        - mode: 640
         - show_changes: False
         - require:
             - pkg: powerdns
