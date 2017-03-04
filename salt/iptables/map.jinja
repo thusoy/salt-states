@@ -3,5 +3,6 @@
 {% set iptables = salt['grains.filter_by']({
     'default': {
         'output_policy': 'ACCEPT',
+        'blocklist': [],
     },
 }, merge=pillar_get('iptables')) %}
