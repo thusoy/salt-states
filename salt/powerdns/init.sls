@@ -70,6 +70,22 @@ powerdns-firewall-{{ proto }}-{{ family }}:
         - comment: "powerdns: Allow incoming DNS requests"
         - dport: 53
         - jump: ACCEPT
+
+
+# powerdns regularly polls for security updates to itself, allow those queries
+# https://doc.powerdns.com/md/common/security/#security-polling
+powerdns-firewall-allow-secpolls-{{ family }}-{{ proto }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: {{ proto }}
+        - dport: 53
+        - match:
+            - comment
+            - owner
+        - comment: 'powerdns: Allow polling for security status'
+        - uid-owner: pdns
+        - jump: ACCEPT
 {% endfor %}
 
 
