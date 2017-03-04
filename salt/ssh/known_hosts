@@ -1,6 +1,0 @@
-{% set ssh = pillar.get('ssh', {}) -%}
-{% for host, keys in ssh.get('host_keys', {}).items() -%}
-{% for key in keys -%}
-{{ host }} {{ key }}
-{% endfor -%}
-{% endfor -%}
