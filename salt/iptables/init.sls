@@ -88,6 +88,7 @@ iptables-allow-outgoing-dns-for-root-{{ family }}-{{ protocol }}:
         - family: {{ family }}
         - proto: {{ protocol }}
         - dport: 53
+        - destination: system_dns
         - match:
             - comment
             - owner

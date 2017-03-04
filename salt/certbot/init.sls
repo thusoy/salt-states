@@ -76,6 +76,7 @@ certbot-firewall-outgoing-dns-{{ protocol }}-{{ family }}:
         - chain: OUTPUT
         - protocol: {{ protocol }}
         - dport: 53
+        - destination: system_dns
         - match:
             - comment
             - owner
