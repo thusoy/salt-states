@@ -72,4 +72,18 @@ powerdns-firewall-{{ proto }}-{{ family }}:
         - dport: 53
         - jump: ACCEPT
 {% endfor %}
+
+
+powerdns-firewall-allow-database-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: tcp
+        - dport: 5432
+        - match:
+            - comment
+            - owner
+        - comment: 'powerdns: Allow connecting to database'
+        - uid-owner: pdns
+        - jump: ACCEPT
 {% endfor %}
