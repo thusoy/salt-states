@@ -68,9 +68,6 @@ nginx:
         - name: /etc/nginx/nginx.conf
         - source: salt://nginx/nginx.conf
         - template: jinja
-        - mode: 640
-        - user: root
-        - group: nginx
         - context:
             keepalive_timeout: {{ nginx.keepalive_timeout }}
             log_formats:
