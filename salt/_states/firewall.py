@@ -78,6 +78,18 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
     assert family in ('ipv4', 'ipv6')
     assert table in ('filter', 'nat')
 
+    destination = kwargs.get('destination')
+    # Some convenience utilities for destinations here, first we allow specifying that the
+    # intended destination is the system dns servers, which will figure out which those are
+    # and add the correct IPs, but allow all traffic if we can't determine their IPs
+    if destination == 'system_dns':
+        grain_lookup = 'dns:%s_nameservers' % family.replace('v', '')
+        dns_servers = __salt__['grains.get'](grain_lookup)
+        if dns_servers:
+            kwargs['destination'] = ','.join(dns_servers)
+        else:
+            del kwargs['destination']
+
     partial_rule = __salt__['iptables.build_rule'](**kwargs)
     full_rule = '-A %s %s' % (chain, partial_rule)
 
