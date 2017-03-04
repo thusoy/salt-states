@@ -1,0 +1,6 @@
+{% from 'openssh-client/map.jinja' import openssh_client with context -%}
+{% for host, keys in openssh_client.known_hosts.items() -%}
+{% for key in keys -%}
+{{ host }} {{ key }}
+{% endfor -%}
+{% endfor -%}
