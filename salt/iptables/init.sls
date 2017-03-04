@@ -1,6 +1,6 @@
 # Never run this state without also configuring ssh rules to prevent being locked out
 include:
-    - ssh
+    - openssh-server
     - .blocklist
     - .icmp
     - .logndrop

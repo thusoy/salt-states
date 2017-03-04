@@ -212,6 +212,11 @@ nginx-firewall-{{ family }}:
     firewall.append:
         - table: filter
         - chain: INPUT
+        {% if family == 'ipv4' and 'allow_sources_v4' in nginx %}
+        - source: {{ ','.join(nginx.allow_sources_v4) }}
+        {% elif family == 'ipv6' and 'allow_sources_v6' in nginx %}
+        - source: {{ ','.join(nginx.allow_sources_v6) }}
+        {% endif %}
         - family: {{ family }}
         - proto: tcp
         - dports: {{ '80,' if nginx['allow_plaintext'] else '' }}443
