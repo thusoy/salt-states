@@ -90,16 +90,20 @@ powerdns-firewall-allow-secpolls-{{ family }}-{{ proto }}:
 {% endfor %}
 
 
+{% set db_host = pillar.get('postgres.host') %}
+{% if db_host %}
 powerdns-firewall-allow-database-{{ family }}:
     firewall.append:
         - family: {{ family }}
         - chain: OUTPUT
         - protocol: tcp
         - dport: 5432
+        - destination: {{ db_host }}
         - match:
             - comment
             - owner
         - comment: 'powerdns: Allow connecting to database'
         - uid-owner: pdns
         - jump: ACCEPT
+{% endif %}
 {% endfor %}
