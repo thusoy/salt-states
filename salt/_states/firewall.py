@@ -28,7 +28,7 @@ COMMIT
 *filter
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
-:OUTPUT ACCEPT [0:0]
+:OUTPUT {{ output_policy }} [0:0]
 {% for chain in filter_chains|default([]) -%}
 :{{ chain }} - [0:0]
 {% endfor %}
@@ -128,15 +128,20 @@ def _get_rules(path):
         return all_rules
 
 
-def apply(name):
+def apply(name, output_policy='ACCEPT'):
     comment = []
     changes = {}
     success = True
     for family in ('v4', 'v6'):
         file_target = get_cached_rule_file_for_family(family)
 
+        context = {
+            'output_policy': output_policy,
+        }
+        context.update(_get_rules(file_target))
+
         result, stderr, rule_changes = _apply_rule_for_family('rules.%s' % family,
-            _get_rules(file_target), 'ip%stables-restore' % ('' if family == 'v4' else '6'))
+            context, 'ip%stables-restore' % ('' if family == 'v4' else '6'))
 
         if stderr:
             comment.append(stderr)
