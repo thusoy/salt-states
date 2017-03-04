@@ -80,6 +80,7 @@ powerdns-firewall-allow-secpolls-{{ family }}-{{ proto }}:
         - chain: OUTPUT
         - protocol: {{ proto }}
         - dport: 53
+        - destination: system_dns
         - match:
             - comment
             - owner
