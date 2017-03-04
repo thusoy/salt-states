@@ -1,5 +1,4 @@
-{% set iptables = pillar.get('iptables', {}) %}
-{% set blocklist = iptables.get('blocklist', []) %}
+{% from 'iptables/map.jinja' import iptables with context %}
 
 iptables-blocklist:
     firewall.chain_present:
@@ -31,7 +30,7 @@ iptables-blocklist-return:
         - jump: RETURN
 
 
-{% for blocked_ip in blocklist %}
+{% for blocked_ip in iptables.blocklist %}
 iptables-blocklist-{{ blocked_ip }}:
     firewall.append:
         - chain: blocklist
