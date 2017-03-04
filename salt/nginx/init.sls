@@ -125,6 +125,13 @@ nginx-dh-param-{{ size }}:
 {% endfor %}
 
 
+nginx-sites-enabled-dir:
+    file.directory:
+        - name: /etc/nginx/sites-enabled
+        - require:
+            - pkg: nginx
+
+
 nginx-certificates-dir:
     file.directory:
         - name: /etc/nginx/ssl
