@@ -1,0 +1,7 @@
+{% set pillar_get = salt['pillar.get'] %}
+
+{% set iptables = salt['grains.filter_by']({
+    'default': {
+        'output_policy': 'ACCEPT',
+    },
+}, merge=pillar_get('iptables')) %}
