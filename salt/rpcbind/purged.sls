@@ -1,0 +1,2 @@
+rpcbind:
+    pkg.purged
