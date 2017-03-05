@@ -1,6 +1,9 @@
 # Based on https://github.com/saltstack-formulas/sun-java-formula
 {% from 'java/settings.sls' import java with context -%}
 
+include:
+    - curl
+
 {{ java.prefix }}:
   file.directory:
     - user: root
@@ -15,6 +18,7 @@ unpack-jdk-tarball:
     - unless: test -d {{ java.java_real_home }}
     - require:
       - file: {{ java.prefix }}
+      - pkg: curl
 
   alternatives.install:
     - name: java-home-link
