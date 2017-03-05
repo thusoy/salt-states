@@ -1,0 +1,4 @@
+curl
+====
+
+Installs curl.
