@@ -1,0 +1,4 @@
+wget
+====
+
+Installs wget.
