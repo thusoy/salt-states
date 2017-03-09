@@ -72,6 +72,7 @@ nginx:
         - user: root
         - group: nginx
         - context:
+            add_default_https: {{ nginx.add_default_https }}
             keepalive_timeout: {{ nginx.keepalive_timeout }}
             log_formats:
                 {% for log_format, format in nginx.log_formats.items() %}
