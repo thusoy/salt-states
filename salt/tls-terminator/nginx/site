@@ -14,7 +14,7 @@ server {
 }
 
 server {
-  listen [::]:443 ssl;
+  listen [::]:443 ssl{{ ' ' + listen_parameters if listen_parameters else '' }};
   server_name {{ server_name }};
   charset utf-8;
 
