@@ -179,6 +179,7 @@ def run():
                 {'watch_in': [{'service': 'nginx'}]},
                 {'context': {
                     'server_name': site,
+                    'listen_parameters': values.get('listen_parameters', ''),
                     'backends': parsed_backends,
                     'cert': cert,
                     'key': key,
