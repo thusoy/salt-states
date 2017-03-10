@@ -15,5 +15,6 @@
         'dh_keysize': 4096,
         'allow_plaintext': True,
         'add_default_https': True,
+        'add_default_http': True,
     },
 }, merge=salt['pillar.get']('nginx')) %}
