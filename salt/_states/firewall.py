@@ -4,6 +4,7 @@ import difflib
 import jinja2
 import json
 import os
+import socket
 import subprocess
 
 RULES_TEMPLATE = jinja2.Template('''
@@ -28,7 +29,7 @@ COMMIT
 *filter
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
-:OUTPUT ACCEPT [0:0]
+:OUTPUT {{ output_policy }} [0:0]
 {% for chain in filter_chains|default([]) -%}
 :{{ chain }} - [0:0]
 {% endfor %}
@@ -78,11 +79,32 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
     assert family in ('ipv4', 'ipv6')
     assert table in ('filter', 'nat')
 
+    destination = kwargs.get('destination')
+    # Some convenience utilities for destinations here, first we allow specifying that the
+    # intended destination is the system dns servers, which will figure out which those are
+    # and add the correct IPs, but allow all traffic if we can't determine their IPs
+    if destination == 'system_dns':
+        grain_lookup = 'dns:%s_nameservers' % family.replace('v', '')
+        dns_servers = __salt__['grains.get'](grain_lookup)
+        if dns_servers:
+            kwargs['destination'] = ','.join(dns_servers)
+        else:
+            del kwargs['destination']
+    elif _is_ipv4(destination) and family == 'ipv6' or _is_ipv6(destination) and family == 'ipv4':
+        return {
+            'name': name,
+            'comment': 'Ignored due to wrong family for destination %s' % destination,
+            'result': True,
+            'changes': '',
+        }
+    elif destination and not _is_ipv6(destination) and not _is_ipv4(destination):
+        # not a valid address, assume hostname and allow all destinations
+        del kwargs['destination']
+
     partial_rule = __salt__['iptables.build_rule'](**kwargs)
     full_rule = '-A %s %s' % (chain, partial_rule)
 
-    cachedir = __opts__['cachedir']
-    file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family[-2:])
+    file_target = get_cached_rule_file_for_family(family[-2:])
     _add_rule(file_target, '%s_rules' % table, full_rule)
 
     return {
@@ -97,8 +119,7 @@ def chain_present(name, table='filter', family='ipv4', **kwargs):
     assert table in ('filter', 'nat')
     assert family in ('ipv4', 'ipv6')
 
-    cachedir = __opts__['cachedir']
-    file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family[-2:])
+    file_target = get_cached_rule_file_for_family(family[-2:])
     _add_rule(file_target, '%s_chains' % table, name)
 
     return {
@@ -107,6 +128,13 @@ def chain_present(name, table='filter', family='ipv4', **kwargs):
         'changes': '',
         'comment': '',
     }
+
+
+def get_cached_rule_file_for_family(family):
+    assert family in ('v4', 'v6')
+    cachedir = __opts__['cachedir']
+    file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family)
+    return file_target
 
 
 def _get_rules(path):
@@ -123,36 +151,37 @@ def _get_rules(path):
         return all_rules
 
 
-def apply(name):
-    cachedir = __opts__['cachedir']
-    v4_file_target = os.path.join(cachedir, 'firewall-rules-v4.json')
-    v6_file_target = os.path.join(cachedir, 'firewall-rules-v6.json')
-
-    v4_result, v4_stderr, v4_changes = _apply_rule_for_family('rules.v4',
-        _get_rules(v4_file_target), 'iptables-restore')
-    v6_result, v6_stderr, v6_changes = _apply_rule_for_family('rules.v6',
-        _get_rules(v6_file_target), 'ip6tables-restore')
-
+def apply(name, output_policy='ACCEPT'):
     comment = []
-    if v4_stderr:
-        comment.append(v4_stderr)
-    if v6_stderr:
-        comment.append(v6_stderr)
-
     changes = {}
-    if v4_changes:
-        changes['ipv4'] = v4_changes
-    if v6_changes:
-        changes['ipv6'] = v6_changes
+    success = True
+    for family in ('v4', 'v6'):
+        file_target = get_cached_rule_file_for_family(family)
 
-    # Clear out the rules on disk (will also be done on exit if run stops before applying the rules)
-    os.remove(v4_file_target)
-    os.remove(v6_file_target)
+        context = {
+            'output_policy': output_policy,
+        }
+        context.update(_get_rules(file_target))
+
+        result, stderr, rule_changes = _apply_rule_for_family('rules.%s' % family,
+            context, 'ip%stables-restore' % ('' if family == 'v4' else '6'))
+
+        if stderr:
+            comment.append(stderr)
+
+        if rule_changes:
+            changes['ip%s' % family] = rule_changes
+
+        if result != 0:
+            success = False
+
+        # Clear out the rules on disk (will also be done on exit if run stops before applying the rules)
+        os.remove(file_target)
 
     return {
         'name': name,
         'comment': '\n'.join(comment),
-        'result': True if v4_result is 0 and v6_result is 0 else False,
+        'result': success,
         'changes': changes,
     }
 
@@ -186,3 +215,23 @@ def _apply_rule_for_family(filename, context, restore_command):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     _, stderr = restore_process.communicate(rendered_rules)
     return (restore_process.wait(), stderr, changes)
+
+
+def _is_ipv4(address):
+    return _is_ip_family(socket.AF_INET, address)
+
+
+def _is_ipv6(address):
+    return _is_ip_family(socket.AF_INET6, address)
+
+
+def _is_ip_family(family, address):
+    # Asssumes that inet_pton exists, which is fair since this state only works
+    # on systems with iptables anyway
+    if not address:
+        return False
+    try:
+        socket.inet_pton(family, address)
+    except socket.error:  # not a valid address
+        return False
+    return True

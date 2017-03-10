@@ -1,4 +1,4 @@
-# salt-states
+# salt-states [![Build Status](https://travis-ci.org/megacool/salt-states.svg?branch=master)](https://travis-ci.org/megacool/salt-states)
 
 Because sharing is caring.
 

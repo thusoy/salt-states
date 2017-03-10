@@ -1,3 +1,5 @@
+{% from 'iptables/map.jinja' import iptables with context %}
+
 # Never run this state without also configuring ssh rules to prevent being locked out
 include:
     - openssh-server
@@ -15,6 +17,7 @@ iptables-deps:
 
 iptables-rules:
     firewall.apply:
+        - output_policy: {{ iptables.output_policy }}
         - order: last
 
 
@@ -85,6 +88,7 @@ iptables-allow-outgoing-dns-for-root-{{ family }}-{{ protocol }}:
         - family: {{ family }}
         - proto: {{ protocol }}
         - dport: 53
+        - destination: system_dns
         - match:
             - comment
             - owner

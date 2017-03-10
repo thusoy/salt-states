@@ -58,7 +58,7 @@ samba-{{ username }}-{{ directory }}:
         - output_loglevel: quiet
 
     file.directory:
-        - name: /home/{{ username }}/{{ directory }}
+        - name: ~{{ username }}/{{ directory }}
         - mode: 771
         - user: root
         - group: {{ username }}

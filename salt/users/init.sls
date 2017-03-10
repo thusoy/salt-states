@@ -23,6 +23,10 @@
         {% if 'fullname' in user %}
         - fullname: {{ user['fullname'] }}
         {% endif -%}
+        - optional_groups:
+            {% for group in user.get('optional_groups', []) %}
+            - {{ group }}
+            {% endfor %}
         - groups:
             {% for group in user.get('groups', []) -%}
             - {{ group }}

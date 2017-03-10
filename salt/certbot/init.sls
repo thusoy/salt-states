@@ -1,7 +1,9 @@
-{% set certbot = pillar.get('certbot', {}) %}
+{% from 'certbot/map.jinja' import certbot with context %}
+
 
 include:
     - .pillar_check
+
 
 {% set needs_backport = grains.get('oscodename') == 'jessie' %}
 certbot:
@@ -11,6 +13,7 @@ certbot:
     {% endif %}
 
     pkg.installed:
+        - name: {{ certbot.package }}
         {% if needs_backport %}
         - fromrepo: jessie-backports
         - require:
@@ -21,7 +24,7 @@ certbot:
 {% for site in certbot.get('sites', []) %}
 certbot-update-{{ site }}:
     cron.present:
-        - name: certbot certonly
+        - name: {{ certbot.binary }} certonly
                 --standalone
                 {% if 'pre_hook' in certbot -%}
                 --pre-hook '{{ certbot.pre_hook }}'
@@ -73,6 +76,7 @@ certbot-firewall-outgoing-dns-{{ protocol }}-{{ family }}:
         - chain: OUTPUT
         - protocol: {{ protocol }}
         - dport: 53
+        - destination: system_dns
         - match:
             - comment
             - owner
