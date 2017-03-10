@@ -72,6 +72,8 @@ nginx:
         - user: root
         - group: nginx
         - context:
+            add_default_http: {{ nginx.add_default_http }}
+            add_default_https: {{ nginx.add_default_https }}
             keepalive_timeout: {{ nginx.keepalive_timeout }}
             log_formats:
                 {% for log_format, format in nginx.log_formats.items() %}
@@ -123,6 +125,13 @@ nginx-dh-param-{{ size }}:
         - watch_in:
             - service: nginx
 {% endfor %}
+
+
+nginx-sites-enabled-dir:
+    file.directory:
+        - name: /etc/nginx/sites-enabled
+        - require:
+            - pkg: nginx
 
 
 nginx-certificates-dir:

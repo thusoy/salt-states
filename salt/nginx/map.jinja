@@ -14,5 +14,7 @@
         'repo_key_url': 'https://nginx.org/keys/nginx_signing.key',
         'dh_keysize': 4096,
         'allow_plaintext': True,
+        'add_default_https': True,
+        'add_default_http': True,
     },
 }, merge=salt['pillar.get']('nginx')) %}
