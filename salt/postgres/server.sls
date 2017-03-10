@@ -88,6 +88,7 @@ postgres-server-key:
         - user: root
         - group: postgres
         - mode: 640
+        - show_changes: False
         - watch_in:
             - service: postgres-server
 
