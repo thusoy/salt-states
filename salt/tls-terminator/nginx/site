@@ -7,7 +7,7 @@ upstream {{ backend.upstream_identifier }} {
 {% endfor -%}
 
 server {
-  listen [::]:80;
+  listen [::]:80{{ ' ' + listen_parameters if listen_parameters else '' }};
   server_name {{ server_name }};
   charset utf-8;
   return 301 https://{{ https_redirect }}$request_uri;
