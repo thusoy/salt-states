@@ -10,6 +10,7 @@ pyenv-{{ username }}:
     git.latest:
         - name: https://github.com/pyenv/pyenv
         - target: {{ home }}/.pyenv
+        - user: {{ username }}
 
     file.managed:
         - name: {{ home }}/.bash_source/99_pyenv
