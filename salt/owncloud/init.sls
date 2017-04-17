@@ -160,7 +160,7 @@ owncloud:
         - cwd: /usr/local/src
         - unless: sha1sum -c owncloud-{{ version }}.tar.bz2.sha1
         - require:
-            pkg: curl
+            - pkg: curl
 
     file.managed:
         - name: /srv/owncloud/config/autoconfig.php
