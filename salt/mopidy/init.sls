@@ -25,6 +25,11 @@ mopidy:
         - require:
             - pkg: mopidy
 
+    service.running:
+        - enable: True
+        - watch:
+            - file: mopidy
+
     firewall.append:
         - chain: INPUT
         - proto: tcp
