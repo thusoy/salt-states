@@ -19,6 +19,8 @@ def validate_spotify(mopidy):
     if 'spotify' in mopidy:
         assert 'username' in mopidy['spotify']
         assert 'password' in mopidy['spotify']
+        assert 'client_id' in mopidy['spotify']
+        assert 'client_secret' in mopidy['spotify']
 
 
 def validate_local(mopidy):
