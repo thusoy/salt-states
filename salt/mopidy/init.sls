@@ -44,4 +44,6 @@ mopidy:
 mopidy-local-media-dir:
     file.directory:
         - name: {{ mopidy.local.media_dir }}
+        - user: mopidy
+        - group: mopidy
 {% endif %}
