@@ -28,7 +28,7 @@ mopidy:
     firewall.append:
         - chain: INPUT
         - proto: tcp
-        - port: 6600
+        - dport: 6600
         - match:
             - comment
         - comment: "mopidy: Allow MPD"
