@@ -53,6 +53,10 @@ server {
     {% endfor -%}
     {% endfor %}
 
+    # Needs to be specified here too since cache_params also include a add_header directive. The
+    # parent directive ensures it's added to the other location blocks.
+    add_header Strict-Transport-Security max-age=31536000 always;
+
     include proxy_params;
     include cache_params;
 
