@@ -16,7 +16,7 @@ state_dir=$(dirname $0)
 key="$state_dir/release-key.asc"
 
 
-function cleanup {
+cleanup () {
     rm -rf "$temp_dir"
 }
 trap cleanup EXIT
