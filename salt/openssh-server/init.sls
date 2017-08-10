@@ -12,6 +12,7 @@ openssh-server:
 
     service.running:
         - name: ssh
+        - enable: True
         - watch:
             - file: openssh-server
 
