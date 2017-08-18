@@ -45,6 +45,8 @@
             {% for auth in user['ssh_auth'] %}
                 - {{ auth }}
             {% endfor %}
+        # Specify fingerprint hash type to avoid logspam on 2016.11, even though it's unused
+        - fingerprint_hash_type: sha256
         - require:
             - user: {{ name }}_user
     {% endif %}
