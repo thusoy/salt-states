@@ -57,6 +57,8 @@ ssh_auth_delete_{{ name }}_{{ loop.index0 }}:
     ssh_auth.absent:
         - user: {{ name }}
         - name: {{ auth }}
+        # Specify fingerprint hash type to avoid logspam on 2016.11, even though it's unused
+        - fingerprint_hash_type: sha256
         - require:
             - user: {{ name }}_user
 {% endfor %}
