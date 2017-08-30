@@ -35,6 +35,16 @@ nginx:
         client_error.log: main if=$client_error;
 ```
 
+To write logs to syslog:
+
+```yaml
+nginx:
+    log_outputs:
+        - logger: access_log
+          spec: syslog:server=unix:/dev/log
+          format: main
+```
+
 To enable only whitelisted IPs access to the instance:
 
 ```yaml

@@ -80,6 +80,7 @@ nginx:
                 {% for log_file, format in nginx.log_files.items() %}
                 {{ log_file }}: '{{ format }}'
                 {% endfor %}
+            log_outputs: {{ nginx.get('log_outputs', {}) | json }}
             extra_http:
                 {% for extra_http_dict in nginx.extra_http %}
                 {% for key, value in extra_http_dict.items() %}
