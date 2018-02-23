@@ -51,7 +51,7 @@ By default the instance will be publicly accessible.
 
 ## Regular reloads
 
-Since nginx doesn't reload DNS records after boot, you might want to reload reguarly to ensure the
+Since nginx doesn't reload DNS records after boot, you might want to reload regularly to ensure the
 records stay fresh. If you include the state `nginx.regular_reload` a cronjob will be added that
 reloads the nginx instance hourly.
 
