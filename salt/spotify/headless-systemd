@@ -3,6 +3,7 @@ Description=Headless Spotify
 After=syslog.target network.target nss-lookup.target
 
 [Service]
+ExecStartPre=/bin/sh -c '/usr/bin/test -f ~/.config/spotify/prefs # Must run once non-headless to login first'
 ExecStart=/usr/bin/xvfb-run -a /usr/bin/spotify
 Restart=always
 SyslogIdentifier=spotify
