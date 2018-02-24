@@ -21,5 +21,6 @@ spotify-headless:
         - name: spotify
         - enable: True
         - require:
-            - init_script: spotify-headless
             - pkg: spotify-headless
+        - watch:
+            - init_script: spotify-headless
