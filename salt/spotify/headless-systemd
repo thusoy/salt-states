@@ -1,0 +1,13 @@
+[Unit]
+Description=Headless Spotify
+After=syslog.target network.target nss-lookup.target
+
+[Service]
+ExecStart=/usr/bin/xvfb-run -a /usr/bin/spotify
+Restart=always
+SyslogIdentifier=spotify
+User={{ user }}
+Group={{ user }}
+
+[Install]
+WantedBy=multi-user.target sockets.target
