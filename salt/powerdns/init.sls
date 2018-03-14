@@ -5,11 +5,20 @@ include:
     - postgres.client
 
 
+{% if powerdns.get('repo') %}
+powerdns-deps:
+    pkg.installed:
+        - name: apt-transport-https
+{% endif %}
+
+
 powerdns:
     {% if powerdns.get('repo') %}
     pkgrepo.managed:
-        - name: deb http://repo.powerdns.com/{{ grains.osfullname.lower() }} {{ grains.oscodename }}-{{ powerdns.repo }} main
+        - name: deb https://repo.powerdns.com/{{ grains.osfullname.lower() }} {{ grains.oscodename }}-{{ powerdns.repo }} main
         - key_url: salt://powerdns/release-key.asc
+        - require:
+            - pkg: powerdns-deps
         - require_in:
             - pkg: powerdns
     {% endif %}
