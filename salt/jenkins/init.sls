@@ -16,6 +16,13 @@ jenkins:
         - require:
             - pkgrepo: jenkins
 
+    file.managed:
+        - name: /etc/default/jenkins
+        - source: salt://jenkins/jenkins-config
+        - template: jinja
+
     service.running:
         - require:
             - pkg: jenkins
+        - watch:
+            - file: jenkins
