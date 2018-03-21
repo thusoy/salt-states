@@ -12,6 +12,8 @@
         - shell: {{ user.get('shell', '/bin/bash') }}
         {% if 'password' in user -%}
         - password: {{ user['password'] }}
+        {% else %}
+        - empty_password: True
         {% endif -%}
         {% if 'uid' in user -%}
         - uid: {{ user['uid'] }}
