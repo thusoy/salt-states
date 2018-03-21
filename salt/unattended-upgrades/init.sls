@@ -24,7 +24,28 @@ unattended-upgrades-apt-listchanges:
         - template: jinja
 
 
+# In Stretch apt runs network requests as it's own user _apt
+{% set user = '_apt' if grains['os_family'] == 'Debian' and grains['oscodename'] == 'stretch' else 'root' %}
+
 {% for family in ('ipv4', 'ipv6') %}
+
+{% for protocol in ('udp', 'tcp') %}
+unattended-upgrades-outbound-firewall-dns-{{ family }}-{{ protocol }}:
+    firewall.append:
+        - chain: OUTPUT
+        - family: {{ family }}
+        - proto: {{ protocol }}
+        - dport: 53
+        - destination: system_dns
+        - match:
+            - comment
+            - owner
+        - comment: 'iptables: Allow outgoing DNS for apt'
+        - uid-owner: {{ user }}
+        - jump: ACCEPT
+{% endfor %}
+
+
 unattended-upgrades-outbound-firewall-{{ family }}:
     firewall.append:
         - family: {{ family }}
@@ -34,7 +55,7 @@ unattended-upgrades-outbound-firewall-{{ family }}:
         - match:
             - comment
             - owner
-        - comment: 'unattended-upgrades: Allow root access to apt mirrors/HTTP(S)'
-        - uid-owner: root
+        - comment: 'unattended-upgrades: Allow apt access to repos'
+        - uid-owner: {{ user }}
         - jump: ACCEPT
 {% endfor %}
