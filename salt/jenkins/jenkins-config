@@ -12,7 +12,7 @@ NAME=jenkins
 # arguments to pass to java
 
 # Allow graphs etc. to work even when an X server is present
-JAVA_ARGS="-Djava.awt.headless=true {% for java_arg in jenkins.get('java_args', []) %}{{ java_arg }}{% endfor %}"
+JAVA_ARGS="-Djava.awt.headless=true -Dhudson.DNSMultiCast.disabled=true -Dhudson.udp=53 {% for java_arg in jenkins.get('java_args', []) %}{{ java_arg }}{% endfor %}"
 
 #JAVA_ARGS="-Xmx256m"
 
