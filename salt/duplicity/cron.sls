@@ -46,7 +46,7 @@ duplicity-backup-{{ backupname }}:
     cron.present:
         - name: cronic /etc/duplicity/{{ backupname }}.sh
         - identifier: duplicity-backup-{{ backupname }}
-        - minute: 37
+        - minute: random
         - hour: 3
 
 {% endfor %}
