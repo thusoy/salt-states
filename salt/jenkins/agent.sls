@@ -25,7 +25,7 @@ jenkins-agent-user:
         - groups:
             - ssh
         - require:
-            - group: jenkins-ssh-group
+            - group: jenkins-agent-ssh-group
 
     ssh_auth.present:
         - user: jenkins
