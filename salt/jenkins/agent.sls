@@ -3,7 +3,15 @@
 include:
     - .agent_pillar_check
 
-jenkins-ssh-group:
+
+jenkins-agent-deps:
+    pkg.installed:
+        - pkgs:
+            - openjdk-8-jre
+            - openjdk-8-jdk
+
+
+jenkins-agent-ssh-group:
     group.present:
         - name: ssh
 
