@@ -33,3 +33,8 @@ jenkins-agent-user:
             - {{ jenkins.get('master_ssh_pubkey') }}
         - require:
             - user: jenkins-agent-user
+
+    file.directory:
+        # Add a private temp directory to avoid polluting the global tmp which might be
+        # memory-backed and noexec
+        - name: ~jenkins/tmp
