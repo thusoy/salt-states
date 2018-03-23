@@ -64,6 +64,9 @@ openssh-server-firewall-{{ family }}:
         - family: {{ family }}
         - chain: INPUT
         - dport: {{ openssh_server.port }}
+        {% if 'allow_from' in openssh_server %}
+        - source: {{ openssh_server.allow_from }}
+        {% endif %}
         - jump: ACCEPT
         - proto: tcp
         - match:
