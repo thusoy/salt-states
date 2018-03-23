@@ -38,3 +38,5 @@ jenkins-agent-user:
         # Add a private temp directory to avoid polluting the global tmp which might be
         # memory-backed and noexec
         - name: ~jenkins/tmp
+        - user: jenkins
+        - group: jenkins
