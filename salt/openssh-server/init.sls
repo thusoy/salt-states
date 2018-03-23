@@ -56,6 +56,7 @@ openssh-server-host-key-{{ key }}:
 {% endfor %}
 
 
+{% set allow_from = openssh_server.get('allow_from', {}) %}
 {% for family in ('ipv4', 'ipv6') %}
 openssh-server-firewall-{{ family }}:
     firewall.append:
@@ -63,8 +64,8 @@ openssh-server-firewall-{{ family }}:
         - family: {{ family }}
         - chain: INPUT
         - dport: {{ openssh_server.port }}
-        {% if 'allow_from' in openssh_server %}
-        - source: {{ openssh_server.allow_from }}
+        {% if family in allow_from %}
+        - source: {{ allow_from[family] }}
         {% endif %}
         - jump: ACCEPT
         - proto: tcp

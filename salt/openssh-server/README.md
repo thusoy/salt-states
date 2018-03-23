@@ -19,5 +19,7 @@ Available configuration through the pillar `openssh_server`:
 - `allow_users`: Users allowed to log in
 - `minimum_modulus_size`: The smallest allowed modulus used for the DH handshake
 - `listen_addresses`: Which addresses to bind to.
+- `allow_from:ipv4`: IPv4 addresses to allow access. Default is open to all.
+- `allow_from:ipv6`: IPv6 addresses to allow access. Default is open to all.
 
 See the `map.jinja` file for defaults.
