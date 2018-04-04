@@ -1,6 +1,5 @@
 {% set jenkins = pillar.get('jenkins', {}) %}
-{% set agent = pillar.get('jenkins.agent', {}) %}
-{% set extra_groups = agent.get('extra_groups', []) %}
+{% set extra_groups = jenkins.get('extra_groups', []) %}
 
 include:
     - .agent_pillar_check
