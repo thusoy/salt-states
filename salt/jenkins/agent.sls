@@ -17,6 +17,9 @@ jenkins-agent-ssh-group:
 
 
 jenkins-agent-user:
+    group.present:
+        - name: jenkins
+
     user.present:
         - name: jenkins
         - empty_password: True
@@ -26,6 +29,7 @@ jenkins-agent-user:
             - ssh
         - require:
             - group: jenkins-agent-ssh-group
+            - group: jenkins-agent-user
 
     ssh_auth.present:
         - user: jenkins
