@@ -1,4 +1,5 @@
 {% set jenkins = pillar.get('jenkins', {}) %}
+{% set extra_groups = jenkins.get('extra_groups', []) %}
 
 include:
     - .agent_pillar_check
@@ -27,6 +28,9 @@ jenkins-agent-user:
         - fullname: Jenkins Agent
         - groups:
             - ssh
+            {% for group in extra_groups %}
+            - {{ group  }}
+            {% endfor %}
         - require:
             - group: jenkins-agent-ssh-group
             - group: jenkins-agent-user
