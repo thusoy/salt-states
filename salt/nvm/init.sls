@@ -1,6 +1,7 @@
 {% set nvm = pillar.get('nvm', {}) %}
 {% set version = nvm.get('version', 'v0.33.8') %}
 {% set target_directory = nvm.get('target_directory') %}
+{% set user = nvm.get('user') %}
 
 include:
     - .pillar_check
@@ -11,3 +12,4 @@ nvm:
         - name: https://git@github.com/creationix/nvm
         - rev: {{ version }}
         - target: {{ target_directory }}
+        - user: {{ user }}
