@@ -45,7 +45,6 @@ hardening-/tmp:
     # Remove any previous tmpfs config that might have been added
     mount.unmounted:
         - name: /tmp
-        - device: tmpfs
         - persist: True
 {% endif %}
 
