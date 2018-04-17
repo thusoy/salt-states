@@ -7,6 +7,9 @@
 {% endfor %}
 
 {{ name }}_user:
+    group.present:
+        - name: {{ name }}
+
     user.present:
         - name: {{ name }}
         - shell: {{ user.get('shell', '/bin/bash') }}
@@ -35,6 +38,7 @@
             {% endfor %}
         {% if user.get('groups') %}
         - require:
+            - group: {{ name }}
             {% for group in user.get('groups', []) -%}
             - group: {{ group }}
             {% endfor %}
