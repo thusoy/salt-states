@@ -1,0 +1,6 @@
+# macOS doesn't have UTC as a timezone, but GMT is identical in everything
+# but name (no, GMT doesn't follow BST, so it is identical all year).
+{% set timezone = salt['grains.filter_by']({
+    'default': 'UTC',
+    'MacOS': 'GMT',
+}, merge=salt['pillar.get']('timezone')) %}
