@@ -1,4 +1,4 @@
-{% set timezone = pillar.get('timezone', 'UTC') %}
+{% from 'timezone/map.jinja' import timezone with context %}
 
 timezone:
     timezone.system:
