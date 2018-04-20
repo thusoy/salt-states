@@ -18,6 +18,7 @@ android-sdk:
         - name: /usr/local/src/sdk-tools-{{ arch }}-{{ version }}.zip
         - source: https://dl.google.com/android/repository/sdk-tools-{{ arch }}-{{ version  }}.zip
         - source_hash: {{ source_hash }}
+        - makedirs: True
 
     cmd.watch:
         - name: unzip -d {{ install_location }}/android-sdk /usr/local/src/sdk-tools-{{ arch }}-{{ version }}.zip &&
