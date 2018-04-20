@@ -7,6 +7,7 @@
 android-sdk-deps:
     pkg.installed:
         - name: unzip
+        - unless: which unzip
 
 
 android-sdk:
