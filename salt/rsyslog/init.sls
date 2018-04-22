@@ -1,3 +1,5 @@
+{% set rsyslog = pillar.get('rsyslog', {}) %}
+
 rsyslog:
     pkg.installed: []
 
@@ -9,3 +11,15 @@ rsyslog:
     service.running:
         - watch:
             - file: rsyslog
+
+
+{% for name in rsyslog.get('configs', {}) %}
+rsyslog-config-{{ name }}:
+    file.managed:
+        - name: /etc/rsyslog.d/{{ name }}.conf
+        - contents_pillar: rsyslog:configs:{{ name }}
+        - require:
+            - pkg: rsyslog
+        - watch_in:
+            - service: rsyslog
+{% endfor %}
