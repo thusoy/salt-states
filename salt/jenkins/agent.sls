@@ -10,7 +10,7 @@ jenkins-agent-deps:
         - pkgs:
             - openjdk-8-jre
             - openjdk-8-jdk
-        - unless: java -version | head -1 | grep 1.8
+        - unless: java -version 2>&1 | head -1 | grep 1.8
 
 
 jenkins-agent-ssh-group:
