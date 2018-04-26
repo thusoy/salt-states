@@ -2,7 +2,14 @@
 #  File managed by salt state users #
 #####################################
 
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+if [ -x /usr/libexec/path_helper ]; then
+    # macOS
+    eval `/usr/libexec/path_helper -s`
+else
+    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+fi
+
+
 
 if [ "$PS1" ]; then
   if [ "$BASH" ] && [ "$BASH" != "/bin/sh" ]; then
@@ -11,6 +18,11 @@ if [ "$PS1" ]; then
     if [ -f /etc/bash.bashrc ]; then
       . /etc/bash.bashrc
     fi
+    if [ -r /etc/bashrc ]; then
+        # The standard location on macOS
+      . /etc/bashrc
+    fi
+
   else
     if [ "`id -u`" -eq 0 ]; then
       PS1='# '

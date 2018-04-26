@@ -85,7 +85,7 @@ absent-group-{{ group }}:
 {% endfor %}
 
 
-bash-profile:
+users-bash-profile:
     file.managed:
         - name: /etc/profile
         - source: salt://users/profile
