@@ -1,5 +1,5 @@
 {% set slack = pillar.get('slack', {}) %}
-{% set version = slack.get('version', '2.1.0') %}
+{% set version = slack.get('version', '3.1.1') %}
 
 slack:
     pkg.installed:
