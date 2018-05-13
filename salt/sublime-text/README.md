@@ -1,27 +1,14 @@
 Sublime Text
 ============
 
-Installs Sublime with Package Control and license.
+Installs Sublime Text 3. To install a dev version instead of stable, set the following in pillar:
 
-Put your license key in pillar in a dict at `sublime-text:license`, where it points from the username of the user that owns that license to the key.
-
-
-Sample pillar
--------------
-
-```
+```yaml
 sublime-text:
-    users:
-        tarjei:
-            package_control: True
-            license: |
-                ----- BEGIN LICENSE -----
-                Tarjei Husøy
-                Single User License
-                <..>
-                ------ END LICENSE ------
-
+    channel: dev
 ```
+
+Your license key should be installed outside of this state by putting the key in `~/.config/sublime-text-3/Local/License.sublime_license`.
 
 Your packages will be installed automatically if you put them in the file `~/.config/sublime-text-3/Packages/User/Package Control.sublime-settings`, which has the following format:
 
