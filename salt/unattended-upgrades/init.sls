@@ -25,7 +25,7 @@ unattended-upgrades-apt-listchanges:
 
 
 # In Stretch apt runs network requests as it's own user _apt
-{% set user = '_apt' if grains['os_family'] == 'Debian' and grains['oscodename'] == 'stretch' else 'root' %}
+{% set user = '_apt' if grains['os_family'] == 'Debian' and grains['osmajorrelease'] >= 9 else 'root' %}
 
 {% for family in ('ipv4', 'ipv6') %}
 
