@@ -95,7 +95,7 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
             'name': name,
             'comment': 'Ignored due to wrong family for destination %s' % destination,
             'result': True,
-            'changes': '',
+            'changes': {},
         }
     elif destination and not _is_ipv6(destination) and not _is_ipv4(destination):
         # not a valid address, assume hostname and allow all destinations
@@ -111,7 +111,7 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
         'name': name,
         'comment': '',
         'result': True,
-        'changes': '',
+        'changes': {},
     }
 
 
@@ -125,7 +125,7 @@ def chain_present(name, table='filter', family='ipv4', **kwargs):
     return {
         'name': name,
         'result': True,
-        'changes': '',
+        'changes': {},
         'comment': '',
     }
 

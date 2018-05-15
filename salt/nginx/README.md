@@ -47,3 +47,38 @@ nginx:
 ```
 
 By default the instance will be publicly accessible.
+
+
+## Regular reloads
+
+Since nginx doesn't reload DNS records after boot, you might want to reload regularly to ensure the
+records stay fresh. If you include the state `nginx.regular_reload` a cronjob will be added that
+reloads the nginx instance hourly.
+
+Note that reloads are graceful, no requests are dropped during a reload.
+
+To customize the reload interval:
+
+```yaml
+nginx:
+    regular_reload:
+        minute: '*/10'
+```
+
+This will reload every 10 minutes. If you want less frequent reloads:
+
+```yaml
+nginx:
+    regular_reload:
+        minute: 15
+        hour: '*/5'
+```
+
+This will reload 15 minutes past every fifth hour. The `regular_reload` state accepts the same
+parameters as the salt `cron` state (`minute`, `hour`, `daymonth`, `dayweek`, `month`).
+
+**NB:** If you specify `random` it'll pick a random value, which can be handy to ensure not all
+servers reload at the same time if you have multiple servers. But do note that an earlier value
+will not be reset if using `random`, so if you had `minute: '*/5'` in your config to reload every
+fifth minute, but later changed this to `minute: random` the reload interval will not change. This
+is due to how the salt `cron` state works.

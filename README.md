@@ -11,11 +11,11 @@ Add the following to your master/minion config to get going:
 
 ```yaml
 fileserver_backend:
-	- roots
-	- git
+    - roots
+    - git
 
 gitfs_remotes:
-	- https://github.com/thusoy/salt-states	
+    - https://github.com/thusoy/salt-states
 
 gitfs_env_whitelist:
     - base

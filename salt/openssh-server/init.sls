@@ -28,7 +28,7 @@ openssh-server:
 openssh-server-moduli:
     cmd.run:
         - name: |
-            if [ -n "$(awk '$5 >= {{ minumum_modulus_size }}' /etc/ssh/moduli | tail -n +2)" ]; then
+            if [ -n "$(grep -Ev '^#' /etc/ssh/moduli | awk '$5 >= {{ minumum_modulus_size }}')" ]; then
                 echo "Removing weak ssh moduli"
                 awk '$5 >= {{ minumum_modulus_size }}' /etc/ssh/moduli > /tmp/strong-ssh-moduli
                 mv /tmp/strong-ssh-moduli /etc/ssh/moduli
@@ -38,7 +38,7 @@ openssh-server-moduli:
                 ssh-keygen -T /etc/ssh/moduli -f /tmp/strong-ssh-moduli
                 rm /tmp/strong-ssh-moduli
             fi
-        - onlyif: "tail -n +2 /etc/ssh/moduli | awk '$5 < {{ minumum_modulus_size }}' | head -1 | grep -q ^"
+        - onlyif: "grep -Ev '^#' /etc/ssh/moduli | awk '$5 < {{ minumum_modulus_size }}' | head -1 | grep -q ^"
         - watch_in:
             - service: openssh-server
 
@@ -57,6 +57,7 @@ openssh-server-host-key-{{ key }}:
 {% endfor %}
 
 
+{% set allow_from = openssh_server.get('allow_from', {}) %}
 {% for family in ('ipv4', 'ipv6') %}
 openssh-server-firewall-{{ family }}:
     firewall.append:
@@ -64,6 +65,9 @@ openssh-server-firewall-{{ family }}:
         - family: {{ family }}
         - chain: INPUT
         - dport: {{ openssh_server.port }}
+        {% if family in allow_from %}
+        - source: {{ allow_from[family] }}
+        {% endif %}
         - jump: ACCEPT
         - proto: tcp
         - match:
