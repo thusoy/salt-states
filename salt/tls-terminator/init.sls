@@ -79,8 +79,9 @@ def run():
             # Set default upstream Host header to the hostname if the upstream
             # is a hostname, otherwise the name of the site
             upstream_hostname = parsed_backend.hostname # if family == 'both' else site
-            if 'upstream_hostname' in backend_config:
-                upstream_hostname = backend_config.get('upstream_hostname')
+            if 'upstream_hostname' in backend_config or 'upstream_hostname' in values:
+                upstream_hostname = backend_config.get('upstream_hostname',
+                    values.get('upstream_hostname'))
                 if upstream_hostname == 'site':
                     upstream_hostname = site
                 elif upstream_hostname == 'request':
