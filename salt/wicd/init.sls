@@ -1,12 +1,8 @@
+{% set wicd = pillar.get('wicd', {}) %}
+{% set client = wicd.get('client', 'gtk') %}
+
 wicd:
     pkg.installed:
         - pkgs:
-            - wicd-client
-            - wicd-daemon
-
-    init_script.managed:
-        - systemd: salt://wicd/wicd-systemd
-
-    # fails to start if the sysV config is present
-    file.absent:
-        - name: /etc/init.d/wicd
+            - wicd
+            - wicd-{{ client }}
