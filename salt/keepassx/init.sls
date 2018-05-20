@@ -1,0 +1,2 @@
+keepassx:
+    pkg.installed
