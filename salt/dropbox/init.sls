@@ -11,7 +11,7 @@ dropbox:
     cmd.wait:
         - name: |
             dpkg -i /usr/local/src/dropbox-{{ helper_version }}.deb
-            apt-get install -f
+            apt-get install -f -y
             dpkg -i /usr/local/src/dropbox-{{ helper_version }}.deb
         - watch:
             - file: dropbox
