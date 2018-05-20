@@ -1,4 +1,4 @@
-{% set version_spec = '1.8.1 sha256=ed0e1ae0f35aecd47e0b3dfb486a230984a08ceda3b371486add4d42714a693d' %}
+{% set version_spec = '2.1.1 sha256=cee18b6f3b1209ea5878c22cfd84a9f0004f20ef146cb7a18aada19162928a0f' %}
 {% set version, version_hash = version_spec.split() %}
 
 
