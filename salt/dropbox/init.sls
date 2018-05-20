@@ -9,6 +9,9 @@ dropbox:
         - source_hash: {{ helper_version_hash }}
 
     cmd.wait:
-        - name: dpkg -i /usr/local/src/dropbox-{{ helper_version }}.deb
+        - name: |
+            dpkg -i /usr/local/src/dropbox-{{ helper_version }}.deb
+            apt-get install -f
+            dpkg -i /usr/local/src/dropbox-{{ helper_version }}.deb
         - watch:
             - file: dropbox
