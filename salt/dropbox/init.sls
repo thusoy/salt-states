@@ -2,6 +2,12 @@
 {% set helper_version = dropbox.get('helper_version_spec', '2015.10.28 sha256=f9780cce3725ee307cdad8a835300e89483504059d302b3c6f91fe5cac0a5411') %}
 {% set helper_version, helper_version_hash = helper_version.split() %}
 
+dropbox-deps:
+    pkg.installed:
+        # Needed for the helper to verify binary signatures
+        - name: python-gpgme
+
+
 dropbox:
     file.managed:
         - name: /usr/local/src/dropbox-{{ helper_version }}.deb
@@ -15,3 +21,5 @@ dropbox:
             dpkg -i /usr/local/src/dropbox-{{ helper_version }}.deb
         - watch:
             - file: dropbox
+        - require:
+            - pkg: dropbox-deps
