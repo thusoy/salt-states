@@ -12,8 +12,6 @@ virtualbox:
 
     pkg.installed:
         - pkgs:
-            - linux-headers-amd64
-            - virtualbox
-            - virtualbox-dkms
+            - virtualbox-5.2
         - require:
             - pkgrepo: virtualbox
