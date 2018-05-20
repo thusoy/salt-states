@@ -11,7 +11,6 @@ virtualbox:
             - pkg: virtualbox-deps
 
     pkg.installed:
-        - pkgs:
-            - virtualbox-5.2
+        - name: virtualbox-5.2
         - require:
             - pkgrepo: virtualbox
