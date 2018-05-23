@@ -1,0 +1,4 @@
+scrot
+=====
+
+Installs scrot.
