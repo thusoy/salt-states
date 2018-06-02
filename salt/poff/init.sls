@@ -2,9 +2,9 @@
 
 include:
     - .pillar_check
-    - pip
     - postgres.client
-    - virtualenv
+    - python-pip
+    - python-virtualenv
 
 
 poff-deps:
@@ -12,7 +12,8 @@ poff-deps:
         - pkgs:
             - python-dev
         - require:
-            - pip: virtualenv
+            - pkg: python-pip
+            - pkg: python-virtualenv
 
 
 poff:
