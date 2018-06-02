@@ -1,0 +1,2 @@
+unscd:
+    pkg.purged
