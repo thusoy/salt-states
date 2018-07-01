@@ -6,7 +6,7 @@
 rkt:
     file.managed:
         - name: /usr/local/src/rkt.deb
-        - source:  https://github.com/rkt/rkt/releases/download/v{{ version }}/rkt_{{ version }}-1_amd64.deb
+        - source: https://github.com/rkt/rkt/releases/download/v{{ version }}/rkt_{{ version }}-1_amd64.deb
         - source_hash: {{ version_hash }}
 
     cmd.wait:
