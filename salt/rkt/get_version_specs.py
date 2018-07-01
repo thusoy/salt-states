@@ -38,6 +38,15 @@ def cli_list(args):
 
 def cli_info(args):
     release = get_release_info(args.release)
+    print_release(release)
+
+
+def cli_latest(args):
+    release = get_latest_release()
+    print_release(release)
+
+
+def print_release(release):
     print('rkt %s (released %s):' % (release.version, release.release_date.strftime('%Y-%M-%d')))
     print('URL: %s' % release.url)
     print('sha256=%s' % release.sha256_digest)
@@ -59,6 +68,14 @@ def get_releases():
             continue
 
         yield ReleaseBrief(version, release_date)
+
+
+def get_latest_release():
+    response = _session.get('https://api.github.com/repos/rkt/rkt/releases/latest')
+    response.raise_for_status()
+
+    latest_release_name = response.json()['name']
+    return get_release_info(latest_release_name)
 
 
 def parse_iso8601(datestr):
@@ -151,6 +168,7 @@ def get_args():
 
     add_list_parser(subparsers)
     add_info_parser(subparsers)
+    add_latest_parser(subparsers)
 
     args = parser.parse_args()
 
@@ -171,7 +189,12 @@ def add_info_parser(subparsers):
     parser.add_argument('release', help='Which release to get info about, like v1.15.0')
     parser.set_defaults(action=cli_info)
 
-# TODO: Add quick helper for "latest" that uses GET /repos/:owner/:repo/releases/latest
+
+def add_latest_parser(subparsers):
+    parser = subparsers.add_parser('latest', help='Get info about the latest release')
+    parser.set_defaults(action=cli_latest)
+
+
 # TODO: Configure logger and log rate limiting remaining
 # TODO: Possibly enable setting auth to get around public ratelimit
 
