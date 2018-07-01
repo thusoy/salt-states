@@ -83,6 +83,9 @@ def parse_iso8601(datestr):
 
 
 def get_release_info(release_name):
+    if not release_name.startswith('v'):
+        # prepend the v in v1.30.0 and similar if the user forgot
+        release_name = 'v' + release_name
     release_urls = get_release_urls(release_name)
     return get_verified_release_details(release_urls)
 
