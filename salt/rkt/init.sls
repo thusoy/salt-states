@@ -2,6 +2,9 @@
 {% set version_spec = rkt.get('version_spec', '1.30.0 sha256=57e1d8ec5075369a0781d1c3aac2dcc032d73f4c2b292bcb61a52a53cd02d301') %}
 {% set version, version_hash = version_spec.split(' ') %}
 
+include:
+    - cronic
+
 
 rkt:
     file.managed:
@@ -13,3 +16,8 @@ rkt:
         - name: dpkg -i /usr/local/src/rkt.deb
         - watch:
             - file: rkt
+
+    cron.present:
+        - name: cronic rkt gc
+        - hour: random
+        - minute: random
