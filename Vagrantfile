@@ -6,8 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "ARTACK/debian-jessie"
-  config.vm.box_url = "https://atlas.hashicorp.com/ARTACK/boxes/debian-jessie"
+  config.vm.box = "bento/debian-9.4"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
@@ -36,7 +35,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Prevent TTY Errors (copied from laravel/homestead: "homestead.rb" file)... By default this is "bash -l".
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
 
-  config.vm.provision "shell", inline: "sudo apt-get update && sudo apt-get install -y vim libssl1.0.0"
+  config.vm.provision "shell", inline: "sudo apt-get update && sudo apt-get install -y vim"
 
   config.vm.provision :salt do |salt|
     salt.minion_config = "vagrant-minion"
