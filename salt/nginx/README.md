@@ -48,6 +48,21 @@ nginx:
 
 By default the instance will be publicly accessible.
 
+To use extra extensions modules:
+
+```yaml
+nginx:
+    package: nginx-full
+    modules:
+        - /usr/lib/nginx/modules/ngx_http_geoip_module.so
+        - /usr/lib/nginx/modukes/ngx_http_upstream_fair_module.so
+```
+
+Note that normally nginx will be installed from the official nginx apt repo, not the standard debian
+repo. The `nginx-full` package however is provided by debian and will cause the standard debian
+version to be installed, which lags a couple versions behind latest, but includes a lot of extension
+packages packaged by debian in stretch and newer.
+
 
 ## Regular reloads
 
