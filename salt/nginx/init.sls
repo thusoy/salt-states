@@ -87,6 +87,10 @@ nginx:
                 - {{ key }}: '{{ value }}'
                 {% endfor %}
                 {% endfor %}
+            modules:
+                {% for module in nginx.modules %}
+                - {{ module }}
+                {% endfor %}
         - require:
             - pkg: nginx
             - user: nginx
