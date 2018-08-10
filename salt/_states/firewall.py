@@ -151,8 +151,14 @@ def _get_rules(path):
         return all_rules
 
 
-def apply(name, output_policy='ACCEPT'):
+def apply(name, output_policy='ACCEPT', apply=True):
+    '''
+    Build and apply the rules.
+    :param apply: Set this to False to only build the ruleset on disk.
+    '''
     comment = []
+    if not apply:
+        comment.append('Built only, not applied')
     changes = {}
     success = True
     for family in ('v4', 'v6'):
@@ -164,7 +170,7 @@ def apply(name, output_policy='ACCEPT'):
         context.update(_get_rules(file_target))
 
         result, stderr, rule_changes = _apply_rule_for_family('rules.%s' % family,
-            context, 'ip%stables-restore' % ('' if family == 'v4' else '6'))
+            context, 'ip%stables-restore' % ('' if family == 'v4' else '6'), apply)
 
         if stderr:
             comment.append(stderr)
@@ -186,7 +192,7 @@ def apply(name, output_policy='ACCEPT'):
     }
 
 
-def _apply_rule_for_family(filename, context, restore_command):
+def _apply_rule_for_family(filename, context, restore_command, apply):
     rendered_rules = RULES_TEMPLATE.render(context)
 
     # iptables-restore fails to parse if the rules doesnt end with newline
@@ -211,10 +217,18 @@ def _apply_rule_for_family(filename, context, restore_command):
     new_content = [line + '\n' for line in rendered_rules[:-1].split('\n')]
     changes = ''.join(difflib.unified_diff(old_content, new_content))
 
-    restore_process = subprocess.Popen([restore_command], stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    _, stderr = restore_process.communicate(rendered_rules)
-    return (restore_process.wait(), stderr, changes)
+    if apply:
+        restore_process = subprocess.Popen([restore_command],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        _, stderr = restore_process.communicate(rendered_rules)
+        result = restore_process.wait()
+    else:
+        result = 0
+        stderr = ''
+    return (result, stderr, changes)
 
 
 def _is_ipv4(address):
