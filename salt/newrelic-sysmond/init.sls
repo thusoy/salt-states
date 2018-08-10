@@ -52,26 +52,19 @@ newrelic-sysmond-firewall:
             - pkg: newrelic-sysmond
 
 
-{% for family, dns_servers in [
-    ('ipv4', salt['grains.get']('dns:ip4_nameservers')),
-    ('ipv6', salt['grains.get']('dns:ip6_nameservers')),
-    ] %}
+{% for family in ('ipv4', 'ipv6') %}
 {% for protocol in ('udp', 'tcp') %}
 newrelic-sysmond-firewall-outgoing-dns-{{ protocol }}-{{ family }}:
     firewall.append:
         - chain: OUTPUT
         - family: {{ family }}
-        {% if dns_servers %}
-        # Ensures the agent can only talk to the system DNS servers, but fails open if we don't
-        # know the system DNS servers
-        - destination: {{ ','.join(dns_servers) }}
-        {% endif %}
+        - destination: system_dns
         - proto: {{ protocol }}
         - dport: 53
         - match:
             - comment
             - owner
-        - comment: "newrelic: Allow DNS for newrelic agent."
+        - comment: "newrelic: Allow DNS for newrelic agent"
         - uid-owner: newrelic
         - jump: ACCEPT
         - require:
