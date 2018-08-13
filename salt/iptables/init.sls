@@ -19,6 +19,7 @@ iptables-rules:
     firewall.apply:
         - output_policy: {{ iptables.output_policy }}
         - order: last
+        - apply: {{ iptables.get('apply', True) }}
 
 
 {% for family in ('ipv4', 'ipv6') %}

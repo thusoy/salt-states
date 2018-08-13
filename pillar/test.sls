@@ -201,3 +201,7 @@ postgres:
 
 newrelic-sysmond:
     license_key: bogusbogusbogusbogusbogusbogusbogusbogus
+
+# Don't actually apply iptables to prevent locking ourselves out
+iptables:
+    apply: False
