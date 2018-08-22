@@ -6,4 +6,4 @@ proxy_cache proxy_upstream_cache;
 proxy_cache_bypass {{ nginx.cache_bypass }};
 {% endif -%}
 proxy_cache_use_stale {{ nginx.cache_use_stale }};
-add_header X-Proxy-Cache $upstream_cache_status;
+add_header X-Cache-Status $upstream_cache_status;
