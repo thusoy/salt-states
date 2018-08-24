@@ -1,3 +1,9 @@
+honeytail:
+    write_key: foobar
+    log_file: /var/log/nginx/access.log
+    parser_name: keyval
+    dataset: vagrant
+
 ghost-cli:
     # this is the hash for 'vagrant'
     user_password: $6$8jtQaRqHihuwm4Iu$cKidi.pA/oms3hFHpZ73GF/lVkWQcsIMhHMCpBfPM2iaxJb4.JQeWMSVBnfJY4orVbcC.nGq7HJcpkiRPnsvn.
