@@ -23,6 +23,10 @@ honeytail:
         - name: /etc/honeytail/honeytail.conf
         - source: salt://honeytail/honeytail.conf
         - template: jinja
+        - show_changes: False
+        - user: root
+        - group: adm
+        - mode: 640
         - require:
             - cmd: honeytail-deb
 
