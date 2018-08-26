@@ -38,4 +38,23 @@ cachish-outgoing-firewall-{{ family }}:
         - jump: ACCEPT
         - require:
             - pkg: cachish
+
+
+{% for protocol in ('tcp', 'udp') %}
+cachish-outgoing-firewall-dns-{{ family }}-{{ protocol }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: {{ protocol }}
+        - dport: 53
+        - destination: system_dns
+        - match:
+            - comment
+            - owner
+        - comment: 'cachish: Allow outgoing DNS'
+        - uid-owner: cachish
+        - jump: ACCEPT
+        - require:
+            - pkg: cachish
+{% endfor %}
 {% endfor %}

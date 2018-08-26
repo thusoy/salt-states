@@ -198,3 +198,10 @@ postgres:
         oUQDQgAE5TI0b3iTRIjQ9RzD13DHjoKmU6hlMdVuZOdRCfBoQF7hL4oIiGE463qf
         HkqkvMN6Bqw8yxeZ2v5HApf4/X4qMg==
         -----END EC PRIVATE KEY-----
+
+newrelic-sysmond:
+    license_key: bogusbogusbogusbogusbogusbogusbogusbogus
+
+# Don't actually apply iptables to prevent locking ourselves out
+iptables:
+    apply: False

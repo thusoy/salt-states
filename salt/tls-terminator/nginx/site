@@ -1,3 +1,7 @@
+{# Setting hsts in a variable since it has to be repeated several times. Could
+   probably also be loaded from a map to enable configuration from pillar -#}
+{% set hsts = "max-age=31536000; includeSubDomains" -%}
+
 {% for backend in backends.values() -%}
 upstream {{ backend.upstream_identifier }} {
     server {{ backend.hostname }}:{{ backend.port }};
@@ -7,14 +11,14 @@ upstream {{ backend.upstream_identifier }} {
 {% endfor -%}
 
 server {
-  listen [::]:80;
+  listen [::]:80{{ ' ' + listen_parameters if listen_parameters else '' }};
   server_name {{ server_name }};
   charset utf-8;
   return 301 https://{{ https_redirect }}$request_uri;
 }
 
 server {
-  listen [::]:443 ssl;
+  listen [::]:443 ssl{{ ' ' + listen_parameters if listen_parameters else '' }};
   server_name {{ server_name }};
   charset utf-8;
 
@@ -22,7 +26,7 @@ server {
 
   ssl_certificate {{ cert }};
   ssl_certificate_key {{ key }};
-  add_header Strict-Transport-Security max-age=31536000 always;
+  add_header Strict-Transport-Security "{{ hsts }}" always;
 
   error_page 504 /504-{{ server_name }}.html;
 
@@ -55,7 +59,7 @@ server {
 
     # Needs to be specified here too since cache_params also include a add_header directive. The
     # parent directive ensures it's added to the other location blocks.
-    add_header Strict-Transport-Security max-age=31536000 always;
+    add_header Strict-Transport-Security "{{ hsts }}" always;
 
     include proxy_params;
     include cache_params;
@@ -63,6 +67,7 @@ server {
     proxy_set_header Host "{{ backend.upstream_hostname }}";
 
     proxy_ssl_trusted_certificate '{{ backend.upstream_trust_root }}';
+    proxy_ssl_server_name on;
     proxy_ssl_name {{ backend.upstream_hostname }};
 
     # The verification depth needed for Heroku is currently only 2, but since they might

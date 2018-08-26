@@ -2,10 +2,6 @@
 {% set minumum_modulus_size = openssh_server.minumum_modulus_size %}
 
 
-include:
-    - .pillar_check
-
-
 openssh-server:
     pkg.installed:
         - name: openssh-server
