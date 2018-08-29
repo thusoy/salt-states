@@ -4,6 +4,7 @@ honeytail:
     parser_name: keyval
     dataset: vagrant
     debug: True
+    request_shape: path
     add_grains:
         - cpu_model
         - kernelrelease
@@ -138,6 +139,14 @@ nginx:
     allow_sources_v6:
         - fe80::abcd
     proxy_read_timeout: 30
+    log_formats:
+        # Log with logfmt to make it easier to do ad-hoc analysis with lcut and similar tools,
+        # make it easy to forward parameters to honeycomb with a logfmt parser without having to
+        # change the format in multiple locations, and make it easy to sample incoming logs on
+        # papertrail (with a filter like `request_id=[0-8].*status=2` f. ex)
+        main: 'time=$time_iso8601 client=$remote_addr host=$http_host
+               method=$request_method path="$request_uri" status=$status bytes=$body_bytes_sent
+               total_time=$request_time ua="$http_user_agent"'
     package: nginx-full
     modules:
         - /usr/lib/nginx/modules/ngx_http_auth_pam_module.so
