@@ -1,7 +1,7 @@
 honeytail
 =========
 
-Installs honeytail from the debian repo.
+Installs honeytail from the debian repo. The salt minion id is included automatically as `hostname`.
 
 Configurable keys through pillar:
 
