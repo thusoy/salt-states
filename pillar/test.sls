@@ -5,6 +5,8 @@ honeytail:
     dataset: vagrant
     debug: True
     request_shape: path
+    drop_fields:
+        - path_path
     add_grains:
         - cpu_model
         - kernelrelease

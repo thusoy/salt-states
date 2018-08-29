@@ -17,3 +17,4 @@ Configurable keys through pillar:
   honeytail to install. Latest version and hash can be found [in the docs](https://docs.honeycomb.io/getting-data-in/honeytail/).
 - `honeytail:add_grains`: A list of grains that should be added to the data, like `num_cpus`, `manufacturer`, `cpu_model`, etc.
 - `honeytail:request_shape`: Field that holds request line or path.
+- `honeytail:drop_fields`: A list of fields to drop.
