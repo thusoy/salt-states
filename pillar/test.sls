@@ -5,6 +5,8 @@ honeytail:
     dataset: vagrant
     debug: True
     request_shape: path
+    request_patterns:
+        - /apps/:app_identifier
     drop_fields:
         - path_path
     add_grains:
