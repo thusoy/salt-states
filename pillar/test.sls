@@ -3,6 +3,11 @@ honeytail:
     log_file: /var/log/nginx/access.log
     parser_name: keyval
     dataset: vagrant
+    debug: True
+    add_grains:
+        - cpu_model
+        - kernelrelease
+        - mem_total
 
 ghost-cli:
     # this is the hash for 'vagrant'
