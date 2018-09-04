@@ -47,21 +47,12 @@ samba:
 {% if samba_config %}
 
 {% set smbpw = samba_config.get('password') %}
-{% set directory = samba_config.get('directory') %}
-samba-{{ username }}-{{ directory }}:
+samba-{{ username }}:
     cmd.run:
         - name: 'printf "$password\n$password\n" | smbpasswd -s -a {{ username }}'
         - env:
             password: {{ smbpw }}
         - output_loglevel: quiet
-
-    file.directory:
-        - name: ~{{ username }}/{{ directory }}
-        - mode: 771
-        - user: root
-        - group: {{ username }}
-        - require:
-            - user: {{ username }}_user
 {% endif %}
 {% endfor %}
 
