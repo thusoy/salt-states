@@ -19,18 +19,16 @@ samba:
                 unix extensions: "no"
                 printing: bsd
                 printcap name: /dev/null
+            {% set sections = salt['pillar.get']('samba:sections', {}) %}
+            {% if sections %}
             sections:
-                {% for username, values in pillar.get('users', {}).items() %}
-                {% set samba = values.get('samba') %}
-                {% if samba %}
-                {{ username }}:
-                    public: {{ samba.get('public', 'no') }}
-                    writable: {{ samba.get('writable', 'yes') }}
-                    read only: {{ samba.get('read only', 'no') }}
-                    valid users: {{ ' '.join(samba.get('valid users', [username])) }}
-                    path: /home/{{ username }}/{{ samba.directory }}
-                {% endif %}
+                {% for section_name, config in sections.items() %}
+                {{ section_name }}:
+                    {% for key, val in config.items() %}
+                    {{ key }}: {{ val }}
+                    {% endfor %}
                 {% endfor %}
+            {% endif %}
 
         - require:
             - pkg: samba
