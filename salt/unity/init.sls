@@ -4,7 +4,7 @@
 unity:
     file.managed:
         - name: /opt/Unity-{{ version }}.pkg
-        - source: https://netstorage.unity3d.com/unity/{{ hash }}/MacEditorInstaller/Unity-{{ version }}.pkg
+        - source: https://netstorage.unity3d.com/unity/{{ version_hash }}/MacEditorInstaller/Unity-{{ version }}.pkg
         - source_hash: {{ source_hash }}
 
     cmd.watch:
