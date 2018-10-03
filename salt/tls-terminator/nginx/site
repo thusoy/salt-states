@@ -42,7 +42,7 @@ server {
 
   {% for url, backend in backends.items() -%}
   location {{ url }} {
-    proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }};
+    proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }}{{ backend.path }};
 
     {% if backend.pam_auth -%}
     # Restrict access to users on this machine with PAM

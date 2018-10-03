@@ -56,7 +56,7 @@ def run():
 
             # If backend is https it's going out over the network, thus allow it through
             # the firewall
-            target_ip, target_port, remote, family = parse_backend(backend)
+            target_ip, target_port, remote, family, path = parse_backend(backend)
             if remote:
                 if family in ('ipv4', 'both'):
                     outgoing_ipv4_firewall_ports[target_ip].add(port)
@@ -107,6 +107,7 @@ def run():
                 'upstream_hostname': upstream_hostname,
                 'protocol': protocol,
                 'port': port,
+                'path': path,
                 'upstream_identifier': upstream_identifier,
                 'upstream_trust_root': upstream_trust_root,
                 'pam_auth': backend_config.get('pam_auth', values.get('pam_auth')),
@@ -269,7 +270,7 @@ def parse_backend(url):
         normalized_ip = socket.inet_ntop(socket.AF_INET6, packed_ip)
         family = 'ipv6'
 
-    return (normalized_ip, port, remote, family)
+    return (normalized_ip, port, remote, family, parsed_url.path)
 
 
 def get_packed_ip(address):
