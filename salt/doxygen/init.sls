@@ -1,0 +1,2 @@
+doxygen:
+    pkg.installed
