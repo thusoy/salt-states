@@ -20,7 +20,7 @@ sasl2:
             - pkg: sasl2
 
     cmd.run:
-        - name: rm /etc/sasl2/{{ service }}-sasldb2
+        - name: rm -f /etc/sasl2/{{ service }}-sasldb2
                 && saslpasswd2 -p -a {{ service }} -c -f /etc/sasl2/{{ service }}-sasldb2 {{ sasl2.get('username') }}
                 && chown {{ service_user }}:{{ service_user }} /etc/sasl2/{{ service }}-sasldb2
         - stdin: '{{ sasl2.get('password') }}'
