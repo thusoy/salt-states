@@ -233,3 +233,13 @@ newrelic-sysmond:
 # Don't actually apply iptables to prevent locking ourselves out
 iptables:
     apply: False
+
+memcached:
+    memory: 128
+
+
+sasl2:
+    service: memcached
+    service_user: memcache
+    username: vagrant
+    password: vagrant
