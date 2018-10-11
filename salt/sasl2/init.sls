@@ -12,6 +12,7 @@ sasl2:
 
     file.managed:
         - name: /etc/sasl2/{{ service }}.conf
+        - makedirs: True
         - source: salt://sasl2/sasl2.conf
         - template: jinja
         - context:
@@ -25,4 +26,4 @@ sasl2:
                 && chown {{ service_user }}:{{ service_user }} /etc/sasl2/{{ service }}-sasldb2
         - stdin: '{{ sasl2.get('password') }}'
         - require:
-            - pkg: sasl2
+            - file: sasl2
