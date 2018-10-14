@@ -48,72 +48,7 @@ def build_state(sites, nginx_version='0.0.0'):
 
         parsed_backends = {}
         for url, backend_config in backends.items():
-            backend = backend_config['upstream']
-            normalized_backend = '//' + backend if not '://' in backend else backend
-            parsed_backend = urlparse.urlparse(normalized_backend)
-            protocol = parsed_backend.scheme or 'http'
-            port = parsed_backend.port or (443 if protocol == 'https' else 80)
-            upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
-                url)
-
-            # If backend is https it's going out over the network, thus allow it through
-            # the firewall
-            target_ip, target_port, remote, family, path = parse_backend(backend)
-            if remote:
-                if family in ('ipv4', 'both'):
-                    outgoing_ipv4_firewall_ports[target_ip].add(port)
-                if family in ('ipv6', 'both'):
-                    outgoing_ipv6_firewall_ports[target_ip].add(port)
-
-            upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
-            if 'upstream_trust_root' in backend_config:
-                upstream_trust_root = '/etc/nginx/ssl/%s-upstream-root.pem' % upstream_identifier
-                ret['tls-terminator-%s-upstream-trust-root' % upstream_identifier] = {
-                    'file.managed': [
-                        {'name': upstream_trust_root},
-                        {'contents': backend_config.get('upstream_trust_root')},
-                        {'require_in': [
-                            {'file': 'tls-terminator-%s-nginx-site' % site},
-                        ]},
-                    ]
-                }
-
-            upstream_hostname = parsed_backend.hostname
-            if 'upstream_hostname' in backend_config or 'upstream_hostname' in values:
-                upstream_hostname = backend_config.get('upstream_hostname',
-                    values.get('upstream_hostname'))
-                if upstream_hostname == 'site':
-                    upstream_hostname = site
-                elif upstream_hostname == 'request':
-                    upstream_hostname = '$http_host'
-
-            extra_location_config = backend_config.get('extra_location_config', [])
-            if isinstance(extra_location_config, dict):
-                extra_location_config = [extra_location_config]
-
-            # Add X-Request-Id header both ways if the nginx version supports it
-            nginx_version = tuple(int(num) for num in nginx_version.split('.'))
-            if nginx_version and nginx_version >= (1, 11, 0):
-                extra_location_config.append({
-                    # Add to the response from the proxy
-                    'add_header': 'X-Request-Id $request_id always',
-                })
-                extra_location_config.append({
-                    # Add to the request before it reaches the proxy
-                    'proxy_set_header': 'X-Request-Id $request_id',
-                })
-
-            parsed_backends[url] = {
-                'hostname': parsed_backend.hostname,
-                'upstream_hostname': upstream_hostname,
-                'protocol': protocol,
-                'port': port,
-                'path': path,
-                'upstream_identifier': upstream_identifier,
-                'upstream_trust_root': upstream_trust_root,
-                'pam_auth': backend_config.get('pam_auth', values.get('pam_auth')),
-                'extra_location_config': extra_location_config,
-            }
+            parsed_backends[url] = build_backend(site, values, url, backend_config, nginx_version)
 
         site_504_page = [
             {'name': '/etc/nginx/html/504-' + site + '.html'},
@@ -222,6 +157,77 @@ def build_state(sites, nginx_version='0.0.0'):
         ret['include'].append('certbot')
 
     return ret
+
+
+def build_backend(site, site_config, url, backend_config, nginx_version):
+    backend = backend_config['upstream']
+    normalized_backend = '//' + backend if not '://' in backend else backend
+    parsed_backend = urlparse.urlparse(normalized_backend)
+    protocol = parsed_backend.scheme or 'http'
+    port = parsed_backend.port or (443 if protocol == 'https' else 80)
+    upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
+        url)
+
+    # If backend is https it's going out over the network, thus allow it through
+    # the firewall
+    target_ip, target_port, remote, family, path = parse_backend(backend)
+    if remote:
+        if family in ('ipv4', 'both'):
+            outgoing_ipv4_firewall_ports[target_ip].add(port)
+        if family in ('ipv6', 'both'):
+            outgoing_ipv6_firewall_ports[target_ip].add(port)
+
+    upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
+    if 'upstream_trust_root' in backend_config:
+        upstream_trust_root = '/etc/nginx/ssl/%s-upstream-root.pem' % upstream_identifier
+        ret['tls-terminator-%s-upstream-trust-root' % upstream_identifier] = {
+            'file.managed': [
+                {'name': upstream_trust_root},
+                {'contents': backend_config.get('upstream_trust_root')},
+                {'require_in': [
+                    {'file': 'tls-terminator-%s-nginx-site' % site},
+                ]},
+            ]
+        }
+
+    # Set default upstream Host header to the hostname if the upstream
+    # is a hostname, otherwise the name of the site
+    upstream_hostname = parsed_backend.hostname # if family == 'both' else site
+    if 'upstream_hostname' in backend_config or 'upstream_hostname' in site_config:
+        upstream_hostname = backend_config.get('upstream_hostname',
+            site_config.get('upstream_hostname'))
+        if upstream_hostname == 'site':
+            upstream_hostname = site
+        elif upstream_hostname == 'request':
+            upstream_hostname = '$http_host'
+
+    extra_location_config = backend_config.get('extra_location_config', [])
+    if isinstance(extra_location_config, dict):
+        extra_location_config = [extra_location_config]
+
+    # Add X-Request-Id header both ways if the nginx version supports it
+    nginx_version = tuple(int(num) for num in nginx_version.split('.'))
+    if nginx_version and nginx_version >= (1, 11, 0):
+        extra_location_config.append({
+            # Add to the response from the proxy
+            'add_header': 'X-Request-Id $request_id always',
+        })
+        extra_location_config.append({
+            # Add to the request before it reaches the proxy
+            'proxy_set_header': 'X-Request-Id $request_id',
+        })
+
+    return {
+        'hostname': parsed_backend.hostname,
+        'upstream_hostname': upstream_hostname,
+        'protocol': protocol,
+        'port': port,
+        'path': path,
+        'upstream_identifier': upstream_identifier,
+        'upstream_trust_root': upstream_trust_root,
+        'pam_auth': backend_config.get('pam_auth', site_config.get('pam_auth')),
+        'extra_location_config': extra_location_config,
+    }
 
 
 def get_upstream_identifier_for_backend(site, hostname, url):
