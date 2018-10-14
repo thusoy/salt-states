@@ -69,6 +69,34 @@ def test_build_custom_tls_state():
     assert 'certbot' not in state['include']
 
 
+def test_build_outgoing_ip():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://1.1.1.1',
+        }
+    })
+
+    assert 'tls-terminator-outgoing-ipv4-port-443' not in state
+    firewall_v4 = merged(state['tls-terminator-outgoing-ipv4-port-80']['firewall.append'])
+    assert firewall_v4['family'] == 'ipv4'
+    assert firewall_v4['dports'] == '80'
+    assert firewall_v4['destination'] == '1.1.1.1'
+
+
+def test_build_outgoing_hostname():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'https://backend.example.com',
+        }
+    })
+
+    assert 'tls-terminator-outgoing-ipv4-port-80' not in state
+    firewall_v4 = merged(state['tls-terminator-outgoing-ipv4-port-443']['firewall.append'])
+    assert firewall_v4['family'] == 'ipv4'
+    assert firewall_v4['dports'] == '443'
+    assert firewall_v4['destination'] == '0/0'
+
+
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
 
