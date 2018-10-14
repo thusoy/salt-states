@@ -41,12 +41,41 @@ def test_build_state():
     assert len(backends) == 1
     assert backends['/']['hostname'] == '127.0.0.1'
     assert backends['/']['port'] == 5000
+    assert 'certbot' not in state['include']
+
+
+def test_build_acme_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'acme': True,
+        }
+    })
+    assert 'certbot' in state['include']
+
+
+def test_build_custom_tls_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'cert': 'FOOCERT',
+            'key': 'FOOKEY',
+        }
+    })
+    cert = state['tls-terminator-example.com-tls-cert']
+    key = state['tls-terminator-example.com-tls-key']
+    assert merged(cert['file.managed'])['contents'] == 'FOOCERT'
+    assert merged(key['file.managed'])['contents'] == 'FOOKEY'
+    assert 'certbot' not in state['include']
 
 
 def get_backends(state_nginx_site):
-    for dictionary in state_nginx_site['file.managed']:
-        context = dictionary.get('context')
-        if not context:
-            continue
+    return merged(state_nginx_site['file.managed'])['context']['backends']
 
-        return context['backends']
+
+def merged(dict_list):
+    '''Merges a salt-style list of dicts into a single dict'''
+    merged = {}
+    for dictionary in dict_list:
+        merged.update(dictionary)
+    return merged

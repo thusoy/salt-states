@@ -26,10 +26,10 @@ def build_state(sites, nginx_version='0.0.0'):
     outgoing_ipv4_firewall_ports = defaultdict(set)
     outgoing_ipv6_firewall_ports = defaultdict(set)
 
-    for site, values in sites.items():
-        backend = values.get('backend')
-        backends = values.get('backends', {})
-        redirect = values.get('redirect')
+    for site, site_config in sites.items():
+        backend = site_config.get('backend')
+        backends = site_config.get('backends', {})
+        redirect = site_config.get('redirect')
         required_properties_given = len([prop for prop in (backend, backends, redirect) if prop])
         if required_properties_given != 1:
             raise ValueError('TLS-terminator site "%s" has none or too many of the required '
@@ -48,7 +48,7 @@ def build_state(sites, nginx_version='0.0.0'):
 
         parsed_backends = {}
         for url, backend_config in backends.items():
-            parsed_backends[url] = build_backend(site, values, url, backend_config, nginx_version)
+            parsed_backends[url] = build_backend(site, site_config, url, backend_config, nginx_version)
 
         site_504_page = [
             {'name': '/etc/nginx/html/504-' + site + '.html'},
@@ -60,51 +60,19 @@ def build_state(sites, nginx_version='0.0.0'):
             }}
         ]
         ret['tls-terminator-timeout-page-' + site] = {'file.managed': site_504_page}
-        use_acme_certs = values.get('acme')
-        if use_acme_certs:
-            # The actual certs will be managed by the certbot state (or equivalent)
-            cert = '/etc/letsencrypt/live/%s/fullchain.pem' % site
-            key = '/etc/letsencrypt/live/%s/privkey.pem' % site
 
+        cert, key, is_acme, cert_states = build_tls_certs_for_site(site, site_config)
+        ret.update(cert_states)
+        if is_acme:
             has_any_acme_sites = True
-        elif 'cert' in values and 'key' in values:
-            # Custom certs, create them on disk
-            cert = '/etc/nginx/ssl/%s.crt' % site
-            key = '/etc/nginx/private/%s.key' % site
-
-            ret['tls-terminator-%s-tls-cert' % site] = {
-                'file.managed': [
-                    {'name': cert},
-                    {'contents': values.get('cert')},
-                    {'require': [{'file': 'nginx-certificates-dir'}]},
-                    {'watch_in': [{'service': 'nginx'}]},
-                ]
-            }
-
-            ret['tls-terminator-%s-tls-key' % site] = {
-                'file.managed': [
-                    {'name': key},
-                    {'contents': values.get('key')},
-                    {'user': 'root'},
-                    {'group': 'nginx'},
-                    {'mode': '0640'},
-                    {'show_changes': False},
-                    {'require': [{'file': 'nginx-private-dir'}]},
-                    {'watch_in': [{'service': 'nginx'}]},
-                ]
-            }
-        else:
-            # Using the default certs from the nginx state
-            cert = '/etc/nginx/ssl/default.crt'
-            key = '/etc/nginx/private/default.key'
 
         https_redirect = '$server_name'
         if site.startswith('*'):
             https_redirect = '$http_host'
 
-        client_max_body_size = values.get('client_max_body_size', '10m')
+        client_max_body_size = site_config.get('client_max_body_size', '10m')
 
-        extra_server_config = values.get('extra_server_config', [])
+        extra_server_config = site_config.get('extra_server_config', [])
         if isinstance(extra_server_config, dict):
             extra_server_config = [extra_server_config]
 
@@ -117,14 +85,14 @@ def build_state(sites, nginx_version='0.0.0'):
                 {'watch_in': [{'service': 'nginx'}]},
                 {'context': {
                     'server_name': site,
-                    'listen_parameters': values.get('listen_parameters', ''),
+                    'listen_parameters': site_config.get('listen_parameters', ''),
                     'backends': parsed_backends,
                     'cert': cert,
                     'key': key,
                     'https_redirect': https_redirect,
                     'client_max_body_size': client_max_body_size,
                     'extra_server_config': extra_server_config,
-                    'extra_locations': values.get('extra_locations', {}),
+                    'extra_locations': site_config.get('extra_locations', {}),
                     'redirect': redirect,
                 }}
             ]
@@ -227,6 +195,48 @@ def build_backend(site, site_config, url, backend_config, nginx_version):
         'pam_auth': backend_config.get('pam_auth', site_config.get('pam_auth')),
         'extra_location_config': extra_location_config,
     }
+
+
+def build_tls_certs_for_site(site, site_config):
+    is_acme = site_config.get('acme')
+    states = {}
+    if is_acme:
+        # The actual certs will be managed by the certbot state (or equivalent)
+        cert = '/etc/letsencrypt/live/%s/fullchain.pem' % site
+        key = '/etc/letsencrypt/live/%s/privkey.pem' % site
+
+    elif 'cert' in site_config and 'key' in site_config:
+        # Custom certs, create them on disk
+        cert = '/etc/nginx/ssl/%s.crt' % site
+        key = '/etc/nginx/private/%s.key' % site
+
+        states['tls-terminator-%s-tls-cert' % site] = {
+            'file.managed': [
+                {'name': cert},
+                {'contents': site_config.get('cert')},
+                {'require': [{'file': 'nginx-certificates-dir'}]},
+                {'watch_in': [{'service': 'nginx'}]},
+            ]
+        }
+
+        states['tls-terminator-%s-tls-key' % site] = {
+            'file.managed': [
+                {'name': key},
+                {'contents': site_config.get('key')},
+                {'user': 'root'},
+                {'group': 'nginx'},
+                {'mode': '0640'},
+                {'show_changes': False},
+                {'require': [{'file': 'nginx-private-dir'}]},
+                {'watch_in': [{'service': 'nginx'}]},
+            ]
+        }
+    else:
+        # Using the default certs from the nginx state
+        cert = '/etc/nginx/ssl/default.crt'
+        key = '/etc/nginx/private/default.key'
+
+    return cert, key, is_acme, states
 
 
 def get_upstream_identifier_for_backend(site, hostname, url):
