@@ -32,7 +32,7 @@ def build_state(sites, nginx_version='0.0.0'):
         redirect = values.get('redirect')
         required_properties_given = len([prop for prop in (backend, backends, redirect) if prop])
         if required_properties_given != 1:
-            raise ValueError('TLS-terminator site "%s" is has none or too many of the required '
+            raise ValueError('TLS-terminator site "%s" has none or too many of the required '
                 'properties backend/backends/redirect' % site)
 
         if backend:
