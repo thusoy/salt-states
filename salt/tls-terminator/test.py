@@ -31,29 +31,22 @@ def test_get_port_sets():
     assert uut(range(0, 31, 2)) == ['0,2,4,6,8,10,12,14,16,18,20,22,24,26,28', '30']
 
 
+def test_build_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+        }
+    })
+    backends = get_backends(state['tls-terminator-example.com-nginx-site'])
+    assert len(backends) == 1
+    assert backends['/']['hostname'] == '127.0.0.1'
+    assert backends['/']['port'] == 5000
 
 
+def get_backends(state_nginx_site):
+    for dictionary in state_nginx_site['file.managed']:
+        context = dictionary.get('context')
+        if not context:
+            continue
 
-
-# use this to test the full state:
-# tls-terminator:
-#     example.com:
-#         backends:
-#             /1: http://10.10.10.17:8001
-#             /2: http://10.10.10.17:8002
-#             /3: http://10.10.10.17:8003
-#             /4: http://10.10.10.17:8004
-#             /5: http://10.10.10.17:8005
-#             /6: http://10.10.10.17:8006
-#             /7: http://10.10.10.17:8007
-#             /8: http://10.10.10.17:8008
-#             /9: http://10.10.10.17:8009
-#             /10: http://10.10.10.17:8010
-#             /11: http://10.10.10.17:8011
-#             /12: http://10.10.10.17:8012
-#             /13: http://10.10.10.17:8013
-#             /14: http://10.10.10.17:8014
-#             /15: http://10.10.10.17:8015
-#             /16: http://10.10.10.17:8016
-#             /17: http://10.10.10.17:8017
-#             /18: http://10.10.10.17:8018
+        return context['backends']

@@ -10,9 +10,11 @@ from collections import defaultdict
 
 def run():
     """Create the states for the TLS-terminator backends."""
+    return build_state(__pillar__.get('tls-terminator', {}),
+        nginx_version=__salt__['pillar.get']('nginx:version', '0.0.0'))
 
-    sites = __pillar__.get('tls-terminator', {})
 
+def build_state(sites, nginx_version='0.0.0'):
     ret = {
         "include": [
             "nginx"
@@ -92,8 +94,7 @@ def run():
                 extra_location_config = [extra_location_config]
 
             # Add X-Request-Id header both ways if the nginx version supports it
-            nginx_version_raw = __salt__['pillar.get']('nginx:version', '0.0.0')
-            nginx_version = tuple(int(num) for num in nginx_version_raw.split('.'))
+            nginx_version = tuple(int(num) for num in nginx_version.split('.'))
             if nginx_version and nginx_version >= (1, 11, 0):
                 extra_location_config.append({
                     # Add to the response from the proxy
