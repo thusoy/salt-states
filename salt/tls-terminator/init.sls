@@ -27,25 +27,7 @@ def build_state(sites, nginx_version='0.0.0'):
     outgoing_ipv6_firewall_ports = defaultdict(set)
 
     for site, site_config in sites.items():
-        backend = site_config.get('backend')
-        backends = site_config.get('backends', {})
-        redirect = site_config.get('redirect')
-        required_properties_given = len([prop for prop in (backend, backends, redirect) if prop])
-        if required_properties_given != 1:
-            raise ValueError('TLS-terminator site "%s" has none or too many of the required '
-                'properties backend/backends/redirect' % site)
-
-        if backend:
-            backends['/'] = {
-                'upstream': backend,
-            }
-
-        for url, backend_config in backends.items():
-            if not isinstance(backend_config, dict):
-                backends[url] = {
-                    'upstream': backend_config,
-                }
-
+        backends = normalize_backends(site_config)
         parsed_backends = {}
         for url, backend_config in backends.items():
             # If backend is https it's going out over the network, thus allow it through
@@ -100,7 +82,7 @@ def build_state(sites, nginx_version='0.0.0'):
                     'client_max_body_size': site_config.get('client_max_body_size', '10m'),
                     'extra_server_config': extra_server_config,
                     'extra_locations': site_config.get('extra_locations', {}),
-                    'redirect': redirect,
+                    'redirect': site_config.get('redirect'),
                 }}
             ]
         }
@@ -111,6 +93,29 @@ def build_state(sites, nginx_version='0.0.0'):
         ret['include'].append('certbot')
 
     return ret
+
+
+def normalize_backends(site_config):
+    backend = site_config.get('backend')
+    backends = site_config.get('backends', {})
+    redirect = site_config.get('redirect')
+    required_properties_given = len([prop for prop in (backend, backends, redirect) if prop])
+    if required_properties_given != 1:
+        raise ValueError('TLS-terminator site "%s" has none or too many of the required '
+            'properties backend/backends/redirect' % site)
+
+    if backend:
+        backends['/'] = {
+            'upstream': backend,
+        }
+
+    for url, backend_config in backends.items():
+        if not isinstance(backend_config, dict):
+            backends[url] = {
+                'upstream': backend_config,
+            }
+
+    return backends
 
 
 def build_backend(site, site_config, url, backend_config, nginx_version):
