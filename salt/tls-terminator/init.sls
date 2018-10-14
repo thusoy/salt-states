@@ -79,8 +79,6 @@ def build_state(sites, nginx_version='0.0.0'):
         if site.startswith('*'):
             https_redirect = '$http_host'
 
-        client_max_body_size = site_config.get('client_max_body_size', '10m')
-
         extra_server_config = site_config.get('extra_server_config', [])
         if isinstance(extra_server_config, dict):
             extra_server_config = [extra_server_config]
@@ -99,7 +97,7 @@ def build_state(sites, nginx_version='0.0.0'):
                     'cert': cert,
                     'key': key,
                     'https_redirect': https_redirect,
-                    'client_max_body_size': client_max_body_size,
+                    'client_max_body_size': site_config.get('client_max_body_size', '10m'),
                     'extra_server_config': extra_server_config,
                     'extra_locations': site_config.get('extra_locations', {}),
                     'redirect': redirect,
