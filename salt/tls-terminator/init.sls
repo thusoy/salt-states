@@ -48,6 +48,15 @@ def build_state(sites, nginx_version='0.0.0'):
 
         parsed_backends = {}
         for url, backend_config in backends.items():
+            # If backend is https it's going out over the network, thus allow it through
+            # the firewall
+            target_ip, target_port, remote, family = parse_backend(backend)
+            if remote:
+                if family in ('ipv4', 'both'):
+                    outgoing_ipv4_firewall_ports[target_ip].add(target_port)
+                if family in ('ipv6', 'both'):
+                    outgoing_ipv6_firewall_ports[target_ip].add(target_port)
+
             parsed_backends[url] = build_backend(site, site_config, url, backend_config, nginx_version)
 
         site_504_page = [
@@ -98,28 +107,7 @@ def build_state(sites, nginx_version='0.0.0'):
             ]
         }
 
-
-    for ruleset, family in [
-        (outgoing_ipv4_firewall_ports, 'ipv4'),
-        (outgoing_ipv6_firewall_ports, 'ipv6')]:
-        for target_ip, ports in sorted(ruleset.items()):
-            for port_set in get_port_sets(ports):
-                ret['tls-terminator-outgoing-%s-port-%s' % (family, port_set)] = {
-                    'firewall.append': [
-                        {'chain': 'OUTPUT'},
-                        {'family': family},
-                        {'protocol': 'tcp'},
-                        {'destination': target_ip},
-                        {'dports': port_set},
-                        {'match': [
-                            'comment',
-                            'owner',
-                        ]},
-                        {'comment': 'tls-terminator: Allow outgoing to upstream'},
-                        {'uid-owner': 'nginx'},
-                        {'jump': 'ACCEPT'},
-                    ]
-                }
+    ret.update(build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_ports))
 
     if has_any_acme_sites:
         ret['include'].append('certbot')
@@ -135,15 +123,6 @@ def build_backend(site, site_config, url, backend_config, nginx_version):
     port = parsed_backend.port or (443 if protocol == 'https' else 80)
     upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
         url)
-
-    # If backend is https it's going out over the network, thus allow it through
-    # the firewall
-    target_ip, target_port, remote, family = parse_backend(backend)
-    if remote:
-        if family in ('ipv4', 'both'):
-            outgoing_ipv4_firewall_ports[target_ip].add(port)
-        if family in ('ipv6', 'both'):
-            outgoing_ipv6_firewall_ports[target_ip].add(port)
 
     upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
     if 'upstream_trust_root' in backend_config:
@@ -237,6 +216,32 @@ def build_tls_certs_for_site(site, site_config):
         key = '/etc/nginx/private/default.key'
 
     return cert, key, is_acme, states
+
+
+def build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_ports):
+    states = {}
+    for ruleset, family in [
+        (outgoing_ipv4_firewall_ports, 'ipv4'),
+        (outgoing_ipv6_firewall_ports, 'ipv6')]:
+        for target_ip, ports in sorted(ruleset.items()):
+            for port_set in get_port_sets(ports):
+                states['tls-terminator-outgoing-%s-port-%s' % (family, port_set)] = {
+                    'firewall.append': [
+                        {'chain': 'OUTPUT'},
+                        {'family': family},
+                        {'protocol': 'tcp'},
+                        {'destination': target_ip},
+                        {'dports': port_set},
+                        {'match': [
+                            'comment',
+                            'owner',
+                        ]},
+                        {'comment': 'tls-terminator: Allow outgoing to upstream'},
+                        {'uid-owner': 'nginx'},
+                        {'jump': 'ACCEPT'},
+                    ]
+                }
+    return states
 
 
 def get_upstream_identifier_for_backend(site, hostname, url):
