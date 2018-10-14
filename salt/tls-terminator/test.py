@@ -44,6 +44,22 @@ def test_build_state():
     assert 'certbot' not in state['include']
 
 
+def test_build_state_aliases():
+    short = {
+        'example.com': {'backend': 'http://127.0.0.1:5000'},
+    }
+    full = {
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5000',
+                }
+            }
+        }
+    }
+    assert module.build_state(short) == module.build_state(full)
+
+
 def test_build_acme_state():
     state = module.build_state({
         'example.com': {
