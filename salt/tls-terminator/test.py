@@ -48,6 +48,13 @@ def test_build_state_aliases():
     short = {
         'example.com': {'backend': 'http://127.0.0.1:5000'},
     }
+    medium = {
+        'example.com': {
+            'backends': {
+                '/': 'http://127.0.0.1:5000',
+            }
+        }
+    }
     full = {
         'example.com': {
             'backends': {
@@ -57,7 +64,8 @@ def test_build_state_aliases():
             }
         }
     }
-    assert module.build_state(short) == module.build_state(full)
+    uut = module.build_state
+    assert uut(short) == uut(medium) == uut(full)
 
 
 def test_build_acme_state():
