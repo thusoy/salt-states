@@ -39,8 +39,7 @@ def test_build_state():
     })
     backends = get_backends(state['tls-terminator-example.com-nginx-site'])
     assert len(backends) == 1
-    assert backends['/']['hostname'] == '127.0.0.1'
-    assert backends['/']['port'] == 5000
+    assert backends['/']['upstream_identifier'].startswith('example.com-127.0.0.1_')
     assert 'certbot' not in state['include']
     rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
     assert len(rate_limits['context']['rate_limit_zones']) == 0
@@ -158,6 +157,9 @@ def test_set_rate_limits():
     assert len(backends) == 2
     assert backends['/']['rate_limit'] == 'zone=default burst=30 nodelay'
     assert backends['/login']['rate_limit'] == 'zone=sensitive burst=5'
+    # Should share upstream
+    assert backends['/login']['upstream_identifier'] == backends['/']['upstream_identifier']
+    assert len(merged(nginx_site['file.managed'])['context']['upstreams']) == 1
 
     rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
     assert rate_limits['context']['rate_limit_zones'] == [

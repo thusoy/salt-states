@@ -28,6 +28,7 @@ def build_state(sites, nginx_version='0.0.0'):
 
     rate_limit_zones = []
     error_pages = normalize_error_pages(sites)
+    upstreams = {}
 
     for site, site_config in sites.items():
         backends = normalize_backends(site_config)
@@ -42,7 +43,9 @@ def build_state(sites, nginx_version='0.0.0'):
                 if family in ('ipv6', 'both'):
                     outgoing_ipv6_firewall_ports[target_ip].add(target_port)
 
-            parsed_backends[url] = build_backend(site, site_config, url, backend_config, nginx_version)
+            backend, upstream = build_backend(site, site_config, url, backend_config, nginx_version)
+            upstreams[upstream['identifier']] = upstream
+            parsed_backends[url] = backend
 
         error_states, error_pages = build_site_error_pages(site, site_config, error_pages)
         ret.update(error_states)
@@ -80,6 +83,7 @@ def build_state(sites, nginx_version='0.0.0'):
                     'extra_locations': site_config.get('extra_locations', {}),
                     'redirect': site_config.get('redirect'),
                     'error_pages': error_pages,
+                    'upstreams': upstreams,
                 }}
             ]
         }
@@ -165,7 +169,12 @@ def build_backend(site, site_config, url, backend_config, nginx_version):
     protocol = parsed_backend.scheme or 'http'
     port = parsed_backend.port or (443 if protocol == 'https' else 80)
     upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
-        url)
+        parsed_backend.path)
+    upstream = {
+        'hostname': parsed_backend.hostname,
+        'port': port,
+        'identifier': upstream_identifier,
+    }
 
     upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
     if 'upstream_trust_root' in backend_config:
@@ -208,16 +217,14 @@ def build_backend(site, site_config, url, backend_config, nginx_version):
         })
 
     return {
-        'hostname': parsed_backend.hostname,
         'upstream_hostname': upstream_hostname,
         'protocol': protocol,
-        'port': port,
         'upstream_identifier': upstream_identifier,
         'upstream_trust_root': upstream_trust_root,
         'pam_auth': backend_config.get('pam_auth', site_config.get('pam_auth')),
         'extra_location_config': extra_location_config,
         'rate_limit': backend_config.get('rate_limit'),
-    }
+    }, upstream
 
 
 def build_tls_certs_for_site(site, site_config):
@@ -339,15 +346,13 @@ def build_rate_limit_zones(site_config):
     return zones
 
 
-def get_upstream_identifier_for_backend(site, hostname, url):
-    # Slashes are invalid in upstream identifiers, and we can't just replace them with _ or - since
-    # that might cause conflicts with other urls (/api/old and /api-old would resolve to the same
-    # upstream). We could use just a digest, but that would be bad for readability, thus we
-    # construct a hybrid identifier incorporating the hostname, a slugified url and a truncated
-    # digest of the url.
-    url_slug = '-root' if url == '/' else slugify(url)
-    url_digest = hashlib.sha256(url).hexdigest()[:6]
-    return '%s-%s%s_%s' % (slugify(site), hostname, url_slug, url_digest)
+def get_upstream_identifier_for_backend(site, backend_hostname, backend_url):
+    # Balance the need for unique upstream identifiers with readability by
+    # combining the hostname with a slugified url and a truncated digest of the
+    # url.
+    url_slug = '-root' if backend_url == '/' else slugify(backend_url)
+    url_digest = hashlib.sha256(backend_url).hexdigest()[:6]
+    return '%s-%s%s_%s' % (slugify(site), backend_hostname, backend_url, url_digest)
 
 
 def slugify(value):
