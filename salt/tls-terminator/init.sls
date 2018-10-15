@@ -26,6 +26,8 @@ def build_state(sites, nginx_version='0.0.0'):
     outgoing_ipv4_firewall_ports = defaultdict(set)
     outgoing_ipv6_firewall_ports = defaultdict(set)
 
+    rate_limit_zones = []
+
     for site, site_config in sites.items():
         backends = normalize_backends(site_config)
         parsed_backends = {}
@@ -51,6 +53,8 @@ def build_state(sites, nginx_version='0.0.0'):
             }}
         ]
         ret['tls-terminator-timeout-page-' + site] = {'file.managed': site_504_page}
+
+        rate_limit_zones.extend(build_rate_limit_zones(site_config))
 
         cert, key, is_acme, cert_states = build_tls_certs_for_site(site, site_config)
         ret.update(cert_states)
@@ -89,6 +93,19 @@ def build_state(sites, nginx_version='0.0.0'):
 
     ret.update(build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_ports))
 
+    ret['tls-terminator-rate-limit-zones'] = {
+        'file.managed': [
+            {'name': '/etc/nginx/rate_limit_zones.conf'},
+            {'source': 'salt://tls-terminator/rate_limit_zones.conf'},
+            {'template': 'jinja'},
+            {'require': [{'pkg': 'nginx'}]},
+            {'watch_in': [{'service': 'nginx'}]},
+            {'context': {
+                'rate_limit_zones': rate_limit_zones,
+            }}
+        ]
+    }
+
     if has_any_acme_sites:
         ret['include'].append('certbot')
 
@@ -114,6 +131,22 @@ def normalize_backends(site_config):
             backends[url] = {
                 'upstream': backend_config,
             }
+
+    # Add backends only specified in rate limit rules
+    for url, limits in site_config.get('rate_limit', {}).get('backends', {}).items():
+        backend = backends.get(url)
+        if not backend:
+            backend = dict(backends['/'].items())
+            backends[url] = backend
+
+        rule = ['zone=%s' % limits['zone']]
+        burst = limits.get('burst')
+        if burst:
+            rule.append('burst=%d' % burst)
+        nodelay = limits.get('nodelay', True)
+        if nodelay:
+            rule.append('nodelay')
+        backend['rate_limit'] = ' '.join(rule)
 
     return backends
 
@@ -176,6 +209,7 @@ def build_backend(site, site_config, url, backend_config, nginx_version):
         'upstream_trust_root': upstream_trust_root,
         'pam_auth': backend_config.get('pam_auth', site_config.get('pam_auth')),
         'extra_location_config': extra_location_config,
+        'rate_limit': backend_config.get('rate_limit'),
     }
 
 
@@ -245,6 +279,21 @@ def build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_p
                     ]
                 }
     return states
+
+
+def build_rate_limit_zones(site_config):
+    zones = []
+    rate_limit = site_config.get('rate_limit', {})
+    if not rate_limit:
+        return zones
+
+    for zone_name, config in sorted(rate_limit.get('zones', {}).items()):
+        key = config.get('key', '$binary_remote_addr')
+        size = config.get('size', '1m')
+        rate = config['rate']
+        zones.append('%s zone=%s:%s rate=%s' % (key, zone_name, size, rate))
+
+    return zones
 
 
 def get_upstream_identifier_for_backend(site, hostname, url):
