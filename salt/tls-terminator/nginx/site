@@ -2,9 +2,9 @@
    probably also be loaded from a map to enable configuration from pillar -#}
 {% set hsts = "max-age=31536000; includeSubDomains" -%}
 
-{% for backend in backends.values() -%}
-upstream {{ backend.upstream_identifier }} {
-    server {{ backend.hostname }}:{{ backend.port }};
+{% for upstream_identifier, upstream in upstreams.items() -%}
+upstream {{ upstream_identifier }} {
+    server {{ upstream.hostname }}:{{ upstream.port }};
     keepalive 8;
 }
 
