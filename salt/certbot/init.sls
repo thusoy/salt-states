@@ -35,6 +35,7 @@ certbot-update-{{ site }}:
                 --domain {{ site }}
                 --quiet
                 --email {{ certbot.administrative_contact }}
+                --preferred-challenges tls-sni-01
                 --agree-tos
                 --text
         - identifier: certbot-update-{{ site }}
