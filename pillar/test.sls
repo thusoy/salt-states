@@ -81,6 +81,23 @@ poff:
 
 
 tls-terminator:
+    error_pages:
+        {% raw %}
+        429: |
+            <!doctype html>
+            <title>That's enough</title>
+            <p>Too much traffic from you to, give the poor server at {{ site }} a rest.</p>
+        {% endraw %}
+        504:
+            content_type: application/json
+            content: |
+                {
+                    "error": {
+                        "status": 502,
+                        "message": "Timed out"
+                    }
+                }
+
     example.com:
         backend: https://thusoy.com
         extra_locations:
