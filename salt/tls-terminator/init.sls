@@ -27,6 +27,7 @@ def build_state(sites, nginx_version='0.0.0'):
     outgoing_ipv6_firewall_ports = defaultdict(set)
 
     rate_limit_zones = []
+    error_pages = normalize_error_pages(sites)
 
     for site, site_config in sites.items():
         backends = normalize_backends(site_config)
@@ -43,7 +44,8 @@ def build_state(sites, nginx_version='0.0.0'):
 
             parsed_backends[url] = build_backend(site, site_config, url, backend_config, nginx_version)
 
-        ret.update(build_site_error_pages(site))
+        error_states, error_pages = build_site_error_pages(site, site_config, error_pages)
+        ret.update(error_states)
         rate_limit_zones.extend(build_rate_limit_zones(site_config))
 
         cert, key, is_acme, cert_states = build_tls_certs_for_site(site, site_config)
@@ -77,6 +79,7 @@ def build_state(sites, nginx_version='0.0.0'):
                     'extra_server_config': extra_server_config,
                     'extra_locations': site_config.get('extra_locations', {}),
                     'redirect': site_config.get('redirect'),
+                    'error_pages': error_pages,
                 }}
             ]
         }
@@ -100,6 +103,20 @@ def build_state(sites, nginx_version='0.0.0'):
         ret['include'].append('certbot')
 
     return ret
+
+
+def normalize_error_pages(site_config):
+    normalized = {}
+    error_pages = site_config.pop('error_pages', {})
+    for error_code, content in error_pages.items():
+        if not isinstance(content, dict):
+            content = {
+                'content_type': 'application/html',
+                'content': content,
+            }
+        normalized[int(error_code)] = content
+
+    return normalized
 
 
 def normalize_backends(site_config):
@@ -246,12 +263,30 @@ def build_tls_certs_for_site(site, site_config):
     return cert, key, is_acme, states
 
 
-def build_site_error_pages(site):
+def build_site_error_pages(site, site_config, default_error_pages):
     states = {}
-    for error_code in (429, 504):
-        states['tls-terminator-%s-error-%d' % (site, error_code)] = {
+    error_pages = dict(default_error_pages.items())
+    error_pages.update(normalize_error_pages(site_config))
+    use_default_for_codes = set([429, 504])
+
+    for error_code, content in error_pages.items():
+        use_default_for_codes.discard(error_code)
+        states['tls-terminator-%s-error-page-%d' % (site, error_code)] = {
             'file.managed': [
-                {'name': '/etc/nginx/html/%d-%s.html' % (error_code, site)},
+                {'name': '/etc/nginx/html/%d-%s' % (error_code, site)},
+                {'contents': content['content']},
+                {'makedirs': True},
+                {'template': 'jinja'},
+                {'context': {
+                    'site': site,
+                }},
+            ]
+        }
+
+    for error_code in use_default_for_codes:
+        states['tls-terminator-%s-error-page-%d' % (site, error_code)] = {
+            'file.managed': [
+                {'name': '/etc/nginx/html/%d-%s' % (error_code, site)},
                 {'source': 'salt://tls-terminator/nginx/%d.html' % error_code},
                 {'makedirs': True},
                 {'template': 'jinja'},
@@ -260,7 +295,8 @@ def build_site_error_pages(site):
                 }}
             ]
         }
-    return states
+
+    return states, error_pages
 
 
 def build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_ports):

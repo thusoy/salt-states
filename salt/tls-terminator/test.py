@@ -165,7 +165,40 @@ def test_set_rate_limits():
         '$binary_remote_addr zone=sensitive:1m rate=10r/m',
     ]
 
-    assert 'tls-terminator-example.com-error-429' in state
+    assert 'tls-terminator-example.com-error-page-429' in state
+
+
+def test_custom_error_pages():
+    state = module.build_state({
+        'error_pages': {
+            '429': '429 loading {{ site }}',
+            502: {
+                'content_type': 'application/json',
+                'content': '{"error": 502, "site": "{{ site }}"}',
+            },
+        },
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+        },
+        'test.com': {
+            'backend': 'http://127.0.0.1:5001',
+            'error_pages': {
+                502: '<p>Backend stumbled</p>',
+            },
+        },
+    })
+
+    def error_page(site, error_code):
+        error_state = state['tls-terminator-%s-error-page-%d' % (site, error_code)]
+        file_state = merged(error_state['file.managed'])
+        return file_state
+
+    assert error_page('example.com', 429)['contents'] == '429 loading {{ site }}'
+    assert error_page('example.com', 502)['contents'] == '{"error": 502, "site": "{{ site }}"}'
+    assert error_page('test.com', 429)['contents'] == '429 loading {{ site }}'
+    assert error_page('test.com', 502)['contents'] == '<p>Backend stumbled</p>'
+    assert 'source' in error_page('example.com', 504)
+    assert 'source' in error_page('test.com', 504)
 
 
 def get_backends(state_nginx_site):
