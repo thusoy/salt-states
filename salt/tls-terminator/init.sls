@@ -43,17 +43,7 @@ def build_state(sites, nginx_version='0.0.0'):
 
             parsed_backends[url] = build_backend(site, site_config, url, backend_config, nginx_version)
 
-        site_504_page = [
-            {'name': '/etc/nginx/html/504-' + site + '.html'},
-            {'source': 'salt://tls-terminator/nginx/504.html'},
-            {'makedirs': True},
-            {'template': 'jinja'},
-            {'context': {
-                'site': site,
-            }}
-        ]
-        ret['tls-terminator-timeout-page-' + site] = {'file.managed': site_504_page}
-
+        ret.update(build_site_error_pages(site))
         rate_limit_zones.extend(build_rate_limit_zones(site_config))
 
         cert, key, is_acme, cert_states = build_tls_certs_for_site(site, site_config)
@@ -253,6 +243,23 @@ def build_tls_certs_for_site(site, site_config):
         key = '/etc/nginx/private/default.key'
 
     return cert, key, is_acme, states
+
+
+def build_site_error_pages(site):
+    states = {}
+    for error_code in (429, 504):
+        states['tls-terminator-%s-error-%d' % (site, error_code)] = {
+            'file.managed': [
+                {'name': '/etc/nginx/html/%d-%s.html' % (error_code, site)},
+                {'source': 'salt://tls-terminator/nginx/%d.html' % error_code},
+                {'makedirs': True},
+                {'template': 'jinja'},
+                {'context': {
+                    'site': site,
+                }}
+            ]
+        }
+    return states
 
 
 def build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_ports):

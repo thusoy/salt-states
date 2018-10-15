@@ -165,6 +165,8 @@ def test_set_rate_limits():
         '$binary_remote_addr zone=sensitive:1m rate=10r/m',
     ]
 
+    assert 'tls-terminator-example.com-error-429' in state
+
 
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
