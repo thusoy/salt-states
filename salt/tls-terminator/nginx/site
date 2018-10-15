@@ -48,7 +48,10 @@ server {
     # Restrict access to users on this machine with PAM
     auth_pam "Restricted";
     auth_pam_service_name "nginx";
+    {% endif -%}
 
+    {% if backend.rate_limit -%}
+    limit_req {{ backend.rate_limit }};
     {% endif -%}
 
     {% for extra_location_dict in backend.extra_location_config -%}

@@ -42,6 +42,8 @@ def test_build_state():
     assert backends['/']['hostname'] == '127.0.0.1'
     assert backends['/']['port'] == 5000
     assert 'certbot' not in state['include']
+    rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
+    assert len(rate_limits['context']['rate_limit_zones']) == 0
 
 
 def test_build_state_aliases():
@@ -119,6 +121,49 @@ def test_build_outgoing_hostname():
     assert firewall_v4['family'] == 'ipv4'
     assert firewall_v4['dports'] == '443'
     assert firewall_v4['destination'] == '0/0'
+
+
+def test_set_rate_limits():
+    state = module.build_state({
+        'example.com': {
+            'rate_limit': {
+                'zones': {
+                    'default': {
+                        'size': '10m',
+                        'rate': '60r/m',
+                        'key': '$cookie_session',
+                    },
+                    'sensitive': {
+                        'rate': '10r/m',
+                    }
+                },
+                'backends': {
+                    '/': {
+                        'zone': 'default',
+                        'burst': 30,
+                    },
+                    '/login': {
+                        'zone': 'sensitive',
+                        'burst': 5,
+                        'nodelay': False,
+                    }
+                }
+            },
+            'backend': 'http://127.0.0.1:5000',
+        }
+    })
+
+    nginx_site = state['tls-terminator-example.com-nginx-site']
+    backends = get_backends(nginx_site)
+    assert len(backends) == 2
+    assert backends['/']['rate_limit'] == 'zone=default burst=30 nodelay'
+    assert backends['/login']['rate_limit'] == 'zone=sensitive burst=5'
+
+    rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
+    assert rate_limits['context']['rate_limit_zones'] == [
+        '$cookie_session zone=default:10m rate=60r/m',
+        '$binary_remote_addr zone=sensitive:1m rate=10r/m',
+    ]
 
 
 def get_backends(state_nginx_site):
