@@ -467,52 +467,38 @@ def get_default_error_pages():
             'content_type': 'text/html',
             'content': textwrap.dedent('''\
                 <!doctype html>
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title>Too many requests to {{ site }}</title>
-                </head>
-                <body>
-                    <h1>We've detected too many requests to {{ site }}</h1>
+                <html lang="en">
+                <meta charset="utf-8">
+                <title>Too many requests to {{ site }}</title>
+                <h1>We've detected too many requests to {{ site }}</h1>
+                <p>
+                    We're terribly sorry for this, but we seem to have detected too many requests to
+                    {{ site }} from your network recently. Please try again in a little while.
+                </p>
 
-                    <p>
-                        We're terribly sorry for this, but we seem to have detected too many requests to
-                        {{ site }} from your network recently. Please try again in a little while.
-                    </p>
-
-                    <p>
-                        <small>
-                            Details: 429 (too many requests)
-                        </small>
-                    </p>
-                </body>
-                </html>
+                <p>
+                    <small>Details: 429 (too many requests)</small>
+                </p>
             ''')
         },
         504: {
             'content_type': 'text/html',
             'content': textwrap.dedent('''\
                 <!doctype html>
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title>{{ site }} unreachable</title>
-                </head>
-                <body>
-                    <h1>{{ site }} unreachable</h1>
+                <html lang="en">
+                <meta charset="utf-8">
+                <title>{{ site }} unreachable</title>
+                <h1>{{ site }} unreachable</h1>
 
-                    <p>
-                        We're terribly sorry for this, but something failed while retrieving {{ site }}. We're
-                        not quite sure what the issue is yet, but we're working on it. Try again in a while
-                    </p>
+                <p>
+                    We're terribly sorry for this, but {{ site }} timed out while loading. We're
+                    not quite sure what the issue is yet, but we're working on it. Try again in
+                    a little while.
+                </p>
 
-                    <p>
-                        <small>
-                            Details: 504 (gateway timeout)
-                        </small>
-                    </p>
-                </body>
-                </html>
+                <p>
+                    <small>Details: 504 (gateway timeout)</small>
+                </p>
             '''),
         }
     }
