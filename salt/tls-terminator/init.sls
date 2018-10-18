@@ -1,8 +1,9 @@
 #!py
 
 import hashlib
-import socket
 import re
+import socket
+import textwrap
 import unicodedata
 import urlparse
 from collections import defaultdict
@@ -27,7 +28,8 @@ def build_state(sites, nginx_version='0.0.0'):
     outgoing_ipv6_firewall_ports = defaultdict(set)
 
     rate_limit_zones = []
-    error_pages = normalize_error_pages(sites)
+    error_pages = get_default_error_pages()
+    error_pages.update(normalize_error_pages(sites))
 
     for site, site_config in sites.items():
         backends = normalize_backends(site_config)
@@ -273,10 +275,8 @@ def build_site_error_pages(site, site_config, default_error_pages):
     states = {}
     error_pages = dict(default_error_pages.items())
     error_pages.update(normalize_error_pages(site_config))
-    use_default_for_codes = set([429, 504])
 
     for error_code, content in error_pages.items():
-        use_default_for_codes.discard(error_code)
         states['tls-terminator-%s-error-page-%d' % (site, error_code)] = {
             'file.managed': [
                 {'name': '/etc/nginx/html/%d-%s' % (error_code, site)},
@@ -286,19 +286,6 @@ def build_site_error_pages(site, site_config, default_error_pages):
                 {'context': {
                     'site': site,
                 }},
-            ]
-        }
-
-    for error_code in use_default_for_codes:
-        states['tls-terminator-%s-error-page-%d' % (site, error_code)] = {
-            'file.managed': [
-                {'name': '/etc/nginx/html/%d-%s' % (error_code, site)},
-                {'source': 'salt://tls-terminator/nginx/%d.html' % error_code},
-                {'makedirs': True},
-                {'template': 'jinja'},
-                {'context': {
-                    'site': site,
-                }}
             ]
         }
 
@@ -471,3 +458,60 @@ def format_item(item):
         return str(item)
     else:
         return '%d:%d' % item
+
+
+def get_default_error_pages():
+    return {
+        429: {
+            'content_type': 'text/html',
+            'content': textwrap.dedent('''\
+                <!doctype html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Too many requests to {{ site }}</title>
+                </head>
+                <body>
+                    <h1>We've detected too many requests to {{ site }}</h1>
+
+                    <p>
+                        We're terribly sorry for this, but we seem to have detected too many requests to
+                        {{ site }} from your network recently. Please try again in a little while.
+                    </p>
+
+                    <p>
+                        <small>
+                            Details: 429 (too many requests)
+                        </small>
+                    </p>
+                </body>
+                </html>
+            ''')
+        },
+        504: {
+            'content_type': 'text/html',
+            'content': textwrap.dedent('''\
+                <!doctype html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>{{ site }} unreachable</title>
+                </head>
+                <body>
+                    <h1>{{ site }} unreachable</h1>
+
+                    <p>
+                        We're terribly sorry for this, but something failed while retrieving {{ site }}. We're
+                        not quite sure what the issue is yet, but we're working on it. Try again in a while
+                    </p>
+
+                    <p>
+                        <small>
+                            Details: 504 (gateway timeout)
+                        </small>
+                    </p>
+                </body>
+                </html>
+            '''),
+        }
+    }

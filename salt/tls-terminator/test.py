@@ -195,12 +195,14 @@ def test_custom_error_pages():
         file_state = merged(error_state['file.managed'])
         return file_state
 
+    nginx_site = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])
+    error_pages = nginx_site['context']['error_pages']
+    assert len(error_pages) == 3 # the two defaults plus 502
     assert error_page('example.com', 429)['contents'] == '429 loading {{ site }}'
     assert error_page('example.com', 502)['contents'] == '{"error": 502, "site": "{{ site }}"}'
+    assert error_page('example.com', 504)['contents'].startswith('<!doctype html>')
     assert error_page('test.com', 429)['contents'] == '429 loading {{ site }}'
     assert error_page('test.com', 502)['contents'] == '<p>Backend stumbled</p>'
-    assert 'source' in error_page('example.com', 504)
-    assert 'source' in error_page('test.com', 504)
 
 
 def test_isolatest_site_upstreams():
