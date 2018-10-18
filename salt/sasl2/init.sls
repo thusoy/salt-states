@@ -25,5 +25,8 @@ sasl2:
                 && saslpasswd2 -p -a {{ service }} -c -f /etc/sasl2/{{ service }}-sasldb2 {{ sasl2.get('username') }}
                 && chown {{ service_user }}:{{ service_user }} /etc/sasl2/{{ service }}-sasldb2
         - stdin: '{{ sasl2.get('password') }}'
+        # Run this last so that any package needed to install the service's user
+        # has run before this
+        - order: last
         - require:
             - file: sasl2
