@@ -1,4 +1,5 @@
 {% set memcached = pillar.get('memcached', {}) %}
+{% set port = memcached.get('port', 11211) %}
 
 include:
      - sasl2
@@ -14,7 +15,7 @@ memcached:
         - template: jinja
         - context:
             memory: {{ memcached.get('memory', 64) }}
-            port: {{ memcached.get('port', 11211) }}
+            port: {{ port }}
         - require:
             - pkg: memcached
 
@@ -33,6 +34,6 @@ memcached-iptables-allow-incoming-{{ family }}:
         - match:
             - comment
         - comment: 'memcached: Allow incoming'
-        - dport: 11211
+        - dport: {{ port }}
         - jump: ACCEPT
 {% endfor %}
