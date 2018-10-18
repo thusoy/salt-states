@@ -236,7 +236,7 @@ iptables:
 
 memcached:
     memory: 128
-
+    port: 11212
 
 sasl2:
     service: memcached
