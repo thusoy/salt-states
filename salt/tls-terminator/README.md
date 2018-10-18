@@ -144,3 +144,6 @@ tls-terminator:
                         }
                     }
 ```
+
+The custom error pages are only used for errors originating from the tls-terminator, if the upstream
+returns any of the errors itself the response is sent unmodified to the client.
