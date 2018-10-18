@@ -14,6 +14,7 @@ memcached:
         - template: jinja
         - context:
             memory: {{ memcached.get('memory', 64) }}
+            port: {{ memcached.get('port', 11211) }}
         - require:
             - pkg: memcached
 
