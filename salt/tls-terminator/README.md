@@ -70,3 +70,31 @@ tls-terminator:
     example.com:
         backend: https://example-app.herokuapp.com
 ```
+
+
+To set up rate-limiting:
+
+```yaml
+tls-terminator:
+    example.com:
+        rate_limit:
+            zones:
+                default:
+                    key: $cookie_session
+                    size: 10m
+                    rate: 1r/s
+                sensitive:
+                    rate: 6r/m
+                    # key defaults to $binary_remote_addr when unset
+                    # size defaults to 1m when unset
+            backends:
+                /:
+                    zone: default
+                    burst: 3
+                /login:
+                    zone: sensitive
+                    burst: 4
+        backend: http://127.0.0.1:5000
+```
+
+Each backend defaults to setting the `nodelay` flag, this can be turned off per backend by setting `nodelay: False`.

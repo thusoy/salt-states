@@ -2,9 +2,9 @@
    probably also be loaded from a map to enable configuration from pillar -#}
 {% set hsts = "max-age=31536000; includeSubDomains" -%}
 
-{% for backend in backends.values() -%}
-upstream {{ backend.upstream_identifier }} {
-    server {{ backend.hostname }}:{{ backend.port }};
+{% for upstream_identifier, upstream in upstreams.items() -%}
+upstream {{ upstream_identifier }} {
+    server {{ upstream.hostname }}:{{ upstream.port }};
     keepalive 8;
 }
 
@@ -28,7 +28,9 @@ server {
   ssl_certificate_key {{ key }};
   add_header Strict-Transport-Security "{{ hsts }}" always;
 
-  error_page 504 /504-{{ server_name }}.html;
+  {% for error_code in error_pages -%}
+  error_page {{ error_code }} /{{ error_code }}-{{ server_name }};
+  {% endfor %}
 
   {% for extra_server_dict in extra_server_config -%}
   {% for key, value in extra_server_dict.items() -%}
@@ -48,7 +50,10 @@ server {
     # Restrict access to users on this machine with PAM
     auth_pam "Restricted";
     auth_pam_service_name "nginx";
+    {% endif -%}
 
+    {% if backend.rate_limit -%}
+    limit_req {{ backend.rate_limit }};
     {% endif -%}
 
     {% for extra_location_dict in backend.extra_location_config -%}
@@ -83,8 +88,12 @@ server {
   }
   {% endfor %}
 
-  location = /504-{{ server_name }}.html {
-    root html;
+  {% for error_code, content in error_pages.items() %}
+  location = /{{ error_code }}-{{ server_name }} {
+    root /etc/nginx/html;
+    {# Skip extension on the file so that we can set any content-type -#}
+    default_type {{ content['content_type'] }};
     internal;
   }
+  {% endfor %}
 }

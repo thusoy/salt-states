@@ -23,6 +23,10 @@
         'cache_background_update': True,
         'cache_bypass': None,
         'cache_use_stale': 'error timeout updating http_500 http_502 http_503 http_504',
+        'ssl_cache_size': '50m',
+        'ssl_session_timeout': '30m',
+        'cache_max_size': '100m',
+        'cache_inactive': '60m',
     },
     'stretch': {
         'repo': 'deb https://nginx.org/packages/mainline/debian/ stretch nginx',

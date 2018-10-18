@@ -31,29 +31,185 @@ def test_get_port_sets():
     assert uut(range(0, 31, 2)) == ['0,2,4,6,8,10,12,14,16,18,20,22,24,26,28', '30']
 
 
+def test_build_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+        }
+    })
+    backends = get_backends(state['tls-terminator-example.com-nginx-site'])
+    assert len(backends) == 1
+    assert backends['/']['upstream_identifier'].startswith('example.com-127.0.0.1_')
+    assert 'certbot' not in state['include']
+    rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
+    assert len(rate_limits['context']['rate_limit_zones']) == 0
 
 
+def test_build_state_aliases():
+    short = {
+        'example.com': {'backend': 'http://127.0.0.1:5000'},
+    }
+    medium = {
+        'example.com': {
+            'backends': {
+                '/': 'http://127.0.0.1:5000',
+            }
+        }
+    }
+    full = {
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5000',
+                }
+            }
+        }
+    }
+    uut = module.build_state
+    assert uut(short) == uut(medium) == uut(full)
 
 
-# use this to test the full state:
-# tls-terminator:
-#     example.com:
-#         backends:
-#             /1: http://10.10.10.17:8001
-#             /2: http://10.10.10.17:8002
-#             /3: http://10.10.10.17:8003
-#             /4: http://10.10.10.17:8004
-#             /5: http://10.10.10.17:8005
-#             /6: http://10.10.10.17:8006
-#             /7: http://10.10.10.17:8007
-#             /8: http://10.10.10.17:8008
-#             /9: http://10.10.10.17:8009
-#             /10: http://10.10.10.17:8010
-#             /11: http://10.10.10.17:8011
-#             /12: http://10.10.10.17:8012
-#             /13: http://10.10.10.17:8013
-#             /14: http://10.10.10.17:8014
-#             /15: http://10.10.10.17:8015
-#             /16: http://10.10.10.17:8016
-#             /17: http://10.10.10.17:8017
-#             /18: http://10.10.10.17:8018
+def test_build_acme_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'acme': True,
+        }
+    })
+    assert 'certbot' in state['include']
+
+
+def test_build_custom_tls_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'cert': 'FOOCERT',
+            'key': 'FOOKEY',
+        }
+    })
+    cert = state['tls-terminator-example.com-tls-cert']
+    key = state['tls-terminator-example.com-tls-key']
+    assert merged(cert['file.managed'])['contents'] == 'FOOCERT'
+    assert merged(key['file.managed'])['contents'] == 'FOOKEY'
+    assert 'certbot' not in state['include']
+
+
+def test_build_outgoing_ip():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://1.1.1.1',
+        }
+    })
+
+    assert 'tls-terminator-outgoing-ipv4-port-443' not in state
+    firewall_v4 = merged(state['tls-terminator-outgoing-ipv4-port-80']['firewall.append'])
+    assert firewall_v4['family'] == 'ipv4'
+    assert firewall_v4['dports'] == '80'
+    assert firewall_v4['destination'] == '1.1.1.1'
+
+
+def test_build_outgoing_hostname():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'https://backend.example.com',
+        }
+    })
+
+    assert 'tls-terminator-outgoing-ipv4-port-80' not in state
+    firewall_v4 = merged(state['tls-terminator-outgoing-ipv4-port-443']['firewall.append'])
+    assert firewall_v4['family'] == 'ipv4'
+    assert firewall_v4['dports'] == '443'
+    assert firewall_v4['destination'] == '0/0'
+
+
+def test_set_rate_limits():
+    state = module.build_state({
+        'example.com': {
+            'rate_limit': {
+                'zones': {
+                    'default': {
+                        'size': '10m',
+                        'rate': '60r/m',
+                        'key': '$cookie_session',
+                    },
+                    'sensitive': {
+                        'rate': '10r/m',
+                    }
+                },
+                'backends': {
+                    '/': {
+                        'zone': 'default',
+                        'burst': 30,
+                    },
+                    '/login': {
+                        'zone': 'sensitive',
+                        'burst': 5,
+                        'nodelay': False,
+                    }
+                }
+            },
+            'backend': 'http://127.0.0.1:5000',
+        }
+    })
+
+    nginx_site = state['tls-terminator-example.com-nginx-site']
+    backends = get_backends(nginx_site)
+    assert len(backends) == 2
+    assert backends['/']['rate_limit'] == 'zone=default burst=30 nodelay'
+    assert backends['/login']['rate_limit'] == 'zone=sensitive burst=5'
+    # Should share upstream
+    assert backends['/login']['upstream_identifier'] == backends['/']['upstream_identifier']
+    assert len(merged(nginx_site['file.managed'])['context']['upstreams']) == 1
+
+    rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
+    assert rate_limits['context']['rate_limit_zones'] == [
+        '$cookie_session zone=default:10m rate=60r/m',
+        '$binary_remote_addr zone=sensitive:1m rate=10r/m',
+    ]
+
+    assert 'tls-terminator-example.com-error-page-429' in state
+
+
+def test_custom_error_pages():
+    state = module.build_state({
+        'error_pages': {
+            '429': '429 loading {{ site }}',
+            502: {
+                'content_type': 'application/json',
+                'content': '{"error": 502, "site": "{{ site }}"}',
+            },
+        },
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+        },
+        'test.com': {
+            'backend': 'http://127.0.0.1:5001',
+            'error_pages': {
+                502: '<p>Backend stumbled</p>',
+            },
+        },
+    })
+
+    def error_page(site, error_code):
+        error_state = state['tls-terminator-%s-error-page-%d' % (site, error_code)]
+        file_state = merged(error_state['file.managed'])
+        return file_state
+
+    assert error_page('example.com', 429)['contents'] == '429 loading {{ site }}'
+    assert error_page('example.com', 502)['contents'] == '{"error": 502, "site": "{{ site }}"}'
+    assert error_page('test.com', 429)['contents'] == '429 loading {{ site }}'
+    assert error_page('test.com', 502)['contents'] == '<p>Backend stumbled</p>'
+    assert 'source' in error_page('example.com', 504)
+    assert 'source' in error_page('test.com', 504)
+
+
+def get_backends(state_nginx_site):
+    return merged(state_nginx_site['file.managed'])['context']['backends']
+
+
+def merged(dict_list):
+    '''Merges a salt-style list of dicts into a single dict'''
+    merged = {}
+    for dictionary in dict_list:
+        merged.update(dictionary)
+    return merged
