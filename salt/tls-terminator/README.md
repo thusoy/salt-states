@@ -19,9 +19,11 @@ tls-terminator:
             ---END PRIVATE KEY------
 ```
 
-`cert` and `key` is only needed if you want to override the nginx default cert set through `nginx:default_cert`.
+`cert` and `key` is only needed if you want to override the nginx default cert set through
+`nginx:default_cert`.
 
-If you want to have different backends for different URLs, you can set the `backends` parameter instead:
+If you want to have different backends for different URLs, you can set the `backends` parameter
+instead:
 
 ```yaml
 tls-terminator:
@@ -31,7 +33,8 @@ tls-terminator:
             /api: https://api-app.herokuapp.com
 ```
 
-A HTTPS backend is validated against the system trust root if no explicit trust root is given. To set a trust root:
+A HTTPS backend is validated against the system trust root if no explicit trust root is given. To
+set a trust root:
 
 ```yaml
 tls-terminator:
@@ -43,7 +46,8 @@ tls-terminator:
                     <upstream-cert>
 ```
 
-As you might have guessed, `backend: <url>` is just a convenient alias for `backends: {"/": {"upstream": <url>}}`.
+As you might have guessed, `backend: <url>` is just a convenient alias for
+`backends: {"/": {"upstream": <url>}}`.
 
 You can add extra location blocks if needed:
 
@@ -97,4 +101,46 @@ tls-terminator:
         backend: http://127.0.0.1:5000
 ```
 
-Each backend defaults to setting the `nodelay` flag, this can be turned off per backend by setting `nodelay: False`.
+Each backend defaults to setting the `nodelay` flag, this can be turned off per backend by setting
+`nodelay: False`.
+
+
+When forwarding requests there are a couple common errors that can originate at the tls-terminator,
+like 502 (Bad Gateway), 504 (Gateway Timeout) and 429 (Too Many Requests, only when setting rate
+limits). The state includes default error pages for these conditions, but you can also override
+these if you want to put special styling on them. They have to be a single page of html, and can be
+set both globally for all sites in the state or on a per-site basis:
+
+```yaml
+tls-terminator:
+    error_pages:
+        429: |
+            <!doctype html>
+            <title>My custom rate limited error page</title>
+            <p>Your requests to {{ site }} have been rate limited</p>
+    example.com:
+        backend: http://127.0.0.1:5000
+        error_pages:
+            429: |
+                <!doctype html>
+                <title>Too many requests to example.com</title>
+```
+
+The error page can be a jinja template, and will receive the name of the site in a variable `site`
+that can be used to customize the page. The page defaults to being served as html, the content type
+can be overridden like this:
+
+```yaml
+tls-terminator:
+    api.example.com:
+        error_pages:
+            504:
+                content_type: application/json
+                content: |
+                    {
+                        "error": {
+                            "status": 504,
+                            "message": "Gateway timeout",
+                        }
+                    }
+```
