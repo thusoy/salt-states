@@ -480,6 +480,24 @@ def get_default_error_pages():
                 </p>
             ''')
         },
+        502: {
+            'content_type': 'text/html',
+            'content': textwrap.dedent('''\
+                <!doctype html>
+                <html lang="en">
+                <meta charset="utf-8">
+                <title>{{ site }} failed</title>
+                <h1>Failed to load {{ site }}</h1>
+                <p>
+                    We're very sorry, but {{ site }} couldn't be reached at the moment. Please try
+                    again in a little while.
+                </p>
+
+                <p>
+                    <small>Details: 502 (bad gateway)</small>
+                </p>
+            '''),
+        },
         504: {
             'content_type': 'text/html',
             'content': textwrap.dedent('''\
