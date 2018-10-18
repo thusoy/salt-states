@@ -28,11 +28,11 @@ def build_state(sites, nginx_version='0.0.0'):
 
     rate_limit_zones = []
     error_pages = normalize_error_pages(sites)
-    upstreams = {}
 
     for site, site_config in sites.items():
         backends = normalize_backends(site_config)
         parsed_backends = {}
+        upstreams = {}
         for url, backend_config in backends.items():
             # If backend is https it's going out over the network, thus allow it through
             # the firewall
