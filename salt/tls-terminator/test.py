@@ -203,6 +203,20 @@ def test_custom_error_pages():
     assert 'source' in error_page('test.com', 504)
 
 
+def test_isolatest_site_upstreams():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+        },
+        'otherexample.com': {
+            'backend': 'http://127.0.0.1:5001',
+        },
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    assert len(context['upstreams']) == 1
+
+
+
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
 
