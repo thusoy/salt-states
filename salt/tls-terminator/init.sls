@@ -117,7 +117,7 @@ def normalize_error_pages(site_config):
     for error_code, content in error_pages.items():
         if not isinstance(content, dict):
             content = {
-                'content_type': 'application/html',
+                'content_type': 'text/html',
                 'content': content,
             }
         normalized[int(error_code)] = content
