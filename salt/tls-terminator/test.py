@@ -218,6 +218,17 @@ def test_isolatest_site_upstreams():
     assert len(context['upstreams']) == 1
 
 
+def test_upstream_with_url():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000/path',
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    upstreams = context['upstreams']
+    assert len(upstreams) == 1
+    assert not any('/' in identifier for identifier in upstreams)
+
 
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']

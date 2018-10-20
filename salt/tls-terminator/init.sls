@@ -340,7 +340,7 @@ def get_upstream_identifier_for_backend(site, backend_hostname, backend_url):
     # url.
     url_slug = '-root' if backend_url == '/' else slugify(backend_url)
     url_digest = hashlib.sha256(backend_url).hexdigest()[:6]
-    return '%s-%s%s_%s' % (slugify(site), backend_hostname, backend_url, url_digest)
+    return '%s-%s%s_%s' % (slugify(site), backend_hostname, url_slug, url_digest)
 
 
 def slugify(value):
