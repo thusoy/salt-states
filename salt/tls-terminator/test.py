@@ -4,7 +4,9 @@ import os
 module = imp.load_source('tls_terminator', os.path.join(os.path.dirname(__file__), 'init.sls'))
 
 def test_is_external_backend():
-    uut = module.parse_backend
+    def uut(backend):
+        return module.parse_backend(backend)[:4]
+
     assert uut('https://example.com') == ('0/0', 443, True, 'both')
     assert uut('https://example.com:8000') == ('0/0', 8000, True, 'both')
     assert uut('https://10.10.10.10') == ('10.10.10.10', 443, True, 'ipv4')
@@ -228,6 +230,20 @@ def test_upstream_with_url():
     upstreams = context['upstreams']
     assert len(upstreams) == 1
     assert not any('/' in identifier for identifier in upstreams)
+
+
+def test_upstream_port_only_difference():
+    state = module.build_state({
+        'example.com': {
+            'backends': {
+                '/': 'http://127.0.0.1:5000',
+                '/path': 'http://127.0.0.1:5001',
+            }
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    upstreams = context['upstreams']
+    assert len(upstreams) == 2
 
 
 def get_backends(state_nginx_site):

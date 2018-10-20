@@ -6,7 +6,10 @@ import socket
 import textwrap
 import unicodedata
 import urlparse
-from collections import defaultdict
+from collections import defaultdict, namedtuple
+
+
+Backend = namedtuple('Backend', 'normalized_ip port is_remote ip_family hostname path scheme')
 
 
 def run():
@@ -38,16 +41,17 @@ def build_state(sites, nginx_version='0.0.0'):
         for url, backend_config in backends.items():
             # If backend is https it's going out over the network, thus allow it through
             # the firewall
-            target_ip, target_port, remote, family = parse_backend(backend_config['upstream'])
-            if remote:
-                if family in ('ipv4', 'both'):
-                    outgoing_ipv4_firewall_ports[target_ip].add(target_port)
-                if family in ('ipv6', 'both'):
-                    outgoing_ipv6_firewall_ports[target_ip].add(target_port)
+            # target_ip, target_port, remote, family = parse_backend(backend_config['upstream'])
+            backend = parse_backend(backend_config['upstream'])
+            if backend.is_remote:
+                if backend.ip_family in ('ipv4', 'both'):
+                    outgoing_ipv4_firewall_ports[backend.normalized_ip].add(backend.port)
+                if backend.ip_family in ('ipv6', 'both'):
+                    outgoing_ipv6_firewall_ports[backend.normalized_ip].add(backend.port)
 
-            backend, upstream = build_backend(site, site_config, url, backend_config, nginx_version)
+            backend_context, upstream = build_backend_context(site, site_config, url, backend_config, nginx_version)
             upstreams[upstream['identifier']] = upstream
-            parsed_backends[url] = backend
+            parsed_backends[url] = backend_context
 
         error_states, error_pages = build_site_error_pages(site, site_config, error_pages)
         ret.update(error_states)
@@ -164,17 +168,14 @@ def normalize_backends(site_config):
     return backends
 
 
-def build_backend(site, site_config, url, backend_config, nginx_version):
+def build_backend_context(site, site_config, url, backend_config, nginx_version):
     backend = backend_config['upstream']
     normalized_backend = '//' + backend if not '://' in backend else backend
-    parsed_backend = urlparse.urlparse(normalized_backend)
-    protocol = parsed_backend.scheme or 'http'
-    port = parsed_backend.port or (443 if protocol == 'https' else 80)
-    upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend.hostname,
-        parsed_backend.path)
+    parsed_backend = parse_backend(normalized_backend)
+    upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend)
     upstream = {
         'hostname': parsed_backend.hostname,
-        'port': port,
+        'port': parsed_backend.port,
         'identifier': upstream_identifier,
     }
 
@@ -220,7 +221,7 @@ def build_backend(site, site_config, url, backend_config, nginx_version):
 
     return {
         'upstream_hostname': upstream_hostname,
-        'protocol': protocol,
+        'protocol': parsed_backend.scheme,
         'path': parsed_backend.path,
         'upstream_identifier': upstream_identifier,
         'upstream_trust_root': upstream_trust_root,
@@ -334,13 +335,14 @@ def build_rate_limit_zones(site_config):
     return zones
 
 
-def get_upstream_identifier_for_backend(site, backend_hostname, backend_url):
+def get_upstream_identifier_for_backend(site, parsed_backend_url):
     # Balance the need for unique upstream identifiers with readability by
     # combining the hostname with a slugified url and a truncated digest of the
     # url.
-    url_slug = '-root' if backend_url == '/' else slugify(backend_url)
-    url_digest = hashlib.sha256(backend_url).hexdigest()[:6]
-    return '%s-%s%s_%s' % (slugify(site), backend_hostname, url_slug, url_digest)
+    backend_path = parsed_backend_url.path
+    url_slug = '-root' if backend_path == '/' else slugify(backend_path)
+    url_digest = hashlib.sha256('%d:%s' % (parsed_backend_url.port, backend_path)).hexdigest()[:6]
+    return '%s-%s%s_%s' % (slugify(site), parsed_backend_url.hostname, url_slug, url_digest)
 
 
 def slugify(value):
@@ -365,21 +367,28 @@ def parse_backend(url):
 
     packed_ip = get_packed_ip(parsed_url.hostname)
     port = parsed_url.port or (80 if parsed_url.scheme == 'http' else 443)
-    remote = True
+    is_remote = True
     normalized_ip = '0/0'
     family = 'both'
 
     if packed_ip and len(packed_ip) == 4:
-        remote = packed_ip[0] != '\x7f'
+        is_remote = packed_ip[0] != '\x7f'
         normalized_ip = socket.inet_ntop(socket.AF_INET, packed_ip)
         family = 'ipv4'
     elif packed_ip:
         ipv6_local_address = '\x00'*15 + '\x01'
-        remote = packed_ip != ipv6_local_address
+        is_remote = packed_ip != ipv6_local_address
         normalized_ip = socket.inet_ntop(socket.AF_INET6, packed_ip)
         family = 'ipv6'
 
-    return (normalized_ip, port, remote, family)
+    return Backend(normalized_ip,
+        port,
+        is_remote,
+        family,
+        parsed_url.hostname,
+        parsed_url.path,
+        parsed_url.scheme,
+    )
 
 
 def get_packed_ip(address):
