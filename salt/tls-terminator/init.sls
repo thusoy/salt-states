@@ -49,9 +49,11 @@ def build_state(sites, nginx_version='0.0.0'):
                 if backend.ip_family in ('ipv6', 'both'):
                     outgoing_ipv6_firewall_ports[backend.normalized_ip].add(backend.port)
 
-            backend_context, upstream = build_backend_context(site, site_config, url, backend_config, nginx_version)
+            states, backend_context, upstream = build_backend_context(site, site_config,
+                backend_config, nginx_version)
             upstreams[upstream['identifier']] = upstream
             parsed_backends[url] = backend_context
+            ret.update(states)
 
         error_states, error_pages = build_site_error_pages(site, site_config, error_pages)
         ret.update(error_states)
@@ -168,7 +170,7 @@ def normalize_backends(site_config):
     return backends
 
 
-def build_backend_context(site, site_config, url, backend_config, nginx_version):
+def build_backend_context(site, site_config, backend_config, nginx_version):
     backend = backend_config['upstream']
     normalized_backend = '//' + backend if not '://' in backend else backend
     parsed_backend = parse_backend(normalized_backend)
@@ -178,11 +180,12 @@ def build_backend_context(site, site_config, url, backend_config, nginx_version)
         'port': parsed_backend.port,
         'identifier': upstream_identifier,
     }
+    states = {}
 
     upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
     if 'upstream_trust_root' in backend_config:
-        upstream_trust_root = '/etc/nginx/ssl/%s-upstream-root.pem' % upstream_identifier
-        ret['tls-terminator-%s-upstream-trust-root' % upstream_identifier] = {
+        upstream_trust_root = '/etc/nginx/ssl/%s-root.pem' % upstream_identifier
+        states['tls-terminator-upstream-%s-trust-root' % upstream_identifier] = {
             'file.managed': [
                 {'name': upstream_trust_root},
                 {'contents': backend_config.get('upstream_trust_root')},
@@ -219,7 +222,7 @@ def build_backend_context(site, site_config, url, backend_config, nginx_version)
             'proxy_set_header': 'X-Request-Id $request_id',
         })
 
-    return {
+    return states, {
         'upstream_hostname': upstream_hostname,
         'protocol': parsed_backend.scheme,
         'path': parsed_backend.path,

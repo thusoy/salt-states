@@ -246,6 +246,24 @@ def test_upstream_port_only_difference():
     assert len(upstreams) == 2
 
 
+def test_upstream_set_trust_root():
+    state = module.build_state({
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstream': 'https://10.10.10.10',
+                    'upstream_trust_root': 'some upstream cert',
+                }
+            }
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    upstream_identifier = context['upstreams'].keys()[0]
+    expected_trust_root_path = '/etc/nginx/ssl/%s-root.pem' % upstream_identifier
+    assert context['backends']['/']['upstream_trust_root'] == expected_trust_root_path
+    assert 'tls-terminator-upstream-%s-trust-root' % upstream_identifier in state
+
+
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
 
