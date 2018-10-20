@@ -270,7 +270,7 @@ def get_backends(state_nginx_site):
 
 def merged(dict_list):
     '''Merges a salt-style list of dicts into a single dict'''
-    merged = {}
+    merged_dict = {}
     for dictionary in dict_list:
-        merged.update(dictionary)
-    return merged
+        merged_dict.update(dictionary)
+    return merged_dict

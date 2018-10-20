@@ -41,7 +41,6 @@ def build_state(sites, nginx_version='0.0.0'):
         for url, backend_config in backends.items():
             # If backend is https it's going out over the network, thus allow it through
             # the firewall
-            # target_ip, target_port, remote, family = parse_backend(backend_config['upstream'])
             backend = parse_backend(backend_config['upstream'])
             if backend.is_remote:
                 if backend.ip_family in ('ipv4', 'both'):
