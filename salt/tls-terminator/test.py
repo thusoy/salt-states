@@ -1,6 +1,9 @@
 import imp
 import os
 
+import pytest
+
+
 module = imp.load_source('tls_terminator', os.path.join(os.path.dirname(__file__), 'init.sls'))
 
 def test_is_external_backend():
@@ -262,6 +265,23 @@ def test_upstream_set_trust_root():
     expected_trust_root_path = '/etc/nginx/ssl/%s-root.pem' % upstream_identifier
     assert context['backends']['/']['upstream_trust_root'] == expected_trust_root_path
     assert 'tls-terminator-upstream-%s-trust-root' % upstream_identifier in state
+
+
+def test_invalid_config():
+    with pytest.raises(ValueError):
+        module.build_state({
+            'example.com': {}
+        })
+
+    with pytest.raises(ValueError):
+        module.build_state({
+            'example.com': {
+                'backend': 'http://127.0.0.1',
+                'backends': {
+                    '/': 'http://127.0.0.1',
+                },
+            }
+        })
 
 
 def get_backends(state_nginx_site):

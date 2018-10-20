@@ -35,7 +35,7 @@ def build_state(sites, nginx_version='0.0.0'):
     error_pages.update(normalize_error_pages(sites))
 
     for site, site_config in sites.items():
-        backends = normalize_backends(site_config)
+        backends = normalize_backends(site, site_config)
         parsed_backends = {}
         upstreams = {}
         for url, backend_config in backends.items():
@@ -130,7 +130,7 @@ def normalize_error_pages(site_config):
     return normalized
 
 
-def normalize_backends(site_config):
+def normalize_backends(site, site_config):
     backend = site_config.get('backend')
     backends = site_config.get('backends', {})
     redirect = site_config.get('redirect')
