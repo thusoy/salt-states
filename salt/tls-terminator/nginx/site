@@ -4,8 +4,13 @@
 
 {% for upstream_identifier, upstream in upstreams.items() -%}
 upstream {{ upstream_identifier }} {
-    server {{ upstream.hostname }}:{{ upstream.port }};
-    keepalive 8;
+    {% for server in upstream.servers -%}
+    server {{ server.hostname }}:{{ server.port }}{{ ' ' + server.arguments if server.arguments else '' }};
+    {% endfor -%}
+    keepalive {{ upstream.keepalive }};
+    {%- if upstream.least_conn %}
+    least_conn;
+    {%- endif %}
 }
 
 {% endfor -%}

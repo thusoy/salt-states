@@ -9,7 +9,7 @@ import urlparse
 from collections import defaultdict, namedtuple
 
 
-Backend = namedtuple('Backend', 'normalized_ip port is_remote ip_family hostname path scheme')
+Backend = namedtuple('Backend', 'normalized_ip port is_remote ip_family hostname path scheme server_arguments')
 
 
 def run():
@@ -41,12 +41,17 @@ def build_state(sites, nginx_version='0.0.0'):
         for url, backend_config in backends.items():
             # If backend is https it's going out over the network, thus allow it through
             # the firewall
-            backend = parse_backend(backend_config['upstream'])
-            if backend.is_remote:
-                if backend.ip_family in ('ipv4', 'both'):
-                    outgoing_ipv4_firewall_ports[backend.normalized_ip].add(backend.port)
-                if backend.ip_family in ('ipv6', 'both'):
-                    outgoing_ipv6_firewall_ports[backend.normalized_ip].add(backend.port)
+            backend_upstreams = backend_config.get('upstreams', [])
+            if not backend_upstreams:
+                backend_upstreams = [backend_config['upstream']]
+
+            for upstream in backend_upstreams:
+                backend = parse_backend(upstream)
+                if backend.is_remote:
+                    if backend.ip_family in ('ipv4', 'both'):
+                        outgoing_ipv4_firewall_ports[backend.normalized_ip].add(backend.port)
+                    if backend.ip_family in ('ipv6', 'both'):
+                        outgoing_ipv6_firewall_ports[backend.normalized_ip].add(backend.port)
 
             states, backend_context, upstream = build_backend_context(site, site_config,
                 backend_config, nginx_version)
@@ -149,6 +154,8 @@ def normalize_backends(site, site_config):
             backends[url] = {
                 'upstream': backend_config,
             }
+        if 'upstream' in backends[url] and 'upstreams' in backends[url]:
+            raise ValueError("TLS-terminator site '%s' had both upstream and upstreams" % site)
 
     # Add backends only specified in rate limit rules
     for url, limits in site_config.get('rate_limit', {}).get('backends', {}).items():
@@ -170,15 +177,14 @@ def normalize_backends(site, site_config):
 
 
 def build_backend_context(site, site_config, backend_config, nginx_version):
-    backend = backend_config['upstream']
-    normalized_backend = '//' + backend if not '://' in backend else backend
-    parsed_backend = parse_backend(normalized_backend)
-    upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend)
-    upstream = {
-        'hostname': parsed_backend.hostname,
-        'port': parsed_backend.port,
-        'identifier': upstream_identifier,
-    }
+    upstream = build_upstream(site, backend_config)
+    upstream_identifier = upstream['identifier']
+
+    if len(upstream['servers']) == 1:
+        upstream_hostname = upstream['servers'][0]['hostname']
+    else:
+        upstream_hostname = 'site'
+
     states = {}
 
     upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
@@ -196,14 +202,13 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
 
     # Set default upstream Host header to the hostname if the upstream
     # is a hostname, otherwise the name of the site
-    upstream_hostname = parsed_backend.hostname # if family == 'both' else site
     if 'upstream_hostname' in backend_config or 'upstream_hostname' in site_config:
         upstream_hostname = backend_config.get('upstream_hostname',
             site_config.get('upstream_hostname'))
-        if upstream_hostname == 'site':
-            upstream_hostname = site
-        elif upstream_hostname == 'request':
-            upstream_hostname = '$http_host'
+    if upstream_hostname == 'site':
+        upstream_hostname = site
+    elif upstream_hostname == 'request':
+        upstream_hostname = '$http_host'
 
     extra_location_config = backend_config.get('extra_location_config', [])
     if isinstance(extra_location_config, dict):
@@ -223,13 +228,38 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
 
     return states, {
         'upstream_hostname': upstream_hostname,
-        'protocol': parsed_backend.scheme,
+        'protocol': upstream['scheme'],
         'upstream_identifier': upstream_identifier,
         'upstream_trust_root': upstream_trust_root,
         'pam_auth': backend_config.get('pam_auth', site_config.get('pam_auth')),
         'extra_location_config': extra_location_config,
         'rate_limit': backend_config.get('rate_limit'),
     }, upstream
+
+
+def build_upstream(site, backend_config):
+    upstreams = backend_config.get('upstreams', [])
+    if not upstreams:
+        upstreams = [backend_config['upstream']]
+    upstreams.sort()
+    upstream = {
+        'servers': [],
+        'keepalive': backend_config.get('upstream_keepalive', 8),
+        'least_conn': backend_config.get('upstream_least_conn', False),
+    }
+    upstream_identifier = None
+    for server in upstreams:
+        parsed_backend = parse_backend(server)
+        if upstream_identifier is None:
+            upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend)
+        upstream['servers'].append({
+            'hostname': parsed_backend.hostname,
+            'port': parsed_backend.port,
+            'arguments': parsed_backend.server_arguments,
+        })
+    upstream['identifier'] = upstream_identifier
+    upstream['scheme'] = parsed_backend.scheme
+    return upstream
 
 
 def build_tls_certs_for_site(site, site_config):
@@ -364,6 +394,12 @@ def slugify(value):
 def parse_backend(url):
     # We classify it as external if either the address is specified as a hostname
     # and not an IP, and if it's an IP if it's outside the local range (127/8)
+    url_parts = url.split(None, 1)
+    if len(url_parts) == 2:
+        url, arguments = url_parts
+    else:
+        url = url_parts[0]
+        arguments = None
     parsed_url = urlparse.urlparse(url)
 
     packed_ip = get_packed_ip(parsed_url.hostname)
@@ -389,6 +425,7 @@ def parse_backend(url):
         parsed_url.hostname,
         parsed_url.path,
         parsed_url.scheme,
+        arguments,
     )
 
 

@@ -99,7 +99,14 @@ tls-terminator:
                 }
 
     example.com:
-        backend: https://thusoy.com
+        backends:
+            /:
+                upstreams:
+                    - http://127.0.0.1:5000 weight=3
+                    - http://127.0.0.1:5001
+                upstream_keepalive: 16
+                upstream_least_conn: True
+            /other: http://127.0.0.1:5002
         extra_locations:
             /.well-known/assetlinks.json: |
                 add_header content-type application/json;

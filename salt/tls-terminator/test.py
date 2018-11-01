@@ -70,8 +70,19 @@ def test_build_state_aliases():
             }
         }
     }
+    multiple = {
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstreams': [
+                        'http://127.0.0.1:5000',
+                    ]
+                }
+            }
+        }
+    }
     uut = module.build_state
-    assert uut(short) == uut(medium) == uut(full)
+    assert uut(short) == uut(medium) == uut(full) == uut(multiple)
 
 
 def test_build_acme_state():
@@ -282,6 +293,55 @@ def test_invalid_config():
                 },
             }
         })
+
+    with pytest.raises(ValueError):
+        module.build_state({
+            'example.com': {
+                'backends': {
+                    '/': {
+                        'upstream': 'http://10.10.10.10',
+                        'upstreams': ['http://10.10.10.11'],
+                    }
+                }
+            }
+        })
+
+
+def test_multiple_upstreams():
+    state = module.build_state({
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstreams': [
+                        'http://10.10.10.10:5000 weight=2',
+                        'http://10.10.10.11:5000'
+                    ],
+                    'upstream_keepalive': 16,
+                    'upstream_least_conn': True,
+                },
+                '/path': {
+                    'upstream': 'http://10.10.10.12:5001',
+                }
+            }
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    upstreams = context['upstreams']
+    assert upstreams['example.com-10.10.10.10_2d957d'] == {
+        'identifier': 'example.com-10.10.10.10_2d957d',
+        'servers': [{
+            'hostname': '10.10.10.10',
+            'port': 5000,
+            'arguments': 'weight=2',
+        }, {
+            'hostname': '10.10.10.11',
+            'port': 5000,
+            'arguments': None,
+        }],
+        'keepalive': 16,
+        'least_conn': True,
+        'scheme': 'http',
+    }
 
 
 def get_backends(state_nginx_site):
