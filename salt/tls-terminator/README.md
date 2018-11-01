@@ -3,6 +3,21 @@ tls-terminator
 
 Configures nginx as TLS terminator for a http(s) backend.
 
+Conceptually this is organized around the following terms:
+**site**: An internet-facing (or internal) https endpoint. This is grouped by hostname,
+  thus `api.example.com` and `example.com` would be two different sites.
+**backend**: Each site has one or more backends, grouped by url prefix. Thus
+  `example.com` and `example.com/docs` could be two different backends for a given site.
+**upstreams**: Each backend has one or more upstreams, which is the service that actually
+  generates the response for a given request. This is usually another http(s) url.
+
+By default the HTTP Host header will be set to the same as the upstream if a single
+upstream is given, ie if the only upstream is `example.herokuapp.com` the Host header will
+be `example.herokuapp.com`. If there are multiple upstreams the default Host header will
+be that of the site. The latter behavior can also be set for a single upstream by setting
+`upstream_hostname` to `site` in the backend or site config. `upstream_hostname` can also
+be set to any arbitrary value that will be used for all upstreams.
+
 Sample pillar config:
 
 ```yaml
@@ -30,7 +45,13 @@ tls-terminator:
     otherexample.com:
         backends:
             /: https://example-app.herokuapp.com
-            /api: https://api-app.herokuapp.com
+            /api:
+                upstreams:
+                    - http://10.10.10.10:8000 weight=5
+                    - http://10.10.10.11:8000
+                    - http://10.10.10.12:8000 backup
+                upstream_least_conn: True
+                upstream_keepalive: 32
 ```
 
 A HTTPS backend is validated against the system trust root if no explicit trust root is given. To
