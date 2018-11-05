@@ -18,6 +18,14 @@ be that of the site. The latter behavior can also be set for a single upstream b
 `upstream_hostname` to `site` in the backend or site config. `upstream_hostname` can also
 be set to any arbitrary value that will be used for all upstreams.
 
+The state will add the following security headers by default:
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains` Ensures later requests are made over https too.
+- `X-Frame-Options: DENY` Prevents click-jacking by preventing the page from being framed.
+- `X-Xss-Protection: 1; mode=block` Turns on the browser's built-in XSS protection.
+- `X-Content-Type-Options: nosniff` Disables mime-type sniffing in browsers.
+
+There are some more headers that the upstream should set since they are very site specific, like Content-Security-Policy, Referrer-Policy and Feature-Policy. If you can't configure the headers on the backend you can configure them both globally on the tls-terminator (convenient for Expect-CT where you just need to set a report uri) or per site (referrer-policy) through the add_headers key. This also enables overriding the defaults mentioned above. The default headers will only be added if the header isn't already set by the upstream.
+
 Sample pillar config:
 
 ```yaml
