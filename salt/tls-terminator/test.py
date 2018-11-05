@@ -344,6 +344,31 @@ def test_multiple_upstreams():
     }
 
 
+def test_add_headers():
+    state = module.build_state({
+        'add_headers': {
+            'Expect-CT': 'max-age=60, report-uri=https://example.com/.report-uri/expect-ct',
+        },
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'add_headers': {
+                'Referrer-Policy': 'strict-origin-when-cross-origin',
+            }
+        },
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    default_security_headers = (
+        'Strict-Transport-Security',
+        'X-Xss-Protection',
+        'X-Content-Type-Options',
+        'X-Frame-Options',
+    )
+    for header in default_security_headers:
+        assert header in context['headers']
+    assert 'Expect-CT' in context['headers']
+    assert 'Referrer-Policy' in context['headers']
+
+
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
 

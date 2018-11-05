@@ -33,9 +33,15 @@ def build_state(sites, nginx_version='0.0.0'):
     rate_limit_zones = []
     error_pages = get_default_error_pages()
     error_pages.update(normalize_error_pages(sites))
+    global_headers = sites.pop('add_headers', {})
+
+    ret.update(build_security_header_maps())
 
     for site, site_config in sites.items():
         backends = normalize_backends(site, site_config)
+        site_headers = site_config.get('add_headers', {})
+        site_headers.update(global_headers)
+        add_security_headers(site_headers)
         parsed_backends = {}
         upstreams = {}
         for url, backend_config in backends.items():
@@ -86,6 +92,7 @@ def build_state(sites, nginx_version='0.0.0'):
                 {'context': {
                     'server_name': site,
                     'listen_parameters': site_config.get('listen_parameters', ''),
+                    'headers': site_headers,
                     'backends': parsed_backends,
                     'cert': cert,
                     'key': key,
@@ -133,6 +140,31 @@ def normalize_error_pages(site_config):
         normalized[int(error_code)] = content
 
     return normalized
+
+
+def build_security_header_maps():
+    return {
+        'tls-terminator-security-header-maps': {
+            'file.managed': [
+                {'name': '/etc/nginx/http-config/tls-terminator.security_header_maps.conf'},
+                {'source': 'salt://tls-terminator/security_header_maps.conf'},
+                {'require': [{'file': 'nginx-http-config'}]},
+                {'watch_in': [{'service': 'nginx'}]},
+            ]
+        }
+    }
+
+
+def add_security_headers(site_headers):
+    default_security_headers = {
+        'Strict-Transport-Security': '$tlst_strict_transport_security',
+        'X-Frame-Options': '$tlst_frame_options',
+        'X-Xss-Protection': '$tlst_xss_protection',
+        'X-Content-Type-Options': '$tlst_content_type_options',
+    }
+    for header, value in default_security_headers.items():
+        if header not in site_headers:
+            site_headers[header] = value
 
 
 def normalize_backends(site, site_config):
