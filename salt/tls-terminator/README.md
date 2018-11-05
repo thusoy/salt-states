@@ -4,11 +4,11 @@ tls-terminator
 Configures nginx as TLS terminator for a http(s) backend.
 
 Conceptually this is organized around the following terms:
-**site**: An internet-facing (or internal) https endpoint. This is grouped by hostname,
+- **site**: An internet-facing (or internal) https endpoint. This is grouped by hostname,
   thus `api.example.com` and `example.com` would be two different sites.
-**backend**: Each site has one or more backends, grouped by url prefix. Thus
+- **backend**: Each site has one or more backends, grouped by url prefix. Thus
   `example.com` and `example.com/docs` could be two different backends for a given site.
-**upstreams**: Each backend has one or more upstreams, which is the service that actually
+- **upstreams**: Each backend has one or more upstreams, which is the service that actually
   generates the response for a given request. This is usually another http(s) url.
 
 By default the HTTP Host header will be set to the same as the upstream if a single
@@ -24,7 +24,12 @@ The state will add the following security headers by default:
 - `X-Xss-Protection: 1; mode=block` Turns on the browser's built-in XSS protection.
 - `X-Content-Type-Options: nosniff` Disables mime-type sniffing in browsers.
 
-There are some more headers that the upstream should set since they are very site specific, like Content-Security-Policy, Referrer-Policy and Feature-Policy. If you can't configure the headers on the backend you can configure them both globally on the tls-terminator (convenient for Expect-CT where you just need to set a report uri) or per site (referrer-policy) through the add_headers key. This also enables overriding the defaults mentioned above. The default headers will only be added if the header isn't already set by the upstream.
+There are some more headers that the upstream should set since they are very site specific, like
+`Content-Security-Policy`, `Referrer-Policy` and `Feature-Policy`. If you can't configure the
+headers on the backend you can configure them both globally on the tls-terminator (convenient for
+`Expect-CT` where you just need to set a report uri) or per site (`Referrer-Policy`) through the
+`add_headers` key. This also enables overriding the defaults mentioned above. The default headers
+will only be added if the header isn't already set by the upstream.
 
 Sample pillar config:
 
