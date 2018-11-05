@@ -104,14 +104,14 @@ def build_state(sites, nginx_version='0.0.0'):
 
     ret['tls-terminator-rate-limit-zones'] = {
         'file.managed': [
-            {'name': '/etc/nginx/rate_limit_zones.conf'},
+            {'name': '/etc/nginx/http-config/tls-terminator.rate_limit_zones.conf'},
             {'source': 'salt://tls-terminator/rate_limit_zones.conf'},
             {'template': 'jinja'},
-            {'require': [{'pkg': 'nginx'}]},
-            {'watch_in': [{'service': 'nginx'}]},
             {'context': {
                 'rate_limit_zones': rate_limit_zones,
-            }}
+            }},
+            {'require': [{'file': 'nginx-http-config'}]},
+            {'watch_in': [{'service': 'nginx'}]},
         ]
     }
 

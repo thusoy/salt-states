@@ -241,12 +241,10 @@ nginx-logrotate-config:
         - template: jinja
 
 
-# Create this file without managing contents to allow other states to override
-# if they need to specify rate limit zones
-nginx-rate-limit-zones:
-    file.managed:
-        - name: /etc/nginx/rate_limit_zones.conf
-        - replace: False
+# Extension point where other states can inject config on the http-level
+nginx-http-config:
+    file.directory:
+        - name: /etc/nginx/http-config
         - require:
             - pkg: nginx
 
