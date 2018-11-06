@@ -44,7 +44,7 @@ def get_other_commits(branch, path):
 
 def parse_commits(git_log_output):
     commits = OrderedDict()
-    for line in git_log_output.split('\n'):
+    for line in git_log_output.decode('utf-8').split('\n'):
         line = line.strip()
         if not line:
             continue
