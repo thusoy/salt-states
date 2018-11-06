@@ -35,7 +35,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Prevent TTY Errors (copied from laravel/homestead: "homestead.rb" file)... By default this is "bash -l".
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
 
-  config.vm.provision "shell", inline: "sudo apt-get update && sudo apt-get install -y vim"
+  config.vm.provision "shell", inline: "sudo apt-get update && sudo apt-get install -y vim && sudo salt-call saltutil.sync_all"
 
   config.vm.provision :salt do |salt|
     salt.minion_config = "vagrant-minion"

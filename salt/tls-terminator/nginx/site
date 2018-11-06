@@ -1,11 +1,12 @@
-{# Setting hsts in a variable since it has to be repeated several times. Could
-   probably also be loaded from a map to enable configuration from pillar -#}
-{% set hsts = "max-age=31536000; includeSubDomains" -%}
-
-{% for backend in backends.values() -%}
-upstream {{ backend.upstream_identifier }} {
-    server {{ backend.hostname }}:{{ backend.port }};
-    keepalive 8;
+{% for upstream_identifier, upstream in upstreams.items() -%}
+upstream {{ upstream_identifier }} {
+    {% for server in upstream.servers -%}
+    server {{ server.hostname }}:{{ server.port }}{{ ' ' + server.arguments if server.arguments else '' }};
+    {% endfor -%}
+    keepalive {{ upstream.keepalive }};
+    {%- if upstream.least_conn %}
+    least_conn;
+    {%- endif %}
 }
 
 {% endfor -%}
@@ -26,9 +27,10 @@ server {
 
   ssl_certificate {{ cert }};
   ssl_certificate_key {{ key }};
-  add_header Strict-Transport-Security "{{ hsts }}" always;
 
-  error_page 504 /504-{{ server_name }}.html;
+  {% for error_code in error_pages -%}
+  error_page {{ error_code }} /{{ error_code }}-{{ server_name }};
+  {% endfor %}
 
   {% for extra_server_dict in extra_server_config -%}
   {% for key, value in extra_server_dict.items() -%}
@@ -48,7 +50,10 @@ server {
     # Restrict access to users on this machine with PAM
     auth_pam "Restricted";
     auth_pam_service_name "nginx";
+    {% endif -%}
 
+    {% if backend.rate_limit -%}
+    limit_req {{ backend.rate_limit }};
     {% endif -%}
 
     {% for extra_location_dict in backend.extra_location_config -%}
@@ -57,9 +62,12 @@ server {
     {% endfor -%}
     {% endfor %}
 
-    # Needs to be specified here too since cache_params also include a add_header directive. The
-    # parent directive ensures it's added to the other location blocks.
-    add_header Strict-Transport-Security "{{ hsts }}" always;
+    # Needs to be specified for each location since cache_params includes an
+    # add_header statement which would otherwise drop everything specified in a
+    # different context
+    {% for header, val in headers.items() -%}
+    add_header {{ header }} "{{ val }}" always;
+    {% endfor %}
 
     include proxy_params;
     include cache_params;
@@ -79,12 +87,26 @@ server {
 
   {% for extra_location, block in extra_locations.items() %}
   location {{ extra_location }} {
+
+    {% for header, val in headers.items() -%}
+    add_header {{ header }} "{{ val }}" always;
+    {% endfor %}
+
     {{ block }}
   }
   {% endfor %}
 
-  location = /504-{{ server_name }}.html {
-    root html;
+  {% for error_code, content in error_pages.items() %}
+  location = /{{ error_code }}-{{ server_name }} {
+    root /etc/nginx/html;
+
+    {% for header, val in headers.items() -%}
+    add_header {{ header }} "{{ val }}" always;
+    {% endfor %}
+
+    {# Skip extension on the file so that we can set any content-type -#}
+    default_type {{ content['content_type'] }};
     internal;
   }
+  {% endfor %}
 }

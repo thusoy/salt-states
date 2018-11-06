@@ -101,8 +101,32 @@ poff:
 
 
 tls-terminator:
+    error_pages:
+        {% raw %}
+        429: |
+            <!doctype html>
+            <title>That's enough</title>
+            <p>Too much traffic from you to {{ site }}, give the poor server a rest.</p>
+        {% endraw %}
+        504:
+            content_type: application/json
+            content: |
+                {
+                    "error": {
+                        "status": 502,
+                        "message": "Timed out"
+                    }
+                }
+
     example.com:
-        backend: https://thusoy.com
+        backends:
+            /:
+                upstreams:
+                    - http://127.0.0.1:5000 weight=3
+                    - http://127.0.0.1:5001
+                upstream_keepalive: 16
+                upstream_least_conn: True
+            /other: http://127.0.0.1:5002
         extra_locations:
             /.well-known/assetlinks.json: |
                 add_header content-type application/json;
@@ -111,6 +135,22 @@ tls-terminator:
                    "sha256_cert_fingerprints":
                      ["14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:"
                       "A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5"]}]';
+        rate_limit:
+            zones:
+                default:
+                    size: 3m
+                    rate: 5r/m
+                sensitive:
+                    size: 1m
+                    rate: 2r/m
+            backends:
+                /:
+                    zone: default
+                    burst: 3
+                /login:
+                    zone: sensitive
+                    burst: 2
+
 
 hardening:
     module_blacklist:

@@ -241,6 +241,14 @@ nginx-logrotate-config:
         - template: jinja
 
 
+# Extension point where other states can inject config on the http-level
+nginx-http-config:
+    file.directory:
+        - name: /etc/nginx/http-config
+        - require:
+            - pkg: nginx
+
+
 nginx-cache-dir:
     file.directory:
         - name: /var/cache/nginx
