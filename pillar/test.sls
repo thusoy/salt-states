@@ -106,7 +106,7 @@ tls-terminator:
         429: |
             <!doctype html>
             <title>That's enough</title>
-            <p>Too much traffic from you to, give the poor server at {{ site }} a rest.</p>
+            <p>Too much traffic from you to {{ site }}, give the poor server a rest.</p>
         {% endraw %}
         504:
             content_type: application/json
