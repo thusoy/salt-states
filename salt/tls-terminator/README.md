@@ -31,6 +31,8 @@ headers on the backend you can configure them both globally on the tls-terminato
 `add_headers` key. This also enables overriding the defaults mentioned above. The default headers
 will only be added if the header isn't already set by the upstream.
 
+You can remove the default headers or headers set globally by setting them to an empty string.
+
 Sample pillar config:
 
 ```yaml
