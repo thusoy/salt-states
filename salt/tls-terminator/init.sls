@@ -39,8 +39,8 @@ def build_state(sites, nginx_version='0.0.0'):
 
     for site, site_config in sites.items():
         backends = normalize_backends(site, site_config)
-        site_headers = site_config.get('add_headers', {})
-        site_headers.update(global_headers)
+        site_headers = dict(global_headers)
+        site_headers.update(site_config.get('add_headers', {}))
         add_security_headers(site_headers)
         parsed_backends = {}
         upstreams = {}
@@ -62,8 +62,7 @@ def build_state(sites, nginx_version='0.0.0'):
             states, backend_context, upstream = build_backend_context(site, site_config,
                 backend_config, nginx_version)
 
-            backend_headers = {}
-            backend_headers.update(site_headers)
+            backend_headers = dict(site_headers)
             backend_headers.update(backend_config.get('add_headers', {}))
             backend_context['headers'] = backend_headers
 
