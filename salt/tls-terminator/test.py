@@ -1,5 +1,6 @@
 import imp
 import os
+from collections import OrderedDict
 
 import pytest
 
@@ -187,16 +188,13 @@ def test_set_rate_limits():
 
 
 def test_custom_error_pages():
-    state = module.build_state({
+    pillar = OrderedDict({
         'error_pages': {
             '429': '429 loading {{ site }}',
             502: {
                 'content_type': 'application/json',
                 'content': '{"error": 502, "site": "{{ site }}"}',
             },
-        },
-        'example.com': {
-            'backend': 'http://127.0.0.1:5000',
         },
         'test.com': {
             'backend': 'http://127.0.0.1:5001',
@@ -205,6 +203,12 @@ def test_custom_error_pages():
             },
         },
     })
+    # Add example.com later to ensure test.com is processed first to expose ordering bugs
+    pillar['example.com'] = {
+        'backend': 'http://127.0.0.1:5000',
+    }
+
+    state = module.build_state(pillar)
 
     def error_page(site, error_code):
         error_state = state['tls-terminator-%s-error-page-%d' % (site, error_code)]
