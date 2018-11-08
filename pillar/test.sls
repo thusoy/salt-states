@@ -106,6 +106,8 @@ tls-terminator:
                     - http://127.0.0.1:5001
                 upstream_keepalive: 16
                 upstream_least_conn: True
+                add_headers:
+                    X-Frame-Options: sameorigin
             /other: http://127.0.0.1:5002
         extra_locations:
             /.well-known/assetlinks.json: |

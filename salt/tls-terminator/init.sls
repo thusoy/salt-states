@@ -61,6 +61,12 @@ def build_state(sites, nginx_version='0.0.0'):
 
             states, backend_context, upstream = build_backend_context(site, site_config,
                 backend_config, nginx_version)
+
+            backend_headers = {}
+            backend_headers.update(site_headers)
+            backend_headers.update(backend_config.get('add_headers', {}))
+            backend_context['headers'] = backend_headers
+
             upstreams[upstream['identifier']] = upstream
             parsed_backends[url] = backend_context
             ret.update(states)

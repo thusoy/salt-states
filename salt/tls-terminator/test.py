@@ -350,7 +350,17 @@ def test_add_headers():
             'Expect-CT': 'max-age=60, report-uri=https://example.com/.report-uri/expect-ct',
         },
         'example.com': {
-            'backend': 'http://127.0.0.1:5000',
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5000',
+                },
+                '/other': {
+                    'upstream': 'http://127.0.0.1:5001',
+                    'add_headers': {
+                        'X-Frame-Options': 'sameorigin',
+                    }
+                }
+            },
             'add_headers': {
                 'Referrer-Policy': 'strict-origin-when-cross-origin',
             }
@@ -367,6 +377,7 @@ def test_add_headers():
         assert header in context['headers']
     assert 'Expect-CT' in context['headers']
     assert 'Referrer-Policy' in context['headers']
+    assert context['backends']['/other']['headers']['X-Frame-Options'] == 'sameorigin'
 
 
 def get_backends(state_nginx_site):
