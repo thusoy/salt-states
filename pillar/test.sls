@@ -165,9 +165,6 @@ nginx:
     allow_sources_v6:
         - fe80::abcd
     proxy_read_timeout: 30
-    package: nginx-full
-    modules:
-        - /usr/lib/nginx/modules/ngx_http_auth_pam_module.so
     default_key: |
         -----BEGIN RSA PRIVATE KEY-----
         MIIEpQIBAAKCAQEA6ss5SR5Ut0bBdrEol//1pjPWTS1o7Q5q3nmPnZwQ1ZGz387u
