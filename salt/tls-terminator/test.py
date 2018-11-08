@@ -363,6 +363,7 @@ def test_add_headers():
             },
             'add_headers': {
                 'Referrer-Policy': 'strict-origin-when-cross-origin',
+                'Expect-CT': '',
             }
         },
     })
@@ -378,6 +379,7 @@ def test_add_headers():
     assert 'Expect-CT' in context['headers']
     assert 'Referrer-Policy' in context['headers']
     assert context['backends']['/other']['headers']['X-Frame-Options'] == 'sameorigin'
+    assert context['headers']['Expect-CT'] == ''
 
 
 def get_backends(state_nginx_site):
