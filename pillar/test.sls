@@ -193,9 +193,6 @@ nginx:
         main: 'time=$time_iso8601 client=$remote_addr host=$http_host
                method=$request_method path="$request_uri" status=$status bytes=$body_bytes_sent
                total_time=$request_time ua="$http_user_agent"'
-    package: nginx-full
-    modules:
-        - /usr/lib/nginx/modules/ngx_http_auth_pam_module.so
     default_key: |
         -----BEGIN RSA PRIVATE KEY-----
         MIIEpQIBAAKCAQEA6ss5SR5Ut0bBdrEol//1pjPWTS1o7Q5q3nmPnZwQ1ZGz387u
