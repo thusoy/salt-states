@@ -70,7 +70,7 @@ def build_state(sites, nginx_version='0.0.0'):
             parsed_backends[url] = backend_context
             ret.update(states)
 
-        error_states, error_pages = build_site_error_pages(site, site_config, error_pages)
+        error_states, site_error_pages = build_site_error_pages(site, site_config, error_pages)
         ret.update(error_states)
         rate_limit_zones.extend(build_rate_limit_zones(site_config))
 
@@ -106,7 +106,7 @@ def build_state(sites, nginx_version='0.0.0'):
                     'extra_server_config': extra_server_config,
                     'extra_locations': site_config.get('extra_locations', {}),
                     'redirect': site_config.get('redirect'),
-                    'error_pages': error_pages,
+                    'error_pages': site_error_pages,
                     'upstreams': upstreams,
                 }}
             ]
@@ -345,7 +345,7 @@ def build_tls_certs_for_site(site, site_config):
 
 def build_site_error_pages(site, site_config, default_error_pages):
     states = {}
-    error_pages = dict(default_error_pages.items())
+    error_pages = dict(default_error_pages)
     error_pages.update(normalize_error_pages(site_config))
 
     for error_code, content in error_pages.items():
