@@ -86,7 +86,7 @@ tls-terminator:
         429: |
             <!doctype html>
             <title>That's enough</title>
-            <p>Too much traffic from you to, give the poor server at {{ site }} a rest.</p>
+            <p>Too much traffic from you to {{ site }}, give the poor server a rest.</p>
         {% endraw %}
         504:
             content_type: application/json
@@ -106,6 +106,8 @@ tls-terminator:
                     - http://127.0.0.1:5001
                 upstream_keepalive: 16
                 upstream_least_conn: True
+                add_headers:
+                    X-Frame-Options: sameorigin
             /other: http://127.0.0.1:5002
         extra_locations:
             /.well-known/assetlinks.json: |
@@ -163,9 +165,6 @@ nginx:
     allow_sources_v6:
         - fe80::abcd
     proxy_read_timeout: 30
-    package: nginx-full
-    modules:
-        - /usr/lib/nginx/modules/ngx_http_auth_pam_module.so
     default_key: |
         -----BEGIN RSA PRIVATE KEY-----
         MIIEpQIBAAKCAQEA6ss5SR5Ut0bBdrEol//1pjPWTS1o7Q5q3nmPnZwQ1ZGz387u

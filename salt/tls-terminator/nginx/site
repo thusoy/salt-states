@@ -65,8 +65,8 @@ server {
     # Needs to be specified for each location since cache_params includes an
     # add_header statement which would otherwise drop everything specified in a
     # different context
-    {% for header, val in headers.items() -%}
-    add_header {{ header }} "{{ val }}" always;
+    {% for header, val in backend.headers.items() -%}
+    add_header {{ header }} '{{ val }}' always;
     {% endfor %}
 
     include proxy_params;
@@ -89,7 +89,7 @@ server {
   location {{ extra_location }} {
 
     {% for header, val in headers.items() -%}
-    add_header {{ header }} "{{ val }}" always;
+    add_header {{ header }} '{{ val }}' always;
     {% endfor %}
 
     {{ block }}
@@ -101,7 +101,7 @@ server {
     root /etc/nginx/html;
 
     {% for header, val in headers.items() -%}
-    add_header {{ header }} "{{ val }}" always;
+    add_header {{ header }} '{{ val }}' always;
     {% endfor %}
 
     {# Skip extension on the file so that we can set any content-type -#}
