@@ -1,6 +1,6 @@
 cachish:
     pkgrepo.managed:
-        - name: deb https://thusoy-apt.s3-accelerate.amazonaws.com/apt/debian {{ grains.oscodename }} main
+        - name: deb https://repo.thusoy.com/apt/debian {{ grains.oscodename }} main
         - key_url: salt://cachish/release-key.asc
 
     pkg.installed:
