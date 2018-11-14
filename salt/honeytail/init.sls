@@ -60,6 +60,7 @@ honeytail-outgoing-firewall-dns-{{ family }}-{{ protocol }}:
         - uid-owner: honeycomb
         - require:
             - user: honeytail
+        - jump: ACCEPT
 {% endfor %}
 
 honeytail-outgoing-firewall-events-{{ family }}:
@@ -76,5 +77,5 @@ honeytail-outgoing-firewall-events-{{ family }}:
         - uid-owner: honeycomb
         - require:
             - user: honeytail
-
+        - jump: ACCEPT
 {% endfor %}
