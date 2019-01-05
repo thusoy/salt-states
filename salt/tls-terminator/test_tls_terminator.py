@@ -126,32 +126,39 @@ def test_build_custom_tls_pillar_state():
     assert 'certbot' not in state['include']
 
 
-def test_build_outgoing_ip():
+def test_build_outgoing_firewall_rules():
     state = module.build_state({
         'example.com': {
             'backend': 'http://1.1.1.1',
-        }
+        },
+        'foo.com': {
+            'backend': 'http://2.2.2.2:8000',
+        },
+        'bar.com': {
+            'backend': 'https://app.bar.com',
+        },
     })
 
     assert 'tls-terminator-outgoing-ipv4-port-443' not in state
-    firewall_v4 = merged(state['tls-terminator-outgoing-ipv4-port-80']['firewall.append'])
-    assert firewall_v4['family'] == 'ipv4'
-    assert firewall_v4['dports'] == '80'
-    assert firewall_v4['destination'] == '1.1.1.1'
+    example_v4 = merged(state['tls-terminator-outgoing-ipv4-to-1.1.1.1-port-80']['firewall.append'])
+    assert example_v4['family'] == 'ipv4'
+    assert example_v4['dports'] == '80'
+    assert example_v4['destination'] == '1.1.1.1'
 
+    foo_v4 = merged(state['tls-terminator-outgoing-ipv4-to-2.2.2.2-port-8000']['firewall.append'])
+    assert foo_v4['family'] == 'ipv4'
+    assert foo_v4['dports'] == '8000'
+    assert foo_v4['destination'] == '2.2.2.2'
 
-def test_build_outgoing_hostname():
-    state = module.build_state({
-        'example.com': {
-            'backend': 'https://backend.example.com',
-        }
-    })
+    bar_v4 = merged(state['tls-terminator-outgoing-ipv4-to-0/0-port-443']['firewall.append'])
+    assert bar_v4['family'] == 'ipv4'
+    assert bar_v4['dports'] == '443'
+    assert bar_v4['destination'] == '0/0'
 
-    assert 'tls-terminator-outgoing-ipv4-port-80' not in state
-    firewall_v4 = merged(state['tls-terminator-outgoing-ipv4-port-443']['firewall.append'])
-    assert firewall_v4['family'] == 'ipv4'
-    assert firewall_v4['dports'] == '443'
-    assert firewall_v4['destination'] == '0/0'
+    bar_v6 = merged(state['tls-terminator-outgoing-ipv6-to-0/0-port-443']['firewall.append'])
+    assert bar_v6['family'] == 'ipv6'
+    assert bar_v6['dports'] == '443'
+    assert bar_v6['destination'] == '0/0'
 
 
 def test_set_rate_limits():

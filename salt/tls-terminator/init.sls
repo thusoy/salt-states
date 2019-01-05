@@ -378,11 +378,13 @@ def build_site_error_pages(site, site_config, default_error_pages):
 def build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_ports):
     states = {}
     for ruleset, family in [
-        (outgoing_ipv4_firewall_ports, 'ipv4'),
-        (outgoing_ipv6_firewall_ports, 'ipv6')]:
+            (outgoing_ipv4_firewall_ports, 'ipv4'),
+            (outgoing_ipv6_firewall_ports, 'ipv6')]:
         for target_ip, ports in sorted(ruleset.items()):
             for port_set in get_port_sets(ports):
-                states['tls-terminator-outgoing-%s-port-%s' % (family, port_set)] = {
+                state_key = 'tls-terminator-outgoing-%s-to-%s-port-%s' % (
+                    family, target_ip, port_set)
+                states[state_key] = {
                     'firewall.append': [
                         {'chain': 'OUTPUT'},
                         {'family': family},
