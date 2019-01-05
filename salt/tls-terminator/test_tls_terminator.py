@@ -111,6 +111,21 @@ def test_build_custom_tls_state():
     assert 'certbot' not in state['include']
 
 
+def test_build_custom_tls_pillar_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'cert_pillar': 'some:pillar:key',
+            'key_pillar': 'other:pillar:key',
+        }
+    })
+    cert = state['tls-terminator-example.com-tls-cert']
+    key = state['tls-terminator-example.com-tls-key']
+    assert merged(cert['file.managed'])['contents_pillar'] == 'some:pillar:key'
+    assert merged(key['file.managed'])['contents_pillar'] == 'other:pillar:key'
+    assert 'certbot' not in state['include']
+
+
 def test_build_outgoing_ip():
     state = module.build_state({
         'example.com': {
