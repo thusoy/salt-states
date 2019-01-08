@@ -247,9 +247,7 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
     elif upstream_hostname == 'request':
         upstream_hostname = '$http_host'
 
-    extra_location_config = backend_config.get('extra_location_config', [])
-    if isinstance(extra_location_config, dict):
-        extra_location_config = [extra_location_config]
+    extra_location_config = []
 
     # Add X-Request-Id header both ways if the nginx version supports it
     nginx_version = tuple(int(num) for num in nginx_version.split('.'))
@@ -262,6 +260,11 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
             # Add to the request before it reaches the proxy
             'proxy_set_header': 'X-Request-Id $request_id',
         })
+
+    pillar_extra_location_config = backend_config.get('extra_location_config', [])
+    if isinstance(pillar_extra_location_config, dict):
+        pillar_extra_location_config = [extra_location_config]
+    extra_location_config.extend(pillar_extra_location_config)
 
     return states, {
         'upstream_hostname': upstream_hostname,
