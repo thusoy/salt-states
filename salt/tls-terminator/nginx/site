@@ -56,12 +56,6 @@ server {
     limit_req {{ backend.rate_limit }};
     {% endif -%}
 
-    {% for extra_location_dict in backend.extra_location_config -%}
-    {% for key, value in extra_location_dict.items() -%}
-    {{ key }} {{ value }};
-    {% endfor -%}
-    {% endfor %}
-
     # Needs to be specified for each location since cache_params includes an
     # add_header statement which would otherwise drop everything specified in a
     # different context
@@ -81,6 +75,12 @@ server {
     # The verification depth needed for Heroku is currently only 2, but since they might
     # change CA and certificate layout on a whim we allow a depth of 3.
     proxy_ssl_verify_depth 3;
+
+    {% for extra_location_dict in backend.extra_location_config -%}
+    {% for key, value in extra_location_dict.items() -%}
+    {{ key }} {{ value }};
+    {% endfor -%}
+    {% endfor %}
   }
 
   {% endfor -%}
