@@ -96,23 +96,6 @@ powerdns-firewall-allow-secpolls-{{ family }}-{{ proto }}:
         - comment: 'powerdns: Allow polling for security status'
         - uid-owner: pdns
         - jump: ACCEPT
-
-
-{% for secondary_ip in powerdns.get('allow_axfr_ips', []) %}
-powerdns-firewall-allow-axfr-{{ family }}-{{ proto }}-to-{{ secondary_ip }}:
-    firewall.append:
-        - family: {{ family }}
-        - chain: OUTPUT
-        - protocol: {{ proto }}
-        - dport: 53
-        - destination: {{ secondary_ip}}
-        - match:
-            - comment
-            - owner
-        - comment: 'powerdns: Allow AXFR to {{ secondary_ip }}'
-        - uid-owner: pdns
-        - jump: ACCEPT
-{% endfor %}
 {% endfor %}
 
 
@@ -132,4 +115,22 @@ powerdns-firewall-allow-database-{{ family }}:
         - uid-owner: pdns
         - jump: ACCEPT
 {% endif %}
+{% endfor %}
+
+
+{% for secondary_ip in powerdns.get('allow_axfr_ips', []) %}
+{% set family = 'ipv6' if ':' in secondary_ip else 'ipv4' %}
+powerdns-firewall-allow-{{ family }}-axfr-to-{{ secondary_ip }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: tcp
+        - dport: 53
+        - destination: {{ secondary_ip }}
+        - match:
+            - comment
+            - owner
+        - comment: 'powerdns: Allow AXFR to {{ secondary_ip }}'
+        - uid-owner: pdns
+        - jump: ACCEPT
 {% endfor %}

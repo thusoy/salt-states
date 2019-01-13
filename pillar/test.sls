@@ -72,6 +72,7 @@ powerdns:
     allow_axfr_ips:
         - 1.2.3.4
         - 2.3.4.5
+        - '2001::53'
     repo: auth-40
 
 
