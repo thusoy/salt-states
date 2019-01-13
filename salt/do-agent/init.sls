@@ -42,4 +42,21 @@ do-agent-firewall-collector-{{ family }}:
         - comment: 'do-agent: Allow connecting to collector'
         - uid-owner: nobody
         - jump: ACCEPT
+
+
+{% for protocol in ('udp', 'tcp') %}
+do-agent-firewall-dns-{{ family }}-{{ protocol }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - destination: system_dns
+        - proto: {{ protocol }}
+        - dport: 53
+        - match:
+            - comment
+            - owner
+        - comment: "do-agent: Allow DNS"
+        - uid-owner: nobody
+        - jump: ACCEPT
+{% endfor %}
 {% endfor %}
