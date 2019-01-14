@@ -17,6 +17,8 @@ acme-dns-cronjob:
     cron.present:
         - identifier: acme-dns
         - name: /usr/local/lib/acme-dns/get_certs.py
+        - minute: random
+        - hour: random
 
 
 acme-dns-tiny:
