@@ -96,24 +96,6 @@ powerdns-firewall-allow-secpolls-{{ family }}-{{ proto }}:
         - comment: 'powerdns: Allow polling for security status'
         - uid-owner: pdns
         - jump: ACCEPT
-
-
-{% for secondary_ip in powerdns.get('allow_axfr_ips', []) %}
-{% set family = 'ipv6' if ':' in secondary_ip else 'ipv4' %}
-powerdns-firewall-allow-{{ family }}-{{ proto }}-notify-to-{{ secondary_ip }}:
-    firewall.append:
-        - family: {{ family }}
-        - chain: OUTPUT
-        - protocol: {{ proto }}
-        - dport: 53
-        - destination: {{ secondary_ip }}
-        - match:
-            - comment
-            - owner
-        - comment: 'powerdns: Allow NOTIFY to {{ secondary_ip }} over {{ proto }}'
-        - uid-owner: pdns
-        - jump: ACCEPT
-{% endfor %}
 {% endfor %}
 
 
@@ -133,4 +115,24 @@ powerdns-firewall-allow-database-{{ family }}:
         - uid-owner: pdns
         - jump: ACCEPT
 {% endif %}
+{% endfor %}
+
+
+{% for secondary_ip in powerdns.get('allow_axfr_ips', []) %}
+{% for protocol in ('udp', 'tcp') %}
+{% set family = 'ipv6' if ':' in secondary_ip else 'ipv4' %}
+powerdns-firewall-allow-{{ family }}-{{ protocol }}-notify-to-{{ secondary_ip }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: {{ protocol }}
+        - dport: 53
+        - destination: {{ secondary_ip }}
+        - match:
+            - comment
+            - owner
+        - comment: 'powerdns: Allow NOTIFY to {{ secondary_ip }} over {{ protocol }}'
+        - uid-owner: pdns
+        - jump: ACCEPT
+{% endfor %}
 {% endfor %}
