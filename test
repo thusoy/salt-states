@@ -1,5 +1,5 @@
 #!/bin/sh
 
 ./venv/bin/py.test \
-    salt/tls-terminator/test.py \
+    salt/tls-terminator/test_tls_terminator.py \
     salt/hardening/test_print_dependent_modules.py "$@"
