@@ -72,7 +72,7 @@ acme-dns-firewall-outbound-dns-{{ family }}-{{ protocol }}:
         - dport: 53
         - match:
             - comment
-            - user
+            - owner
         - comment: 'acme-dns: Allow outbound DNS'
         - uid-owner: root
         - jump: ACCEPT
@@ -87,7 +87,7 @@ acme-dns-firewall-outbound-acme-{{ family }}:
         - protocol: tcp
         - match:
             - comment
-            - user
+            - owner
         - comment: 'acme-dns: Allow outbound ACME requests'
         - uid-owner: root
         - jump: ACCEPT
