@@ -100,3 +100,12 @@ Unattended-Upgrade::MailOnlyOnError "true";
 
 // Enable logging to syslog. Default is False
 Unattended-Upgrade::SyslogEnable "true";
+
+// Make sure dpkg doesn't prompt during updates. Install new config files if
+// they haven't been modified, otherwise keep the local version.
+// Note that this applies to all apt commands, not just when run through
+// unattended-upgrades
+Dpkg::Options {
+    "--force-confdef";
+    "--force-confold";
+};

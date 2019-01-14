@@ -247,9 +247,7 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
     elif upstream_hostname == 'request':
         upstream_hostname = '$http_host'
 
-    extra_location_config = backend_config.get('extra_location_config', [])
-    if isinstance(extra_location_config, dict):
-        extra_location_config = [extra_location_config]
+    extra_location_config = []
 
     # Add X-Request-Id header both ways if the nginx version supports it
     nginx_version = tuple(int(num) for num in nginx_version.split('.'))
@@ -262,6 +260,11 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
             # Add to the request before it reaches the proxy
             'proxy_set_header': 'X-Request-Id $request_id',
         })
+
+    pillar_extra_location_config = backend_config.get('extra_location_config', [])
+    if isinstance(pillar_extra_location_config, dict):
+        pillar_extra_location_config = [extra_location_config]
+    extra_location_config.extend(pillar_extra_location_config)
 
     return states, {
         'upstream_hostname': upstream_hostname,
@@ -301,21 +304,33 @@ def build_upstream(site, backend_config):
 
 def build_tls_certs_for_site(site, site_config):
     is_acme = site_config.get('acme')
+    # Cert and key given directly in pillar
+    pillar_values = 'cert' in site_config and 'key' in site_config
+    # Cert and key given as keys to some other pillar value
+    pillar_keys = 'cert_pillar' in site_config and 'key_pillar' in site_config
+
     states = {}
     if is_acme:
         # The actual certs will be managed by the certbot state (or equivalent)
         cert = '/etc/letsencrypt/live/%s/fullchain.pem' % site
         key = '/etc/letsencrypt/live/%s/privkey.pem' % site
 
-    elif 'cert' in site_config and 'key' in site_config:
+    elif pillar_values or pillar_keys:
         # Custom certs, create them on disk
         cert = '/etc/nginx/ssl/%s.crt' % site
         key = '/etc/nginx/private/%s.key' % site
 
+        if pillar_keys:
+            cert_source = {'contents_pillar': site_config['cert_pillar']}
+            key_source = {'contents_pillar': site_config['key_pillar']}
+        else:
+            cert_source = {'contents': site_config.get('cert')}
+            key_source = {'contents': site_config.get('key')}
+
         states['tls-terminator-%s-tls-cert' % site] = {
             'file.managed': [
                 {'name': cert},
-                {'contents': site_config.get('cert')},
+                cert_source,
                 {'require': [{'file': 'nginx-certificates-dir'}]},
                 {'watch_in': [{'service': 'nginx'}]},
             ]
@@ -324,7 +339,7 @@ def build_tls_certs_for_site(site, site_config):
         states['tls-terminator-%s-tls-key' % site] = {
             'file.managed': [
                 {'name': key},
-                {'contents': site_config.get('key')},
+                key_source,
                 {'user': 'root'},
                 {'group': 'nginx'},
                 {'mode': '0640'},
@@ -333,6 +348,7 @@ def build_tls_certs_for_site(site, site_config):
                 {'watch_in': [{'service': 'nginx'}]},
             ]
         }
+
     else:
         # Using the default certs from the nginx state
         cert = '/etc/nginx/ssl/default.crt'
@@ -365,11 +381,13 @@ def build_site_error_pages(site, site_config, default_error_pages):
 def build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_ports):
     states = {}
     for ruleset, family in [
-        (outgoing_ipv4_firewall_ports, 'ipv4'),
-        (outgoing_ipv6_firewall_ports, 'ipv6')]:
+            (outgoing_ipv4_firewall_ports, 'ipv4'),
+            (outgoing_ipv6_firewall_ports, 'ipv6')]:
         for target_ip, ports in sorted(ruleset.items()):
             for port_set in get_port_sets(ports):
-                states['tls-terminator-outgoing-%s-port-%s' % (family, port_set)] = {
+                state_key = 'tls-terminator-outgoing-%s-to-%s-port-%s' % (
+                    family, target_ip, port_set)
+                states[state_key] = {
                     'firewall.append': [
                         {'chain': 'OUTPUT'},
                         {'family': family},
