@@ -1,3 +1,45 @@
+acme-dns:
+    saltmaster-user: root
+    contact: acme@example.com
+    account-key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEpQIBAAKCAQEA7lVyG1UDVi+voluvXm3eSztyoqMD96IPNLCMqNq/cvN0gqWG
+        VZ0qZY5K0J2y1mCDbhjh4g/a/+6ZeSVy0Prd0kBX+VxO58pidSMZ/G2xrxRtuWfY
+        5O30nyOvhBEZ1fbhcT+piNlFz2FhlIgbgMUDkm02lWv10tCdp86/5ZSzPQdr0/rh
+        B1lezryFH2hGxHI+tDuAsuW2JF3OqVN85/8eg80+nFvjB7F/jDYr6YMN39SYGbHp
+        BVbt7HWxzM9XTRIiaQsqQJq3YY+q/2JiaWbrH9Kht8nL9PC4Di3WANdgKydO8Nvw
+        iZKZlxTL9n5mq3WjFvMtK+jAd7jRRyQwt+9iRQIDAQABAoIBAQDAYZ6C64OO/V0T
+        fFi5q4wFRE5Lc7TPHjSR/nT8E974BgalMsGVuBCx+0Lu1Gy4WR2eMF2dIdlQP6QI
+        wy7D+8w0XBXnRhi3R4lkLlpahZ0oyx+qymWsnVuZXa/etgMZ0He394B8441TUbL3
+        t0okDmPMvXWS9ZtveU/ZVa1Wv0pTVmw/IvKLjL/1JKJzZMpI6jxTGWEQnJLHoED1
+        4e8Quxzas0smdAbt11k4i8n9QOjEd94Dc0IuF/496rwiOIFxp6UaR+Tft+515UkV
+        uCYa4jaO5spNpRYMNAnV8nR/Yies903jBSoPNIjOIAWKKVuWtdbnT0AzOHOGS1Mm
+        kraQMoY9AoGBAP7QUeA0hNop3YfjY70GpWTCFXbx0f0SHOIdGUHycVvLHo8dJILO
+        pgPE3rAyirhiHFbkfyzOfHR/QXdd/0RJfZv7i9IY/DyFuvQLxepzPVLanCPfyfdV
+        HY+ltB1l6xFDmTgqcKV8MKaKMN2Jh0P38Mnh6mCxqX28p09x+hUT/VG7AoGBAO9x
+        fEpQg13eKOkOApCxJKI/5aWDtSwVkrpzj/tPebV49qo5MRtyx8SUnezhPvyQSOgW
+        SKxYQL/xufSKRHlOCAE5NuVBBqS4CBLPT59cxtpiIp7nOzlRTFsqtgQHuGSHyqmM
+        Gy3rGAQA+h2xwCsADJwrVLqFjt4A4TvUMoIaENv/AoGBAJzsXf/dWBOixLLy7nFy
+        rlimzeE6ez+G8BKwKOXcEMOfC2rHX7zO1p5rl1ibR6LViO5aOZe2ch6sX/zK/nFn
+        cNumxizVBkGfecrhlTkVTya/SnktUIvo9xOH0KxqH6G6J5nXSRggqzVk1UMZdxv8
+        jWVGo7h4sRCmJcNfRcvFS7QRAoGANfDu+x7gOUlPFhGd6lK92f9jEMJ3EhNaFr7p
+        9MeWt5ckmnx/35sf/d0tJqwnsGYgxogenxTSoWsnZTuw6VL24q+s+kCH6pu61eH2
+        IgSYl6H8Aqg841C5TuB0WLwUgjFFKqTxioqnwl8l+YKNtCIytQvd7pcf9Etmcj//
+        kOemXKkCgYEAjrx92WgxJWxmnxuCILRVbuW4JlMGt8ZN9HgE1fbzk7iabdulpPDl
+        BcfuQvq/w4S6VCJFDl9Cz3pCXrqm53xCc3/39+iX2qpptejgBYUQPZUk7Nh8esTK
+        iLvt1gJcO7bRTzgrPV18Zfdv8qhtvLle6t1PHaZREAqS7z079U/G+wY=
+        -----END RSA PRIVATE KEY-----
+    zones:
+        - update-server: ns.example.com
+          zone: example.com
+          key-name: acme
+          key-secret: supersecret
+          key-algorithm: hmac-sha256
+          certificates:
+            - hostname: acme.example.com
+              available-to: '*.web.example.com'
+
+
 sublime-text:
     channel: dev
 
