@@ -4,6 +4,7 @@
 
 include:
     - .pillar_check
+    - cronic
 
 
 acme-dns-dependencies:
@@ -16,7 +17,7 @@ acme-dns-dependencies:
 acme-dns-cronjob:
     cron.present:
         - identifier: acme-dns
-        - name: /usr/local/lib/acme-dns/get_certs.py
+        - name: cronic /usr/local/lib/acme-dns/get_certs.py
         - minute: random
         - hour: random
 
