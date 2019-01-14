@@ -100,17 +100,17 @@ powerdns-firewall-allow-secpolls-{{ family }}-{{ proto }}:
 
 {% for secondary_ip in powerdns.get('allow_axfr_ips', []) %}
 {% set family = 'ipv6' if ':' in secondary_ip else 'ipv4' %}
-powerdns-firewall-allow-{{ family }}-{{ protocol }}-notify-to-{{ secondary_ip }}:
+powerdns-firewall-allow-{{ family }}-{{ proto }}-notify-to-{{ secondary_ip }}:
     firewall.append:
         - family: {{ family }}
         - chain: OUTPUT
-        - protocol: {{ protocol }}
+        - protocol: {{ proto }}
         - dport: 53
         - destination: {{ secondary_ip }}
         - match:
             - comment
             - owner
-        - comment: 'powerdns: Allow NOTIFY to {{ secondary_ip }} over {{ protocol }}'
+        - comment: 'powerdns: Allow NOTIFY to {{ secondary_ip }} over {{ proto }}'
         - uid-owner: pdns
         - jump: ACCEPT
 {% endfor %}
