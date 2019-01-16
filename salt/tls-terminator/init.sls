@@ -74,7 +74,7 @@ def build_state(sites, nginx_version='0.0.0'):
         ret.update(error_states)
         rate_limit_zones.extend(build_rate_limit_zones(site_config))
 
-        cert, key, is_acme, cert_states = build_tls_certs_for_site(site, site_config)
+        certs, is_acme, cert_states = build_tls_certs_for_site(site, site_config)
         ret.update(cert_states)
         if is_acme:
             has_any_acme_sites = True
@@ -99,8 +99,7 @@ def build_state(sites, nginx_version='0.0.0'):
                     'listen_parameters': site_config.get('listen_parameters', ''),
                     'headers': site_headers,
                     'backends': parsed_backends,
-                    'cert': cert,
-                    'key': key,
+                    'certs': certs,
                     'https_redirect': https_redirect,
                     'client_max_body_size': site_config.get('client_max_body_size', '10m'),
                     'extra_server_config': extra_server_config,
@@ -303,58 +302,77 @@ def build_upstream(site, backend_config):
 
 
 def build_tls_certs_for_site(site, site_config):
+
+    def _has_pillar_keys(cert_spec):
+        '''Cert and key given as a path to another pillar resource'''
+        return 'cert_pillar' in cert_spec and 'key_pillar' in cert_spec
+
+    def _has_pillar_values(cert_spec):
+        '''Cert and key given directly in pillar'''
+        return 'cert' in cert_spec and 'key' in cert_spec
+
     is_acme = site_config.get('acme')
-    # Cert and key given directly in pillar
-    pillar_values = 'cert' in site_config and 'key' in site_config
-    # Cert and key given as keys to some other pillar value
-    pillar_keys = 'cert_pillar' in site_config and 'key_pillar' in site_config
+    certs = site_config.get('certs', [])
+    ret_certs = []
 
     states = {}
     if is_acme:
         # The actual certs will be managed by the certbot state (or equivalent)
-        cert = '/etc/letsencrypt/live/%s/fullchain.pem' % site
-        key = '/etc/letsencrypt/live/%s/privkey.pem' % site
+        ret_certs.append({
+            'cert': '/etc/letsencrypt/live/%s/fullchain.pem' % site,
+            'key': '/etc/letsencrypt/live/%s/privkey.pem' % site,
+        })
 
-    elif pillar_values or pillar_keys:
-        # Custom certs, create them on disk
-        cert = '/etc/nginx/ssl/%s.crt' % site
-        key = '/etc/nginx/private/%s.key' % site
+    elif certs or _has_pillar_values(site_config) or _has_pillar_keys(site_config):
+        if not certs:
+            certs = [site_config]
 
-        if pillar_keys:
-            cert_source = {'contents_pillar': site_config['cert_pillar']}
-            key_source = {'contents_pillar': site_config['key_pillar']}
-        else:
-            cert_source = {'contents': site_config.get('cert')}
-            key_source = {'contents': site_config.get('key')}
+        for cert_number, cert in enumerate(certs, 1):
+            # Custom certs, create them on disk
+            cert_path = '/etc/nginx/ssl/%s.%d.crt' % (site, cert_number)
+            key_path = '/etc/nginx/private/%s.%d.key' % (site, cert_number)
 
-        states['tls-terminator-%s-tls-cert' % site] = {
-            'file.managed': [
-                {'name': cert},
-                cert_source,
-                {'require': [{'file': 'nginx-certificates-dir'}]},
-                {'watch_in': [{'service': 'nginx'}]},
-            ]
-        }
+            if _has_pillar_keys(cert):
+                cert_source = {'contents_pillar': cert['cert_pillar']}
+                key_source = {'contents_pillar': cert['key_pillar']}
+            else:
+                cert_source = {'contents': cert['cert']}
+                key_source = {'contents': cert['key']}
 
-        states['tls-terminator-%s-tls-key' % site] = {
-            'file.managed': [
-                {'name': key},
-                key_source,
-                {'user': 'root'},
-                {'group': 'nginx'},
-                {'mode': '0640'},
-                {'show_changes': False},
-                {'require': [{'file': 'nginx-private-dir'}]},
-                {'watch_in': [{'service': 'nginx'}]},
-            ]
-        }
+            states['tls-terminator-%s-certs-%d-cert' % (site, cert_number)] = {
+                'file.managed': [
+                    {'name': cert_path},
+                    cert_source,
+                    {'require': [{'file': 'nginx-certificates-dir'}]},
+                    {'watch_in': [{'service': 'nginx'}]},
+                ]
+            }
+
+            states['tls-terminator-%s-certs-%d-key' % (site, cert_number)] = {
+                'file.managed': [
+                    {'name': key_path},
+                    key_source,
+                    {'user': 'root'},
+                    {'group': 'nginx'},
+                    {'mode': '0640'},
+                    {'show_changes': False},
+                    {'require': [{'file': 'nginx-private-dir'}]},
+                    {'watch_in': [{'service': 'nginx'}]},
+                ]
+            }
+            ret_certs.append({
+                'cert': cert_path,
+                'key': key_path,
+            })
 
     else:
         # Using the default certs from the nginx state
-        cert = '/etc/nginx/ssl/default.crt'
-        key = '/etc/nginx/private/default.key'
+        certs.append({
+            'cert': '/etc/nginx/ssl/default.crt',
+            'key': '/etc/nginx/private/default.key',
+        })
 
-    return cert, key, is_acme, states
+    return ret_certs, is_acme, states
 
 
 def build_site_error_pages(site, site_config, default_error_pages):

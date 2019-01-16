@@ -104,8 +104,8 @@ def test_build_custom_tls_state():
             'key': 'FOOKEY',
         }
     })
-    cert = state['tls-terminator-example.com-tls-cert']
-    key = state['tls-terminator-example.com-tls-key']
+    cert = state['tls-terminator-example.com-certs-1-cert']
+    key = state['tls-terminator-example.com-certs-1-key']
     assert merged(cert['file.managed'])['contents'] == 'FOOCERT'
     assert merged(key['file.managed'])['contents'] == 'FOOKEY'
     assert 'certbot' not in state['include']
@@ -119,10 +119,34 @@ def test_build_custom_tls_pillar_state():
             'key_pillar': 'other:pillar:key',
         }
     })
-    cert = state['tls-terminator-example.com-tls-cert']
-    key = state['tls-terminator-example.com-tls-key']
+    cert = state['tls-terminator-example.com-certs-1-cert']
+    key = state['tls-terminator-example.com-certs-1-key']
     assert merged(cert['file.managed'])['contents_pillar'] == 'some:pillar:key'
     assert merged(key['file.managed'])['contents_pillar'] == 'other:pillar:key'
+    assert 'certbot' not in state['include']
+
+
+def test_build_multiple_tls_pillar_state():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'certs': [{
+                'cert_pillar': 'pillar:rsa:cert',
+                'key_pillar': 'pillar:rsa:key',
+            }, {
+                'cert_pillar': 'pillar:ecdsa:cert',
+                'key_pillar': 'pillar:ecdsa:key',
+            }],
+        }
+    })
+    cert_1 = state['tls-terminator-example.com-certs-1-cert']
+    key_1 = state['tls-terminator-example.com-certs-1-key']
+    cert_2 = state['tls-terminator-example.com-certs-2-cert']
+    key_2 = state['tls-terminator-example.com-certs-2-key']
+    assert merged(cert_1['file.managed'])['contents_pillar'] == 'pillar:rsa:cert'
+    assert merged(key_1['file.managed'])['contents_pillar'] == 'pillar:rsa:key'
+    assert merged(cert_2['file.managed'])['contents_pillar'] == 'pillar:ecdsa:cert'
+    assert merged(key_2['file.managed'])['contents_pillar'] == 'pillar:ecdsa:key'
     assert 'certbot' not in state['include']
 
 
