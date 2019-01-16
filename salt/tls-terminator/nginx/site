@@ -25,8 +25,10 @@ server {
 
   client_max_body_size {{ client_max_body_size }};
 
-  ssl_certificate {{ cert }};
-  ssl_certificate_key {{ key }};
+  {% for cert in certs -%}
+  ssl_certificate {{ cert.cert }};
+  ssl_certificate_key {{ cert.key }};
+  {% endfor %}
 
   {% for error_code in error_pages -%}
   error_page {{ error_code }} /{{ error_code }}-{{ server_name }};
