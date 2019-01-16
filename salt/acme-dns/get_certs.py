@@ -2,6 +2,7 @@
 
 import argparse
 import binascii
+import datetime
 import os
 import pwd
 import subprocess
@@ -26,6 +27,10 @@ def main():
             acme_tiny_args = get_acme_tiny_args(config, zone)
             for certificate in zone.get('certificates', []):
                 hostname = certificate['hostname']
+                if not needs_refresh(hostname):
+                    print('%s does not need to be refreshed, ignoring' % hostname)
+                    continue
+
                 create_cert(hostname, account_key_fh.name, acme_tiny_args,
                     config['saltmaster-user'])
 
@@ -35,7 +40,6 @@ def create_cert(hostname, account_key_path, acme_tiny_args, key_read_user):
         ('ecdsa', create_ecdsa_key),
         ('rsa', create_rsa_key),
     ]
-    output_dir = '/var/lib/acme-dns'
     for key_type, key_generator in key_generators:
         key = key_generator()
         csr = create_csr(key, hostname)
@@ -44,12 +48,46 @@ def create_cert(hostname, account_key_path, acme_tiny_args, key_read_user):
             fh.flush()
             cert = get_crt(account_key_path, fh.name, **acme_tiny_args)
 
-        cert_path = os.path.join(output_dir, '%s.%s.crt' % (hostname, key_type))
+        cert_path = get_cert_path(hostname, key_type)
         with open(cert_path, 'w') as fh:
             fh.write(cert)
 
-        key_path = os.path.join(output_dir, '%s.%s.pem' % (hostname, key_type))
+        key_path = get_key_path(hostname, key_type)
         write_private_key(key.decode('utf-8'), key_path, key_read_user)
+
+
+def get_cert_path(hostname, key_type):
+    return '/var/lib/acme-dns/%s.%s.crt' % (hostname, key_type)
+
+
+def get_key_path(hostname, key_type):
+    return '/var/lib/acme-dns/%s.%s.pem' % (hostname, key_type)
+
+
+def needs_refresh(hostname):
+    for key_type in ('ecdsa', 'rsa'):
+        cert_path = get_cert_path(hostname, key_type)
+        try:
+            output = subprocess.check_output([
+                'openssl',
+                'x509',
+                '-in', cert_path,
+                '-noout',
+                '-subject',
+                '-enddate',
+            ])
+        except:
+            return True
+
+        expiry_after = output.decode('utf-8').strip()
+        expiry_after = expiry_after[expiry_after.index('notAfter=') + 9:]
+        expiry_after = datetime.datetime.strptime(expiry_after, '%b %d %H:%M:%S %Y %Z')
+        refresh_threshold = datetime.datetime.utcnow() + datetime.timedelta(days=30)
+
+        if expiry_after < refresh_threshold:
+            return True
+
+    return False
 
 
 def load_config(config_file_path):
