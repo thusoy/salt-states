@@ -60,6 +60,7 @@ acme-dns-config-file:
         - user: root
         - group: {{ saltmaster_user }}
         - mode: 640
+        - show_changes: False
 
 
 {% for family in ('ipv4', 'ipv6') %}
