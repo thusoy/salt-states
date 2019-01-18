@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import argparse, subprocess, json, os, sys, base64, binascii, time, hashlib, re, copy, textwrap, logging
 
+import errno
 import pprint
 import six
 import socket
@@ -196,33 +197,32 @@ def get_crt(account_key, csr, skip_check=False, log=LOGGER, CA=PROD_CA, contact=
             if not addr:
                 raise ValueError("No DNS server for {0} was found".format(domain))
 
-            qname = '_acme-challenge.{0}'.format(domain)
-            valid = []
-            for x in addr:
-                req = dns.message.make_query(qname, 'TXT')
+            # check directly on each name server of the current domain, if the challenge is in place
+            # TODO: Prevent infinite loop on failure
+            while len(addr):
+                x = addr.pop()
+                log.debug("Locally checking challenge on {0}...".format(x))
+                req = dns.message.make_query('_acme-challenge.%s' % domain, 'TXT')
                 try:
                     resp = dns.query.udp(req, x, timeout=30)
-                except socket.error as e:
-                    log.warn('Exception contacting {0}: {1}'.format(x, e))
-                except dns.exception.DNSException as e:
-                    log.warn('Exception contacting {0}: {1}'.format(x, e))
-                else:
-                    if resp.rcode() != dns.rcode.NOERROR:
-                        raise ValueError("Query for {0} returned {1} on nameserver {2}".format(qname, dns.rcode.to_text(resp.rcode()), x))
-                    else:
-                        answer = resp.get_rrset(resp.answer, dns.name.from_text("{0}.".format(qname.rstrip(".")), None),
-                                                dns.rdataclass.IN, dns.rdatatype.TXT)
-                        if answer:
-                            txt = list(map(lambda x: str(x)[1:-1], answer))
-                            if record not in txt:
-                                raise ValueError("{0} does not contain {1} on nameserver {2}".format(qname, record, x))
-                            else:
-                                valid.append(x)
-                        else:
-                            raise ValueError("Query for {0} returned an empty answer set on nameserver {1}".format(qname, x))
+                except OSError as e:
+                    if not e.errno == errno.ENETUNREACH:
+                        raise
+                    log.warning("Name server {0} unreachable. Assuming it's reachable from another network, ignoring...".format(x))
+                    continue
+                except dns.exception.Timeout:
+                    log.warning("Name server {0} not responding. We assume it's just bad luck and we ignore...".format(x))
+                    continue
+                txt = set()
+                for y in resp.answer:
+                    txt = txt.union(map(lambda x: str(x)[1:-1], y))
+                if len(txt) != 1 or record not in txt:
+                    # the challenge has not been found (or an old one is still there)
+                    # we wait a little and check again.
+                    log.warning("_acme-challenge.{0} does not contain (only ?) {1} on nameserver {2}. We sleep for 10s before checking again...".format(domain, record, x))
+                    addr.add(x)
+                    time.sleep(10)
 
-            if not valid:
-                raise ValueError("No DNS server for {0} was reachable".format(qname))
 
         # say the challenge is done
         _send_signed_request(challenge['url'], {}, "Error submitting challenges: {0}".format(rdomain))
