@@ -97,7 +97,7 @@ def load_config(config_file_path):
 
 def get_acme_tiny_args(config, zone):
     args = {
-        'contact_mail': config['contact'],
+        'contact': ['mailto:%s' % config['contact']],
         'dns_zone_update_server': zone['update-server'],
         'dns_zone_keyring': dns.tsigkeyring.from_text({
             zone['key-name']: zone['key-secret'],
