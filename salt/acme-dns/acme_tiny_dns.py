@@ -9,6 +9,7 @@ import pprint
 import six
 import socket
 import traceback
+from collections import defaultdict
 
 import dns.message
 import dns.name
@@ -198,7 +199,8 @@ def get_crt(account_key, csr, skip_check=False, log=LOGGER, CA=PROD_CA, contact=
                 raise ValueError("No DNS server for {0} was found".format(domain))
 
             # check directly on each name server of the current domain, if the challenge is in place
-            # TODO: Prevent infinite loop on failure
+            # We allow 10 minutes per address for the update to propagate
+            time_spent_on_addr = defaultdict(int)
             while len(addr):
                 x = addr.pop()
                 log.debug("Locally checking challenge on {0}...".format(x))
@@ -217,12 +219,19 @@ def get_crt(account_key, csr, skip_check=False, log=LOGGER, CA=PROD_CA, contact=
                 for y in resp.answer:
                     txt = txt.union(map(lambda x: str(x)[1:-1], y))
                 if len(txt) != 1 or record not in txt:
+                    timeout = 10
                     # the challenge has not been found (or an old one is still there)
                     # we wait a little and check again.
-                    log.warning("_acme-challenge.{0} does not contain (only ?) {1} on nameserver {2}. We sleep for 10s before checking again...".format(domain, record, x))
-                    addr.add(x)
-                    time.sleep(10)
+                    log.warning("_acme-challenge.{0} does not contain (only ?) {1} on nameserver {2}. We sleep for {3}s before checking again...".format(
+                        domain, record, x, timeout))
 
+                    time_spent_on_addr[x] += timeout
+                    if time_spent_on_addr[x] > 600:
+                        log.warning('Timed out when locally verify challenge on server {0}, might fail verification later'.format(x))
+                        continue
+
+                    addr.add(x)
+                    time.sleep(timeout)
 
         # say the challenge is done
         _send_signed_request(challenge['url'], {}, "Error submitting challenges: {0}".format(rdomain))
