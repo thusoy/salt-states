@@ -369,7 +369,7 @@ def build_tls_certs_for_site(site, site_config):
 
     else:
         # Using the default certs from the nginx state
-        certs.append({
+        ret_certs.append({
             'cert': '/etc/nginx/ssl/default.crt',
             'key': '/etc/nginx/private/default.key',
         })
