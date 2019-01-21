@@ -96,6 +96,30 @@ def test_build_acme_state():
     assert 'certbot' in state['include']
 
 
+def test_build_with_extra_location_config():
+    state = module.build_state({
+        'example.com': {
+            'backends': {
+                '/':{
+                    'upstream': 'http://127.0.0.1:5000',
+                    'extra_location_config': [{"list-of-dicts": "yes"}],
+                }
+            },
+        },
+        'bar.com': {
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5001',
+                    'extra_location_config': {"plain-dict": "yes"},
+                },
+            }
+        }
+    })
+    # Shouldn't have serialization problems
+    import json
+    json.dumps(state)
+
+
 def test_build_custom_tls_state():
     state = module.build_state({
         'example.com': {

@@ -262,7 +262,7 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
 
     pillar_extra_location_config = backend_config.get('extra_location_config', [])
     if isinstance(pillar_extra_location_config, dict):
-        pillar_extra_location_config = [extra_location_config]
+        pillar_extra_location_config = [pillar_extra_location_config]
     extra_location_config.extend(pillar_extra_location_config)
 
     return states, {
