@@ -9,6 +9,6 @@ hostname-from-id:
 
     host.present:
         - name: {{ grains.id }}
-        - ips:
+        - ip:
             - 127.0.0.1
             - 127.0.1.1
