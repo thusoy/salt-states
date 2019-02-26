@@ -117,6 +117,8 @@ tls-terminator:
                         "message": "Timed out"
                     }
                 }
+    redirect.com:
+        redirect: https://example.com
 
     example.com:
         backends:
@@ -129,6 +131,8 @@ tls-terminator:
                 add_headers:
                     X-Frame-Options: sameorigin
             /other: http://127.0.0.1:5002
+            /foo:
+                redirect: 'https://foo.com'
         extra_locations:
             /.well-known/assetlinks.json: |
                 add_header content-type application/json;
