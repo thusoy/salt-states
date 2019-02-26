@@ -38,7 +38,7 @@ server {
   {% for key, value in extra_server_dict.items() -%}
   {{ key }} {{ value }};
   {% endfor -%}
-  {% endfor %}
+  {% endfor -%}
 
   {% for url, backend in backends.items() -%}
   location {{ url }} {
