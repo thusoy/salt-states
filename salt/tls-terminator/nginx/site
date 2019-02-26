@@ -38,7 +38,7 @@ server {
   {% for key, value in extra_server_dict.items() -%}
   {{ key }} {{ value }};
   {% endfor -%}
-  {% endfor %}
+  {% endfor -%}
 
   {% if redirect -%}
   return {{ redirect }};
