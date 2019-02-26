@@ -49,6 +49,8 @@ def test_build_state():
     assert 'certbot' not in state['include']
     rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
     assert len(rate_limits['context']['rate_limit_zones']) == 0
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    assert context['backends']['/']['protocol'] == 'http'
 
 
 def test_build_state_aliases():
@@ -455,6 +457,80 @@ def test_add_headers():
     assert 'Referrer-Policy' in context['headers']
     assert context['backends']['/other']['headers']['X-Frame-Options'] == 'sameorigin'
     assert context['headers']['Expect-CT'] == ''
+
+
+def test_domain_redirect_plain():
+    state = module.build_state({
+        'example.com': {
+            'redirect': 'https://foo.com',
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    redirect_spec = context['backends']['/']['redirect']
+    assert redirect_spec['url'] == 'https://foo.com'
+    assert redirect_spec['status'] == 301
+    assert redirect_spec['include_query'] == True
+
+
+def test_domain_redirect_details():
+    state = module.build_state({
+        'example.com': {
+            'redirect': {
+                'url': 'https://foo.com',
+                'status': 302,
+                'include_query': False,
+            }
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    redirect_spec = context['backends']['/']['redirect']
+    assert redirect_spec['url'] == 'https://foo.com'
+    assert redirect_spec['status'] == 302
+    assert redirect_spec['include_query'] == False
+
+
+def test_redirect_single_location():
+    state = module.build_state({
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5000',
+                },
+                '/foo': {
+                    'redirect': 'https://foo.com',
+                }
+            }
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    redirect_spec = context['backends']['/foo']['redirect']
+    assert redirect_spec['url'] == 'https://foo.com'
+    assert redirect_spec['status'] == 301
+    assert redirect_spec['include_query'] == True
+
+
+def test_redirect_single_location_details():
+    state = module.build_state({
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5000',
+                },
+                '/foo': {
+                    'redirect': {
+                        'url': 'https://foo.com',
+                        'status': 307,
+                        'include_query': False,
+                    },
+                }
+            }
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    redirect_spec = context['backends']['/foo']['redirect']
+    assert redirect_spec['url'] == 'https://foo.com'
+    assert redirect_spec['status'] == 307
+    assert redirect_spec['include_query'] == False
 
 
 def get_backends(state_nginx_site):

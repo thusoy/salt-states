@@ -48,7 +48,7 @@ def build_state(sites, nginx_version='0.0.0'):
             # If backend is https it's going out over the network, thus allow it through
             # the firewall
             backend_upstreams = backend_config.get('upstreams', [])
-            if not backend_upstreams:
+            if not backend_upstreams and 'upstream' in backend_config:
                 backend_upstreams = [backend_config['upstream']]
 
             for upstream in backend_upstreams:
@@ -66,7 +66,9 @@ def build_state(sites, nginx_version='0.0.0'):
             backend_headers.update(backend_config.get('add_headers', {}))
             backend_context['headers'] = backend_headers
 
-            upstreams[upstream['identifier']] = upstream
+            if upstream:
+                upstreams[upstream['identifier']] = upstream
+
             parsed_backends[url] = backend_context
             ret.update(states)
 
@@ -104,7 +106,6 @@ def build_state(sites, nginx_version='0.0.0'):
                     'client_max_body_size': site_config.get('client_max_body_size', '10m'),
                     'extra_server_config': extra_server_config,
                     'extra_locations': site_config.get('extra_locations', {}),
-                    'redirect': site_config.get('redirect'),
                     'error_pages': site_error_pages,
                     'upstreams': upstreams,
                 }}
@@ -185,6 +186,11 @@ def normalize_backends(site, site_config):
             'upstream': backend,
         }
 
+    if redirect:
+        backends['/'] = {
+            'redirect': redirect,
+        }
+
     for url, backend_config in backends.items():
         if not isinstance(backend_config, dict):
             backends[url] = {
@@ -212,11 +218,25 @@ def normalize_backends(site, site_config):
     return backends
 
 
+def build_redirect(redirect):
+    if not redirect:
+        return None
+
+    if isinstance(redirect, dict):
+        return redirect
+
+    return {
+        'status': 301,
+        'url': redirect,
+        'include_query': True,
+    }
+
+
 def build_backend_context(site, site_config, backend_config, nginx_version):
     upstream = build_upstream(site, backend_config)
-    upstream_identifier = upstream['identifier']
+    upstream_identifier = upstream['identifier'] if upstream else None
 
-    if len(upstream['servers']) == 1:
+    if upstream and len(upstream['servers']) == 1:
         upstream_hostname = upstream['servers'][0]['hostname']
     else:
         upstream_hostname = 'site'
@@ -224,7 +244,7 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
     states = {}
 
     upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
-    if 'upstream_trust_root' in backend_config:
+    if upstream and 'upstream_trust_root' in backend_config:
         upstream_trust_root = '/etc/nginx/ssl/%s-root.pem' % upstream_identifier
         states['tls-terminator-upstream-%s-trust-root' % upstream_identifier] = {
             'file.managed': [
@@ -265,22 +285,31 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
         pillar_extra_location_config = [pillar_extra_location_config]
     extra_location_config.extend(pillar_extra_location_config)
 
-    return states, {
+    backend_context = {
         'upstream_hostname': upstream_hostname,
-        'protocol': upstream['scheme'],
-        'path': upstream['path'],
         'upstream_identifier': upstream_identifier,
         'upstream_trust_root': upstream_trust_root,
         'pam_auth': backend_config.get('pam_auth', site_config.get('pam_auth')),
         'extra_location_config': extra_location_config,
         'rate_limit': backend_config.get('rate_limit'),
-    }, upstream
+        'redirect': build_redirect(backend_config.get('redirect')),
+    }
+
+    if upstream:
+        backend_context['protocol'] = upstream['scheme']
+        backend_context['path'] = upstream['path']
+
+    return states, backend_context, upstream
 
 
 def build_upstream(site, backend_config):
+    if backend_config.get('redirect'):
+        return None
+
     upstreams = backend_config.get('upstreams', [])
     if not upstreams:
         upstreams = [backend_config['upstream']]
+
     upstreams.sort()
     upstream = {
         'servers': [],

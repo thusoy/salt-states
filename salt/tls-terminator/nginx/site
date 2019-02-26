@@ -40,13 +40,13 @@ server {
   {% endfor -%}
   {% endfor %}
 
-  {% if redirect -%}
-  return {{ redirect }};
-  {% endif %}
-
   {% for url, backend in backends.items() -%}
   location {{ url }} {
+    {% if backend.redirect -%}
+    return {{ backend.redirect.status }} {{ backend.redirect.url }}{% if backend.redirect.include_query %}$request_uri{% endif %};
+    {% else -%}
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }}{{ backend.path }};
+    {%- endif %}
 
     {% if backend.pam_auth -%}
     # Restrict access to users on this machine with PAM
