@@ -21,9 +21,13 @@ def ext_pillar(minion_id, pillar):
                 available_hostnames.append(certificate['hostname'])
                 continue
 
-            if _has_access(minion_access, minion_id):
-                available_hostnames.append(certificate['hostname'])
+            if not isinstance(minion_access, list):
+                minion_access = [minion_access]
 
+            for pattern in minion_access:
+                if _has_access(pattern, minion_id):
+                    available_hostnames.append(certificate['hostname'])
+                    break
 
     if not available_hostnames:
         return {}
@@ -58,4 +62,4 @@ def _load_config():
 
 
 def _has_access(access_spec, minion_id):
-    return fnmatch.fnmatchcase(minion_id, access_spec, )
+    return fnmatch.fnmatchcase(minion_id, access_spec)

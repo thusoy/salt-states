@@ -33,9 +33,10 @@ acme-dns:
             certificates:
                 # The hostname to fetch certificates for
                 - hostname: example.com
-                # Glob of minions which should have access to the
-                # cert and key for this hostname.
-                available-to: *.web.example.com
+                  # Glob of minions which should have access to the
+                  # cert and key for this hostname. Can also be a list
+                  # of globs.
+                  available-to: *.web.example.com
 
     # (optional) Set this if you already have a directory where you're
     # collecting extension modules.
