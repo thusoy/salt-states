@@ -1,0 +1,4 @@
+haveged
+=======
+
+Installs haveged.

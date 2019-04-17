@@ -1,0 +1,9 @@
+######################################
+# File managed by salt state haveged #
+######################################
+
+# Configuration file for haveged
+
+# Options to pass to haveged:
+#   -w sets low entropy watermark (in bits)
+DAEMON_ARGS="-w {{ low_entropy_watermark }}"
