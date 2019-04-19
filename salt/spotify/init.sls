@@ -6,7 +6,7 @@ spotify:
     pkgrepo.managed:
         - name: deb http://repository.spotify.com stable non-free
         - humanname: Spotify desktop client repo
-        - keyid: 0DF731E45CE24F27EEEB1450EFDC8610341D9410
+        - keyid: 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90
         - keyserver: hkp://keyserver.ubuntu.com:80
 
     pkg.installed:
