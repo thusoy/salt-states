@@ -19,7 +19,7 @@ spotifyd:
         {% endif %}
 
     cmd.watch:
-        - name: unzip /usr/local/src/spotifyd.zip -d /usr/local/bin
+        - name: unzip -o /usr/local/src/spotifyd.zip -d /usr/local/bin
         - require:
             - pkg: spotifyd
         - watch:
