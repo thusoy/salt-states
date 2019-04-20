@@ -1,0 +1,11 @@
+[Unit]
+Description=Spotifyd daemon
+After=syslog.target network.target
+
+[Service]
+ExecStart=/usr/local/bin/spotifyd --no-daemon
+Restart=always
+SyslogIdentifier=spotifyd
+
+[Install]
+WantedBy=multi-user.target sockets.target
