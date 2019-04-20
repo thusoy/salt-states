@@ -29,6 +29,7 @@ spotifyd:
         - systemd: salt://spotifyd/job-systemd
 
     service.running:
+        - enable: True
         - watch:
             - cmd: spotifyd
             - init_script: spotifyd
