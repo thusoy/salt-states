@@ -1,0 +1,9 @@
+{% set android_ndk = salt['grains.filter_by']({
+    'Linux': {
+        'version_spec': 'r19c sha1=fd94d0be6017c6acbd193eb95e09cf4b6f61b834',
+    },
+    'Darwin': {
+        'version_spec': 'r19c sha1=f46b8193109bba8a58e0461c1a48f4534051fb25',
+        'install_location': '/usr/local',
+    },
+}, grain='kernel', merge=salt['pillar.get']('android_ndk')) %}
