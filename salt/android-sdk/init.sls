@@ -16,7 +16,7 @@ android-sdk:
 
     file.managed:
         - name: /usr/local/src/sdk-tools-{{ arch }}-{{ version }}.zip
-        - source: https://dl.google.com/android/repository/sdk-tools-{{ arch }}-{{ version  }}.zip
+        - source: https://dl.google.com/android/repository/sdk-tools-{{ arch }}-{{ version }}.zip
         - source_hash: {{ source_hash }}
         - makedirs: True
 
