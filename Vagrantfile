@@ -18,6 +18,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.customize ["modifyvm", :id, "--usb", "off"]
     vb.customize ["modifyvm", :id, "--usbehci", "off"]
 
+    # Prevent pegging of the host CPU
+    # Ref. https://www.virtualbox.org/ticket/18089?cversion=0&cnum_hist=16
+    vb.customize ["modifyvm", :id, "--audio", "none"]
+
     # The following is needed to work around a virtualbox bug
     # Ref. https://github.com/chef/bento/issues/688#issuecomment-252404560
     vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
