@@ -14,6 +14,9 @@ honeytail:
         - kernelrelease
         - mem_total
 
+docker-ce:
+    iptables: False
+
 ghost-cli:
     # this is the hash for 'vagrant'
     user_password: $6$8jtQaRqHihuwm4Iu$cKidi.pA/oms3hFHpZ73GF/lVkWQcsIMhHMCpBfPM2iaxJb4.JQeWMSVBnfJY4orVbcC.nGq7HJcpkiRPnsvn.

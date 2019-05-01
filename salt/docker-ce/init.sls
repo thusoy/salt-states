@@ -1,3 +1,6 @@
+{% set docker = pillar.get('docker-ce', {}) %}
+
+
 docker-ce-deps:
     pkg.installed:
         - name: apt-transport-https
@@ -17,5 +20,11 @@ docker-ce:
         - require:
             - pkgrepo: docker-ce
 
+    file.managed:
+        - name: /etc/docker/daemon.json
+        - contents: '{{ docker | json }}'
+
     service.running:
         - name: docker
+        - watch:
+            - file: docker-ce
