@@ -533,6 +533,26 @@ def test_redirect_single_location_details():
     assert redirect_spec['include_query'] == False
 
 
+def test_proxy_client_certs():
+    state = module.build_state({
+        'example.com': {
+            'backends': {
+                '/': {
+                    'upstream': 'https://127.0.0.1:5000',
+                    'client_cert': 'FOOCERT',
+                    'client_key': 'FOOKEY',
+                },
+            }
+        }
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    location_spec = context['backends']['/']
+    assert location_spec['client_cert_path'] == '/etc/nginx/ssl/example.com-127.0.0.1_2d957d-client.pem'
+    assert location_spec['client_key_path'] == '/etc/nginx/private/example.com-127.0.0.1_2d957d-client.key'
+    assert 'tls-terminator-upstream-example.com-127.0.0.1_2d957d-client-cert' in state
+    assert 'tls-terminator-upstream-example.com-127.0.0.1_2d957d-client-key' in state
+
+
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
 

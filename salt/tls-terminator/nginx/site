@@ -74,6 +74,12 @@ server {
     proxy_ssl_server_name on;
     proxy_ssl_name {{ backend.upstream_hostname }};
 
+    {% if backend.client_cert_path -%}
+    proxy_ssl_certificate '{{ backend.client_cert_path }}';
+    proxy_ssl_certificate_key '{{ backend.client_key_path }}';
+
+    {% endif -%}
+
     # The verification depth needed for Heroku is currently only 2, but since they might
     # change CA and certificate layout on a whim we allow a depth of 3.
     proxy_ssl_verify_depth 3;

@@ -256,6 +256,36 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
             ]
         }
 
+    client_cert = backend_config.get('client_cert')
+    client_key = backend_config.get('client_key')
+    client_cert_path = None
+    client_key_path = None
+    if client_cert and client_key:
+        client_cert_path = '/etc/nginx/ssl/%s-client.pem' % upstream_identifier
+        client_key_path = '/etc/nginx/private/%s-client.key' % upstream_identifier
+        states['tls-terminator-upstream-%s-client-cert' % upstream_identifier] = {
+            'file.managed': [
+                {'name': client_cert_path},
+                {'contents': client_cert},
+                {'require_in': [{'file': 'tls-terminator-%s-nginx-site' % site}]},
+                {'watch_in': [{'service': 'nginx'}]},
+            ]
+        }
+        states['tls-terminator-upstream-%s-client-key' % upstream_identifier] = {
+            'file.managed': [
+                {'name': client_key_path},
+                {'contents': client_key},
+                {'show_changes': False},
+                {'user': 'root'},
+                {'group': 'nginx'},
+                {'mode': 640},
+                {'require_in': [{'file': 'tls-terminator-%s-nginx-site' % site}]},
+                {'watch_in': [{'service': 'nginx'}]},
+            ]
+        }
+    elif client_cert or client_key:
+        raise ValueError('Specified either client_cert or client_key without the other')
+
     # Set default upstream Host header to the hostname if the upstream
     # is a hostname, otherwise the name of the site
     if 'upstream_hostname' in backend_config or 'upstream_hostname' in site_config:
@@ -293,6 +323,8 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
         'extra_location_config': extra_location_config,
         'rate_limit': backend_config.get('rate_limit'),
         'redirect': build_redirect(backend_config.get('redirect')),
+        'client_cert_path': client_cert_path,
+        'client_key_path': client_key_path,
     }
 
     if upstream:
