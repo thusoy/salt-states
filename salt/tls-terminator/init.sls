@@ -41,7 +41,9 @@ def build_state(sites, nginx_version='0.0.0'):
         backends = normalize_backends(site, site_config)
         site_headers = dict(global_headers)
         site_headers.update(site_config.get('add_headers', {}))
-        add_security_headers(site_headers)
+        nested = site_config.get('nested')
+        if not nested:
+            add_security_headers(site_headers)
         parsed_backends = {}
         upstreams = {}
         for url, backend_config in backends.items():
@@ -98,6 +100,7 @@ def build_state(sites, nginx_version='0.0.0'):
                 {'watch_in': [{'service': 'nginx'}]},
                 {'context': {
                     'server_name': site,
+                    'nested': nested,
                     'listen_parameters': site_config.get('listen_parameters', ''),
                     'headers': site_headers,
                     'backends': parsed_backends,
@@ -301,13 +304,14 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
     # Add X-Request-Id header both ways if the nginx version supports it
     nginx_version = tuple(int(num) for num in nginx_version.split('.'))
     if nginx_version and nginx_version >= (1, 11, 0):
+        request_id_variable = 'http_x_request_id' if site_config.get('nested') else 'request_id'
         extra_location_config.append({
             # Add to the response from the proxy
-            'add_header': 'X-Request-Id $request_id always',
+            'add_header': 'X-Request-Id $%s always' % request_id_variable,
         })
         extra_location_config.append({
             # Add to the request before it reaches the proxy
-            'proxy_set_header': 'X-Request-Id $request_id',
+            'proxy_set_header': 'X-Request-Id $%s' % request_id_variable,
         })
 
     pillar_extra_location_config = backend_config.get('extra_location_config', [])

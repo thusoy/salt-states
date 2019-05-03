@@ -65,8 +65,10 @@ server {
     add_header {{ header }} '{{ val }}' always;
     {% endfor %}
 
-    include proxy_params;
+    {% if not nested -%}
     include cache_params;
+    {% endif -%}
+    include proxy_params;
 
     proxy_set_header Host "{{ backend.upstream_hostname }}";
 

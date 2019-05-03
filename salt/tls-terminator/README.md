@@ -183,3 +183,14 @@ tls-terminator:
 
 The custom error pages are only used for errors originating from the tls-terminator, if the upstream
 returns any of the errors itself the response is sent unmodified to the client.
+
+If you're running a nested setup where this tls-terminator isn't public facing, but is sitting
+behind another instance that is, you can set the flag `nested: True` to disable caching, use the
+`X-Request-Id` from the outer instance, and not add any security headers:
+
+```yaml
+tls-terminator:
+    internal.example.com:
+        backend: http://127.0.0.1:5000
+        nested: True
+```

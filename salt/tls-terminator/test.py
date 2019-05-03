@@ -553,6 +553,22 @@ def test_proxy_client_certs():
     assert 'tls-terminator-upstream-example.com-127.0.0.1_2d957d-client-key' in state
 
 
+def test_nested_proxy():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'nested': True,
+        }
+    }, nginx_version='1.15.0')
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    location_config = context['backends']['/']['extra_location_config']
+    assert location_config == [
+        {'add_header': 'X-Request-Id $http_x_request_id always'},
+        {'proxy_set_header': 'X-Request-Id $http_x_request_id'},
+    ]
+    assert context['nested'] == True
+
+
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
 
