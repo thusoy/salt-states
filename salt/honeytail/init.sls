@@ -1,5 +1,5 @@
 {% set honeytail = pillar.get('honeytail', {}) %}
-{% set version_info = honeytail.get('version_info', '1.733 sha256=bd135df2accd04d37df31aa4f83bd70227666690143829e2866de8086a1491d2') %}
+{% set version_info = honeytail.get('version_info', '1.762 sha256=d7bed8a005cbc6a34b232c54f0f84b945f0bb90905c67f85cceaedee9bbbad1e') %}
 {% set version, checksum = version_info.split() %}
 
 include:
