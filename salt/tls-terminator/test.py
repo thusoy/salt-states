@@ -563,7 +563,6 @@ def test_nested_proxy():
     context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
     location_config = context['backends']['/']['extra_location_config']
     assert location_config == [
-        {'add_header': 'X-Request-Id $http_x_request_id always'},
         {'proxy_set_header': 'X-Request-Id $http_x_request_id'},
     ]
     assert context['nested'] == True

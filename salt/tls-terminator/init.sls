@@ -304,11 +304,15 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
     # Add X-Request-Id header both ways if the nginx version supports it
     nginx_version = tuple(int(num) for num in nginx_version.split('.'))
     if nginx_version and nginx_version >= (1, 11, 0):
-        request_id_variable = 'http_x_request_id' if site_config.get('nested') else 'request_id'
-        extra_location_config.append({
-            # Add to the response from the proxy
-            'add_header': 'X-Request-Id $%s always' % request_id_variable,
-        })
+        nested = site_config.get('nested')
+        request_id_variable = 'http_x_request_id' if nested else 'request_id'
+        if not nested:
+            # The outer instance will add the requestId to the response, thus
+            # skip it here.
+            extra_location_config.append({
+                # Add to the response from the proxy
+                'add_header': 'X-Request-Id $%s always' % request_id_variable,
+            })
         extra_location_config.append({
             # Add to the request before it reaches the proxy
             'proxy_set_header': 'X-Request-Id $%s' % request_id_variable,
