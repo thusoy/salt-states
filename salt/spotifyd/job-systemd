@@ -6,6 +6,8 @@ After=syslog.target network.target
 ExecStart=/usr/local/bin/spotifyd --no-daemon
 Restart=always
 SyslogIdentifier=spotifyd
+RestartSec=10
+StartLimitInterval=0
 
 [Install]
 WantedBy=multi-user.target sockets.target
