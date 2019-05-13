@@ -1,0 +1,15 @@
+[Unit]
+Description=Honeycomb log tailer honeytail
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/honeytail -c /etc/honeytail/honeytail.conf
+KillMode=process
+Restart=always
+User=honeycomb
+Group=honeycomb
+RestartSec=5
+StartLimitInterval=0
+
+[Install]
+Alias=honeytail honeytail.service

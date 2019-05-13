@@ -30,10 +30,19 @@ honeytail:
         - require:
             - cmd: honeytail-deb
 
+    init_script.managed:
+        - systemd: salt://honeytail/job-systemd
+
+    cmd.watch:
+        - name: systemctl --system daemon-reload
+        - watch:
+            - init_script: honeytail
+
     service.running:
         - watch:
             - cmd: honeytail-deb
             - file: honeytail
+            - init_script: honeytail
 
     user.present:
         - name: honeycomb
