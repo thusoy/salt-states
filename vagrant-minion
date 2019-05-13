@@ -1,2 +1,3 @@
 id: vagrant
 file_client: local
+state_verbose: False
