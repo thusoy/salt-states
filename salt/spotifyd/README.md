@@ -8,6 +8,6 @@ spotifyd:
     username: fo
     password: bar
     backend: alsa
-``
+```
 
 All supported config is forwarded from pillar to the spotifyd config file.
