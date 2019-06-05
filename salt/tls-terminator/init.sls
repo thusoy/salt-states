@@ -246,18 +246,8 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
 
     states = {}
 
-    upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
-    if upstream and 'upstream_trust_root' in backend_config:
-        upstream_trust_root = '/etc/nginx/ssl/%s-root.pem' % upstream_identifier
-        states['tls-terminator-upstream-%s-trust-root' % upstream_identifier] = {
-            'file.managed': [
-                {'name': upstream_trust_root},
-                {'contents': backend_config.get('upstream_trust_root')},
-                {'require_in': [
-                    {'file': 'tls-terminator-%s-nginx-site' % site},
-                ]},
-            ]
-        }
+    upstream_trust_root = get_and_build_upstream_trust_root(
+        site, upstream, backend_config, states)
 
     client_cert = backend_config.get('client_cert')
     client_key = backend_config.get('client_key')
@@ -340,6 +330,35 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
         backend_context['path'] = upstream['path']
 
     return states, backend_context, upstream
+
+
+def get_and_build_upstream_trust_root(site, upstream, backend_config, states):
+    upstream_trust_root = '/etc/nginx/ssl/all-certs.pem'
+
+    if not upstream:
+        return upstream_trust_root
+
+    trust_root = backend_config.get('upstream_trust_root')
+    if not trust_root:
+        return upstream_trust_root
+
+    # Upstreams can be shared between backends but have different trust roots.
+    # This requires them to set different upstream_hostnames, which is what
+    # will be used as the proxy_ssl_name.
+    trust_root_identifier = backend_config.get('upstream_hostname', 'default')
+    backend_trust_root = '%s-%s' % (upstream['identifier'], trust_root_identifier)
+    upstream_trust_root = '/etc/nginx/ssl/%s-root.pem' % backend_trust_root
+    states['tls-terminator-upstream-%s-trust-root' % backend_trust_root] = {
+        'file.managed': [
+            {'name': upstream_trust_root},
+            {'contents': trust_root},
+            {'require_in': [
+                {'file': 'tls-terminator-%s-nginx-site' % site},
+            ]},
+        ]
+    }
+
+    return upstream_trust_root
 
 
 def build_upstream(site, backend_config):
