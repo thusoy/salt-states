@@ -24,6 +24,7 @@ jenkins-agent-user:
 
     user.present:
         - name: jenkins
+        - system: True
         - empty_password: True
         - gid_from_name: True
         - fullname: Jenkins Agent
