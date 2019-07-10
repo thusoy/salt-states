@@ -1,0 +1,7 @@
+{% set laim = pillar.get('laim', {}) -%}
+
+###################################
+# File managed by salt state laim #
+###################################
+
+{{ laim.get('config', {}) | yaml(False) }}
