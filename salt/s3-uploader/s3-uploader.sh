@@ -25,6 +25,7 @@ date_value=$(date -R)
 string_to_sign="PUT\n\n${content_type}\n${date_value}\n/${dest}"
 signature=$(echo -en ${string_to_sign} | openssl sha1 -hmac ${access_secret_key} -binary | base64)
 curl -L -X PUT -T "${src}" \
+    --silent \
     -H "Date: ${date_value}" \
     -H "Content-Type: ${content_type}" \
     -H "Authorization: AWS ${access_key_id}:${signature}" \
