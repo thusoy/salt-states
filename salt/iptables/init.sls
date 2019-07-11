@@ -157,5 +157,9 @@ iptables-logrotate-config:
                 missingok
                 rotate 14
                 compress
+                delaycompress
+                postrotate
+                    reload rsyslog >/dev/null 2>&1 || true
+                endscript
                 notifempty
             }
