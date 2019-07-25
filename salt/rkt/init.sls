@@ -20,6 +20,7 @@ rkt:
         - name: "rkt gc 2>&1
             | grep -v 'not removed: still within grace period'
             | grep -v 'Garbage collecting pod'
-            | grep -v 'moving pod .* to garbage'"
+            | grep -v 'moving pod .* to garbage'
+            | grep -v 'stage1 gc: error removing subcgroup .*: operation not permitted'"
         - hour: random
         - minute: random
