@@ -1,7 +1,10 @@
 {% set rsyslog = pillar.get('rsyslog', {}) %}
 
 rsyslog:
-    pkg.installed: []
+    pkg.installed:
+        - pkgs:
+            - rsyslog
+            - rsyslog-gnutls
 
     file.managed:
         - name: /etc/rsyslog.conf
