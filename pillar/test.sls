@@ -186,6 +186,9 @@ users:
 
 
 nginx:
+    ssl_session_tickets:
+        - xWBv1uzOZNFM2ZAmIQKTziVkPELcDjTIM5C5Joxeo7N4wb3LCsExZV6QKHxoZwpX28BZzeujG0QoqcVa+pY/fCxnowAqADeErOC0pEk2Zq0=
+        - WRbGxc7dgZtPbuiYF16LOBylxD3ApXFbI8jesZwYtXNLVO5Z9gFnI+bU7DA93gvS
     allow_sources_v4:
         - 127.0.0.1
         - 127.0.0.3

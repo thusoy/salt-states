@@ -199,6 +199,19 @@ nginx-default-certificate:
             - service: nginx
 
 
+{% for session_ticket in nginx.get('ssl_session_tickets', []) %}
+nginx-ssl-session-ticket-{{ loop.index }}:
+    file.decode:
+        - name: /etc/nginx/private/ssl_session_ticket_{{ loop.index }}.key
+        - encoded_data: "{{ session_ticket }}"
+        - encoding_type: base64
+        - require:
+            - file: nginx-private-dir
+        - watch_in:
+            - service: nginx
+{% endfor %}
+
+
 nginx-default-key:
     file.managed:
         - name: /etc/nginx/private/default.key
