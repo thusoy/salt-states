@@ -3,10 +3,10 @@ upstream {{ upstream_identifier }} {
     {% for server in upstream.servers -%}
     server {{ server.hostname }}:{{ server.port }}{{ ' ' + server.arguments if server.arguments else '' }};
     {% endfor -%}
-    keepalive {{ upstream.keepalive }};
-    {%- if upstream.least_conn %}
+    {% if upstream.least_conn -%}
     least_conn;
-    {%- endif %}
+    {% endif -%}
+    keepalive {{ upstream.keepalive }};
 }
 
 {% endfor -%}
