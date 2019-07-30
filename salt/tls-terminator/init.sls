@@ -401,6 +401,23 @@ def build_firewall_states(outgoing_ipv4_firewall_ports, outgoing_ipv6_firewall_p
     for ruleset, family in [
             (outgoing_ipv4_firewall_ports, 'ipv4'),
             (outgoing_ipv6_firewall_ports, 'ipv6')]:
+        for protocol in ('tcp', 'udp'):
+            states['tls-terminator-firewall-outgoing-dns-%s-%s' % (family, protocol)] = {
+                'firewall.append': [
+                    {'chain': 'OUTPUT'},
+                    {'family': family},
+                    {'protocol': protocol},
+                    {'destination': 'system_dns'},
+                    {'dport': 53},
+                    {'match': [
+                        'comment',
+                        'owner',
+                    ]},
+                    {'comment': 'tls-terminator: Allow resolving dns for upstreams'},
+                    {'uid-owner': 'nginx'},
+                    {'jump': 'ACCEPT'},
+                ]
+            }
         for target_ip, ports in sorted(ruleset.items()):
             for port_set in get_port_sets(ports):
                 state_key = 'tls-terminator-outgoing-%s-to-%s-port-%s' % (
