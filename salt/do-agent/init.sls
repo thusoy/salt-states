@@ -4,7 +4,7 @@ do-agent-deps:
 
 do-agent:
     pkgrepo.managed:
-        - name: deb https://repos.sonar.digitalocean.com/apt main main
+        - name: deb https://repos.insights.digitalocean.com/apt/do-agent main main
         - key_url: salt://do-agent/release-key.asc
         - require:
             - pkg: do-agent-deps
