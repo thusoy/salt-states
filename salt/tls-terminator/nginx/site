@@ -45,7 +45,14 @@ server {
     {% if backend.redirect -%}
     return {{ backend.redirect.status }} {{ backend.redirect.url }}{% if backend.redirect.include_query %}$request_uri{% endif %};
     {% else -%}
+    {% if backend.use_upstream_block -%}
+    {# Only use the upstream block if necessary -#}
     proxy_pass {{ backend.protocol }}://{{ backend.upstream_identifier }}{{ backend.path }};
+    {% else -%}
+    # Use variables to ensure nginx will respect the DNS TTL
+    set $upstream_hostname "{{ backend.hostname }}";
+    proxy_pass {{ backend.protocol }}://$upstream_hostname:{{ backend.port }}{{ backend.path }};
+    {%- endif %}
     {%- endif %}
 
     {% if backend.pam_auth -%}

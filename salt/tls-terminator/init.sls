@@ -68,7 +68,7 @@ def build_state(sites, nginx_version='0.0.0'):
             backend_headers.update(backend_config.get('add_headers', {}))
             backend_context['headers'] = backend_headers
 
-            if upstream:
+            if upstream and upstream['use_upstream_block']:
                 upstreams[upstream['identifier']] = upstream
 
             parsed_backends[url] = backend_context
@@ -323,11 +323,15 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
         'redirect': build_redirect(backend_config.get('redirect')),
         'client_cert_path': client_cert_path,
         'client_key_path': client_key_path,
+        'use_upstream_block': upstream['use_upstream_block'] if upstream else False,
     }
 
     if upstream:
         backend_context['protocol'] = upstream['scheme']
         backend_context['path'] = upstream['path']
+        if not upstream['use_upstream_block']:
+            backend_context['hostname'] = upstream['servers'][0]['hostname']
+            backend_context['port'] = upstream['servers'][0]['port']
 
     return states, backend_context, upstream
 
@@ -369,6 +373,17 @@ def build_upstream(site, backend_config):
     if not upstreams:
         upstreams = [backend_config['upstream']]
 
+    # Since open-source nginx doesn't have a way to resolve DNS for servers
+    # defined in an upstream block, only use them when necessary, and use plain
+    # proxy_pass with variables for the rest.
+    use_upstream_block = False
+    if 'upstream_keepalive' in backend_config:
+        use_upstream_block = True
+    elif 'upstream_least_conn' in backend_config:
+        use_upstream_block = True
+    elif len(upstreams) > 1:
+        use_upstream_block = True
+
     upstreams.sort()
     upstream = {
         'servers': [],
@@ -378,6 +393,11 @@ def build_upstream(site, backend_config):
     upstream_identifier = None
     for server in upstreams:
         parsed_backend = parse_backend(server)
+        if use_upstream_block and not get_packed_ip(parsed_backend.hostname):
+            raise ValueError("The config for site %s requires use of the "
+                "upstream module, but %s requires DNS lookups which don't work "
+                "with upstreams" % (site, server))
+
         if upstream_identifier is None:
             upstream_identifier = get_upstream_identifier_for_backend(site, parsed_backend)
         upstream['servers'].append({
@@ -388,6 +408,7 @@ def build_upstream(site, backend_config):
     upstream['identifier'] = upstream_identifier
     upstream['scheme'] = parsed_backend.scheme
     upstream['path'] = parsed_backend.path
+    upstream['use_upstream_block'] = use_upstream_block
     return upstream
 
 

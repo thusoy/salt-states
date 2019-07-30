@@ -1,4 +1,5 @@
 import imp
+import json
 import os
 from collections import OrderedDict
 
@@ -118,7 +119,6 @@ def test_build_with_extra_location_config():
         }
     })
     # Shouldn't have serialization problems
-    import json
     json.dumps(state)
 
 
@@ -246,9 +246,9 @@ def test_set_rate_limits():
     assert len(backends) == 2
     assert backends['/']['rate_limit'] == 'zone=default burst=30 nodelay'
     assert backends['/login']['rate_limit'] == 'zone=sensitive burst=5'
-    # Should share upstream
+    # Should have same proxy_pass
     assert backends['/login']['upstream_identifier'] == backends['/']['upstream_identifier']
-    assert len(merged(nginx_site['file.managed'])['context']['upstreams']) == 1
+    assert len(merged(nginx_site['file.managed'])['context']['upstreams']) == 0
 
     rate_limits = merged(state['tls-terminator-rate-limit-zones']['file.managed'])
     assert rate_limits['context']['rate_limit_zones'] == [
@@ -297,13 +297,23 @@ def test_custom_error_pages():
     assert error_page('test.com', 502)['contents'] == '<p>Backend stumbled</p>'
 
 
-def test_isolatest_site_upstreams():
+def test_isolated_site_upstreams():
     state = module.build_state({
         'example.com': {
-            'backend': 'http://127.0.0.1:5000',
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5000',
+                    'upstream_least_conn': True,
+                }
+            }
         },
         'otherexample.com': {
-            'backend': 'http://127.0.0.1:5001',
+            'backends': {
+                '/': {
+                    'upstream': 'http://127.0.0.1:5001',
+                    'upstream_least_conn': True,
+                }
+            },
         },
     })
     context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
@@ -317,9 +327,7 @@ def test_upstream_with_url():
         }
     })
     context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
-    upstreams = context['upstreams']
-    assert len(upstreams) == 1
-    assert not any('/' in identifier for identifier in upstreams)
+    assert '/' not in context['backends']['/']['upstream_identifier']
 
 
 def test_upstream_port_only_difference():
@@ -332,8 +340,9 @@ def test_upstream_port_only_difference():
         }
     })
     context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
-    upstreams = context['upstreams']
-    assert len(upstreams) == 2
+    first_identifier = context['backends']['/']['upstream_identifier']
+    second_identifier = context['backends']['/path']['upstream_identifier']
+    assert first_identifier != second_identifier
 
 
 def test_upstream_set_trust_root():
@@ -353,7 +362,7 @@ def test_upstream_set_trust_root():
         }
     })
     context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
-    trust_root_identifier = '%s-non-default-app' % context['upstreams'].keys()[0]
+    trust_root_identifier = '%s-non-default-app' % context['backends']['/']['upstream_identifier']
     expected_trust_root_path_app1 = '/etc/nginx/ssl/%s-root.pem' % trust_root_identifier
     assert context['backends']['/']['upstream_trust_root'] == expected_trust_root_path_app1
     assert 'tls-terminator-upstream-%s-trust-root' % trust_root_identifier in state
@@ -423,6 +432,7 @@ def test_multiple_upstreams():
         }],
         'keepalive': 16,
         'least_conn': True,
+        'use_upstream_block': True,
         'scheme': 'http',
         'path': '',
     }
