@@ -40,7 +40,7 @@ do-agent-firewall-collector-{{ family }}:
             - comment
             - owner
         - comment: 'do-agent: Allow connecting to collector'
-        - uid-owner: nobody
+        - uid-owner: do-agent
         - jump: ACCEPT
 
 
@@ -56,7 +56,7 @@ do-agent-firewall-dns-{{ family }}-{{ protocol }}:
             - comment
             - owner
         - comment: "do-agent: Allow DNS"
-        - uid-owner: nobody
+        - uid-owner: do-agent
         - jump: ACCEPT
 {% endfor %}
 {% endfor %}
