@@ -31,8 +31,6 @@
         'allow_users': [],
         'minumum_modulus_size': 2048,
         'listen_addresses': [],
-        # Allow clients to bind to remote ports by default. They could do this
-        # anyway outside of ssh, so no benefit to disallow.
         'gateway_ports': 'clientspecified',
     },
 }, merge=pillar_get('openssh_server')) %}
