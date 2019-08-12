@@ -87,6 +87,8 @@ TCPKeepAlive no
 #MaxStartups 10:30:60
 #Banner /etc/issue.net
 
+GatewayPorts {{ openssh_server.gateway_ports }}
+
 # Allow client to pass locale environment variables
 AcceptEnv LANG LC_*
 
