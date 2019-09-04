@@ -1,6 +1,7 @@
 __pycache__
 *.slsc
 venv
+venv3
 .vagrant
 .cache
 *.pyc
