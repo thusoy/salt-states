@@ -1,12 +1,20 @@
-import imp
 import json
 import os
 from collections import OrderedDict
+try:
+    from importlib.machinery import SourceFileLoader
+    def load_source(module, path):
+        return SourceFileLoader(module, path).load_module()
+except ImportError:
+    # python 2
+    import imp
+    def load_source(module, path):
+        return imp.load_source(module, path)
 
 import pytest
 
 
-module = imp.load_source('tls_terminator', os.path.join(os.path.dirname(__file__), 'init.sls'))
+module = load_source('tls_terminator', os.path.join(os.path.dirname(__file__), 'init.sls'))
 
 def test_is_external_backend():
     def uut(backend):

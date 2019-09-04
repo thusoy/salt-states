@@ -3,8 +3,11 @@
 set -eu
 
 main () {
+    local deps='watchdog mock pytest'
     virtualenv venv
-    ./venv/bin/pip install watchdog mock pytest
+    ./venv/bin/pip install $deps
+    virtualenv venv3 -p $(which python3)
+    ./venv3/bin/pip install $deps
 }
 
 main
