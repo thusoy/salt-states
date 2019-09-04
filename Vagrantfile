@@ -6,11 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "bento/debian-9.4"
-
-  # The url from where the 'config.vm.box' box will be fetched if it
-  # doesn't already exist on the user's system.
-#  config.vm.box_url = "https://atlas.hashicorp.com/ARTACK/boxes/debian-jessie"
+  config.vm.box = "bento/debian-10.0"
 
   # Increase available ram a notch
   config.vm.provider :virtualbox do |vb|
@@ -38,15 +34,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Prevent TTY Errors (copied from laravel/homestead: "homestead.rb" file)... By default this is "bash -l".
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-
-  config.vm.provision "shell", inline: "sudo apt-get update && sudo apt-get install -y vim"
-
-  config.vm.provision :salt do |salt|
-    salt.minion_config = "vagrant-minion"
-    salt.verbose = true
-    salt.log_level = 'warning'
-  end
-
+  config.vm.provision "shell", inline: "sudo apt-get update && sudo apt-get install -y vim salt-minion"
+  config.vm.provision "shell", inline: "sudo cp /vagrant/vagrant-minion /etc/salt/minion && sudo service salt-minion restart"
   config.vm.provision "shell", inline: "sudo salt-call saltutil.sync_all"
 
 end
