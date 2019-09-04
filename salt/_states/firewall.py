@@ -212,7 +212,7 @@ def _apply_rule_for_family(filename, context, restore_command, apply):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        _, stderr = restore_process.communicate(rendered_rules)
+        _, stderr = restore_process.communicate(rendered_rules.encode('utf-8'))
         result = restore_process.wait()
     else:
         result = 0
