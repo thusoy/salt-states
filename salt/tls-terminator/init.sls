@@ -5,7 +5,15 @@ import re
 import socket
 import textwrap
 import unicodedata
-import urlparse
+try:
+    from urlparse import urlparse
+    PY2 = True
+except ImportError:
+    PY2 = False
+    from urllib.parse import urlparse
+    def unicode(s):
+        return str(s)
+
 from collections import defaultdict, namedtuple
 
 
@@ -573,7 +581,8 @@ def get_upstream_identifier_for_backend(site, parsed_backend_url):
     # url.
     backend_path = parsed_backend_url.path
     url_slug = '-root' if backend_path == '/' else slugify(backend_path)
-    url_digest = hashlib.sha256('%d:%s' % (parsed_backend_url.port, backend_path)).hexdigest()[:6]
+    hash_input = ('%d:%s' % (parsed_backend_url.port, backend_path)).encode('utf-8')
+    url_digest = hashlib.sha256(hash_input).hexdigest()[:6]
     return '%s-%s%s_%s' % (slugify(site), parsed_backend_url.hostname, url_slug, url_digest)
 
 
@@ -601,7 +610,7 @@ def parse_backend(url):
     else:
         url = url_parts[0]
         arguments = None
-    parsed_url = urlparse.urlparse(url)
+    parsed_url = urlparse(url)
 
     packed_ip = get_packed_ip(parsed_url.hostname)
     port = parsed_url.port or (80 if parsed_url.scheme == 'http' else 443)
@@ -610,11 +619,17 @@ def parse_backend(url):
     family = 'both'
 
     if packed_ip and len(packed_ip) == 4:
-        is_remote = packed_ip[0] != '\x7f'
+        if PY2:
+            is_remote = packed_ip[0] != '\x7f'
+        else:
+            is_remote = packed_ip[0] != 127
         normalized_ip = socket.inet_ntop(socket.AF_INET, packed_ip)
         family = 'ipv4'
     elif packed_ip:
-        ipv6_local_address = '\x00'*15 + '\x01'
+        if PY2:
+            ipv6_local_address = '\x00'*15 + '\x01'
+        else:
+            ipv6_local_address = bytes([0] * 15 + [1])
         is_remote = packed_ip != ipv6_local_address
         normalized_ip = socket.inet_ntop(socket.AF_INET6, packed_ip)
         family = 'ipv6'
