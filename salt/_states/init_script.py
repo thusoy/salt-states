@@ -42,7 +42,7 @@ def managed(name, **kwargs):
 
     kwargs['source'] = file_source
     state_ret = __salt__['state.single']('file.managed', **kwargs)
-    file_ret = state_ret.values()[0]
+    file_ret = list(state_ret.values())[0]
     ret['comment'] = file_ret['comment']
     ret['result'] = file_ret['result']
     ret['changes'] = file_ret['changes']
