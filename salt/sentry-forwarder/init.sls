@@ -72,7 +72,7 @@ sentry-forwarder-firewall-outgoing-https-{{ family }}:
             - comment
             - owner
         - comment: 'sentry-forwarder: Allow outgoing https'
-        - uid-owner: sentry_forwarder
+        - uid-owner: sentry-forwarder
         - jump: ACCEPT
         - require:
             - user: sentry-forwarder
