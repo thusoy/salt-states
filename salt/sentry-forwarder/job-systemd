@@ -1,0 +1,24 @@
+[Unit]
+Description=Sampling sentry forwarder
+After=syslog.target network.target
+
+[Service]
+WorkingDirectory=/srv/sentry-forwarder
+ExecStart=/srv/sentry-forwarder/venv/bin/gunicorn \
+    --bind=127.0.0.1:{{ port }} \
+    --workers={{ grains.get('num_cpus', 1)*2 + 1 }} \
+    --worker-class=gevent \
+    --max-requests=5000 \
+    --max-requests-jitter=300 \
+    --log-file - \
+    --capture-output \
+    'sentry_forwarder:app'
+KillMode=control-group
+Restart=always
+SyslogIdentifier=sentry-forwarder
+User=sentry-forwarder
+Group=sentry-forwarder
+Environment=SENTRY_SAMPLING_RATE={{ sampling_rate }}
+
+[Install]
+WantedBy=multi-user.target sockets.target

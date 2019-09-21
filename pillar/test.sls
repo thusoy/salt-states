@@ -1,3 +1,7 @@
+sentry_forwarder:
+    port: 5010
+    sampling_rate: 10
+
 honeytail:
     write_key: foobar
     log_file: /var/log/nginx/access.log
