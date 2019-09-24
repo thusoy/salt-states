@@ -39,6 +39,15 @@ def test_reports_error(client):
     assert response.status_code == 503
 
 
+@responses.activate
+def test_compressed_request(client):
+    responses.add(responses.POST, 'https://sentry.io/foo/bar/')
+    response = client.post('/foo/bar', headers={
+        'Content-Encoding': 'gzip',
+    }, data=b'\x00')
+    assert responses.calls[0].request.headers['Content-Encoding'] == 'gzip'
+
+
 def test_root(client):
     assert client.get('/').status_code == 200
 
