@@ -23,7 +23,7 @@ def main(path):
 
     uri = 'https://sentry.io%s/' % request.path
     headers = {}
-    for header in ('X-Sentry-Auth', 'User-Agent', 'Content-Encoding'):
+    for header in ('X-Sentry-Auth', 'User-Agent', 'Content-Encoding', 'Content-Type'):
         headers[header] = request.headers.get(header)
 
     status_code = 503
