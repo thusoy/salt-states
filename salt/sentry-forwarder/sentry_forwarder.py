@@ -30,7 +30,7 @@ def main(path):
     try:
         response = session.post(uri,
             headers=headers,
-            data=request.data,
+            data=request.get_data(),
             timeout=(4, 12),
         )
         status_code = response.status_code
