@@ -22,7 +22,7 @@ def main(path):
         return '', 202
 
     uri = 'https://sentry.io%s/' % request.path
-    if request.values:
+    if request.args:
         uri += '?' + request.query_string.decode('utf-8')
     headers = {}
     for header in ('X-Sentry-Auth', 'User-Agent', 'Content-Encoding', 'Content-Type'):
