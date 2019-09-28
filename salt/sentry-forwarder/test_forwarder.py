@@ -41,11 +41,21 @@ def test_reports_error(client):
 
 @responses.activate
 def test_compressed_request(client):
+    app.config['SAMPLING_RATE'] = 1
     responses.add(responses.POST, 'https://sentry.io/foo/bar/')
     response = client.post('/foo/bar', headers={
         'Content-Encoding': 'gzip',
     }, data=b'\x00')
     assert responses.calls[0].request.headers['Content-Encoding'] == 'gzip'
+
+
+
+@responses.activate
+def test_query_parameters(client):
+    app.config['SAMPLING_RATE'] = 1
+    responses.add(responses.POST, 'https://sentry.io/foo/bar/')
+    response = client.post('/foo/bar?auth=foo')
+    assert responses.calls[0].request.url == 'https://sentry.io/foo/bar/?auth=foo'
 
 
 def test_root(client):
