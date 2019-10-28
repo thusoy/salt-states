@@ -24,3 +24,15 @@ rkt:
             | grep -v 'stage1 gc: error removing subcgroup .*: operation not permitted'"
         - hour: random
         - minute: random
+
+
+# Automatically clean up unused, old images
+rkt-images:
+    cron.present:
+        - identifier: rkt-image-gc
+        - name: "rkt image gc 2>&1
+            | grep -v 'successfully removed aci for image:'
+            | grep -v 'gc: removed treestore'
+            | grep -v 'gc: .* image(s) successfully removed'"
+        - hour: random
+        - minute: random
