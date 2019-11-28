@@ -93,13 +93,12 @@ openssh_server:
 
 cachish:
     items:
-        /sandshrew/database-url:
-            module: Heroku
+        /github-ips:
+            module: JsonHttp
+            disable_auth: True
             parameters:
-                some param 1: foo
-                bar: foobar
-    auth:
-        footoken: /sandshrew/*
+                url: https://api.github.com/meta
+                field: git
 
 timezone: UTC
 
