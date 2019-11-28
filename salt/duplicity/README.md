@@ -1,7 +1,10 @@
 duplicity
 ============
 
-Installs duplicity.
+Installs duplicity. Use `duplicity.cron` if you want to also add cron jobs to run backups.
+
+Note that this opens up the firewall for outgoing dns and https for root by default, if you
+use a non-https backend you can customize the outbound port to allow with `duplicity:target_port`.
 
 Pillar example:
 
