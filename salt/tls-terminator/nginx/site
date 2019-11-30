@@ -19,7 +19,7 @@ server {
 }
 
 server {
-  listen [::]:443 ssl{{ ' ' + listen_parameters if listen_parameters else '' }};
+  listen [::]:443 http2 ssl{{ ' ' + listen_parameters if listen_parameters else '' }};
   server_name {{ server_name }};
   charset utf-8;
 
@@ -38,7 +38,7 @@ server {
   {% for key, value in extra_server_dict.items() -%}
   {{ key }} {{ value }};
   {% endfor -%}
-  {% endfor %}
+  {% endfor -%}
 
   {% if redirect -%}
   return {{ redirect }};

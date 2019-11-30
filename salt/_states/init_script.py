@@ -7,7 +7,7 @@ def get_init_system():
     The default is to check for systemd, then upstart, and if neither is found, assume sysvinit.
     """
     real_init_path = os.path.realpath('/sbin/init')
-    if real_init_path == '/lib/systemd/systemd':
+    if real_init_path in ('/lib/systemd/systemd', '/usr/lib/systemd/systemd'):
         return 'systemd'
     init_system = subprocess.check_output('ps aux | grep -o "[u]pstart" -m 1 || echo sysvinit', shell=True)
     return init_system.strip()
@@ -42,7 +42,7 @@ def managed(name, **kwargs):
 
     kwargs['source'] = file_source
     state_ret = __salt__['state.single']('file.managed', **kwargs)
-    file_ret = state_ret.values()[0]
+    file_ret = list(state_ret.values())[0]
     ret['comment'] = file_ret['comment']
     ret['result'] = file_ret['result']
     ret['changes'] = file_ret['changes']

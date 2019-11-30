@@ -30,5 +30,8 @@
     },
     'stretch': {
         'repo': 'deb https://nginx.org/packages/mainline/debian/ stretch nginx',
-    }
+    },
+    'buster': {
+        'repo': 'deb https://nginx.org/packages/mainline/debian/ buster nginx',
+    },
 }, grain='oscodename', merge=salt['pillar.get']('nginx'), base='base') %}

@@ -4,7 +4,7 @@ do-agent-deps:
 
 do-agent:
     pkgrepo.managed:
-        - name: deb https://repos.sonar.digitalocean.com/apt main main
+        - name: deb https://repos.insights.digitalocean.com/apt/do-agent main main
         - key_url: salt://do-agent/release-key.asc
         - require:
             - pkg: do-agent-deps
@@ -40,7 +40,7 @@ do-agent-firewall-collector-{{ family }}:
             - comment
             - owner
         - comment: 'do-agent: Allow connecting to collector'
-        - uid-owner: nobody
+        - uid-owner: do-agent
         - jump: ACCEPT
 
 
@@ -56,7 +56,7 @@ do-agent-firewall-dns-{{ family }}-{{ protocol }}:
             - comment
             - owner
         - comment: "do-agent: Allow DNS"
-        - uid-owner: nobody
+        - uid-owner: do-agent
         - jump: ACCEPT
 {% endfor %}
 {% endfor %}
