@@ -237,10 +237,12 @@ def _is_ipv4(address):
     True
     >>> _is_ipv4('2.2.2.2/32')
     True
+    >>> _is_ipv4(None)
+    False
     >>> _is_ipv4('2001:db8::')
     False
     '''
-    return _is_ip_family(socket.AF_INET, address.split('/', 1)[0])
+    return _is_ip_family(socket.AF_INET, address)
 
 
 def _is_ipv6(address):
@@ -249,10 +251,12 @@ def _is_ipv6(address):
     True
     >>> _is_ipv6('2001:db8::/64')
     True
+    >>> _is_ipv6(None)
+    False
     >>> _is_ipv6('1.1.1.1')
     False
     '''
-    return _is_ip_family(socket.AF_INET6, address.split('/', 1)[0])
+    return _is_ip_family(socket.AF_INET6, address)
 
 
 def _is_ip_family(family, address):
@@ -260,6 +264,8 @@ def _is_ip_family(family, address):
     # on systems with iptables anyway
     if not address:
         return False
+    # Trim CIDR ranges
+    address = address.split('/', 1)[0]
     try:
         socket.inet_pton(family, address)
     except socket.error:  # not a valid address
