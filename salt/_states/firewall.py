@@ -4,6 +4,7 @@ import difflib
 import jinja2
 import json
 import os
+import socket
 import subprocess
 
 RULES_TEMPLATE = jinja2.Template('''
@@ -89,6 +90,16 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
             kwargs['destination'] = ','.join(dns_servers)
         else:
             del kwargs['destination']
+    elif _is_ipv4(destination) and family == 'ipv6' or _is_ipv6(destination) and family == 'ipv4':
+        return {
+            'name': name,
+            'comment': 'Ignored due to wrong family for destination %s' % destination,
+            'result': True,
+            'changes': {},
+        }
+    elif destination and not _is_ipv6(destination) and not _is_ipv4(destination):
+        # not a valid address, assume hostname and allow all destinations
+        del kwargs['destination']
 
     partial_rule = __salt__['iptables.build_rule'](**kwargs)
     full_rule = '-A %s %s' % (chain, partial_rule)
@@ -218,3 +229,23 @@ def _apply_rule_for_family(filename, context, restore_command, apply):
         result = 0
         stderr = ''
     return (result, stderr, changes)
+
+
+def _is_ipv4(address):
+    return _is_ip_family(socket.AF_INET, address)
+
+
+def _is_ipv6(address):
+    return _is_ip_family(socket.AF_INET6, address)
+
+
+def _is_ip_family(family, address):
+    # Asssumes that inet_pton exists, which is fair since this state only works
+    # on systems with iptables anyway
+    if not address:
+        return False
+    try:
+        socket.inet_pton(family, address)
+    except socket.error:  # not a valid address
+        return False
+    return True
