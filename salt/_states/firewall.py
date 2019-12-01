@@ -232,11 +232,27 @@ def _apply_rule_for_family(filename, context, restore_command, apply):
 
 
 def _is_ipv4(address):
-    return _is_ip_family(socket.AF_INET, address)
+    '''
+    >>> _is_ipv4('1.1.1.1')
+    True
+    >>> _is_ipv4('2.2.2.2/32')
+    True
+    >>> _is_ipv4('2001:db8::')
+    False
+    '''
+    return _is_ip_family(socket.AF_INET, address.split('/', 1)[0])
 
 
 def _is_ipv6(address):
-    return _is_ip_family(socket.AF_INET6, address)
+    '''
+    >>> _is_ipv6('2001:db8::')
+    True
+    >>> _is_ipv6('2001:db8::/64')
+    True
+    >>> _is_ipv6('1.1.1.1')
+    False
+    '''
+    return _is_ip_family(socket.AF_INET6, address.split('/', 1)[0])
 
 
 def _is_ip_family(family, address):
