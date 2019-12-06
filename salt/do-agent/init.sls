@@ -25,7 +25,7 @@ do-agent-firewall-metadata:
             - comment
             - owner
         - comment: 'do-agent: Allow connecting to metadata service'
-        - uid-owner: nobody
+        - uid-owner: do-agent
         - jump: ACCEPT
 
 
