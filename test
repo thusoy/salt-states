@@ -7,5 +7,7 @@ for venv in 'venv' 'venv3'; do
         salt/_states/firewall.py \
         salt/acme-dns/test_acme_dns.py \
         salt/tls-terminator/test_tls_terminator.py \
-        salt/hardening/test_print_dependent_modules.py "$@"
+        salt/hardening/test_print_dependent_modules.py \
+        extensions/pillar/test_ssh_keys.py \
+        "$@"
 done
