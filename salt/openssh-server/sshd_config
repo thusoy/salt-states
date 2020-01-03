@@ -20,6 +20,9 @@ Protocol 2
 # HostKeys for protocol version 2
 {% for key in ('ed25519', 'rsa', 'ecdsa') if 'host_%s_key' % key in openssh_server -%}
 HostKey /etc/ssh/ssh_host_{{ key }}_key
+{% if 'host_%s_certificate' % key in openssh_server -%}
+HostCertificate /etc/ssh/ssh_host_{{ key }}_certificate
+{% endif %}
 {% endfor %}
 
 #Privilege Separation is turned on for security
