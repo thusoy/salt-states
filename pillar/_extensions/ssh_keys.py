@@ -7,23 +7,35 @@ You probably want to have different certificates for each environment if you
 have multiple environments on the same saltmaster, to prevent a compromised host
 in one environment from being able to impersonate a host in another.
 
-Create your root certificates, and tell the module where to find them and how
-minions should be assigned to a cert:
+Installing and configuring the extension:
 
-- root_keys:
-    - path: /path/to/cert
-      minion_globs:
-        - "*"
+    $ sudo mkdir -p /var/lib/salt-ssh-keys
+    $ sudo chown root:saltmaster /var/lib/salt-ssh-keys
+    $ sudo chmod 750 /var/lib/salt-ssh-keys
+    $ sudo ssh-keygen -t ed25519 -N '' -f /var/lib/salt-ssh-keys/root
+
+Put this file in your saltmaster's `extension_modules` directory, and add the
+following to /etc/salt/master:
+
+ext_pillar:
+    - ssh_keys:
+        root_keys:
+            - path: /var/lib/salt-ssh-keys/root
+              minion_globs:
+                - "*"
+
+Modify the root keys to your liking, eg by compartmentalizing by environment or
+similar.
 
 This extension works in conjunction with the openssh-server state to provision
 the keys.
 """
 
+import fnmatch
 import os
 import re
 import subprocess
 import tempfile
-import fnmatch
 from datetime import datetime, timedelta
 from logging import getLogger
 
