@@ -25,7 +25,8 @@ ext_pillar:
                 - "*"
 
 Modify the root keys to your liking, eg by compartmentalizing by environment or
-similar.
+similar. Distribute the root's public key (/var/lib/salt-ssh-keys/root.pub) to
+your clients to enable them to validate the connection.
 
 This extension works in conjunction with the openssh-server state to provision
 the keys.
