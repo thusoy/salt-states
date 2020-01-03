@@ -10,9 +10,9 @@ in one environment from being able to impersonate a host in another.
 Installing and configuring the extension:
 
     $ sudo mkdir -p /var/lib/salt-ssh-keys
-    $ sudo chown root:saltmaster /var/lib/salt-ssh-keys
+    $ sudo chown saltmaster:saltmaster /var/lib/salt-ssh-keys
     $ sudo chmod 750 /var/lib/salt-ssh-keys
-    $ sudo ssh-keygen -t ed25519 -N '' -f /var/lib/salt-ssh-keys/root
+    $ sudo -u saltmaster ssh-keygen -t ed25519 -N '' -f /var/lib/salt-ssh-keys/root
 
 Put this file in your saltmaster's `extension_modules` directory, and add the
 following to /etc/salt/master:
