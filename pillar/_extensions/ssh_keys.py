@@ -51,21 +51,13 @@ def ext_pillar(
     ret = {}
 
     for key_type in key_types:
-        key_path = os.path.join(keystore, '%s-%s' % (minion_id, key_type))
-        cert_path = os.path.join(keystore, '%s-%s-cert.pub' % (minion_id, key_type))
-        existing_cert_expiry = get_cert_expiry(cert_path, minion_id)
-        if existing_cert_expiry and datetime.utcnow() - existing_cert_expiry < validity/3:
-            # Re-create cert when less than a third of the lifetime left
-            # TODO: Ensure this can handle changed validity times
-            _logger.info('%s expires %s, regenerating', minion_id, existing_cert_expiry)
-        else:
-            temp_key_path = generate_ssh_key(key_type)
-            temp_cert_path = sign_ssh_key(temp_key_path, root_key_path, minion_id, validity)
-            os.rename(temp_key_path, key_path)
-            os.rename(temp_cert_path, cert_path)
-
-            # Remove the unused pubkey
-            os.remove(temp_key_path + '.pub')
+        key_path, cert_path = get_cert_for_minion(
+            minion_id,
+            root_key_path,
+            key_type,
+            keystore,
+            validity,
+        )
 
         with open(key_path, 'rb') as fh:
             ret['host_%s_key' % key_type] = fh.read()
@@ -75,6 +67,25 @@ def ext_pillar(
     return {
         'openssh_server': ret,
     }
+
+
+def get_cert_for_minion(minion_id, root_key_path, key_type, keystore, validity):
+    key_path = os.path.join(keystore, '%s-%s' % (minion_id, key_type))
+    cert_path = os.path.join(keystore, '%s-%s-cert.pub' % (minion_id, key_type))
+    existing_cert_expiry = get_cert_expiry(cert_path, minion_id)
+    if existing_cert_expiry and existing_cert_expiry - datetime.utcnow() > validity/3:
+        return key_path, cert_path
+
+    # Re-create cert when less than a third of the lifetime left
+    temp_key_path = generate_ssh_key(key_type)
+    temp_cert_path = sign_ssh_key(temp_key_path, root_key_path, minion_id, validity)
+    os.rename(temp_key_path, key_path)
+    os.rename(temp_cert_path, cert_path)
+
+    # Remove the unused pubkey
+    os.remove(temp_key_path + '.pub')
+
+    return key_path, cert_path
 
 
 def get_root_key_path(minion_id, root_keys):
