@@ -49,6 +49,19 @@ openssh-server-host-key-{{ key }}:
         - show_changes: False
         - watch_in:
             - service: openssh-server
+
+
+{% if 'host_%s_certificate' % key in openssh_server %}
+openssh-server-host-{{ key }}-certificate:
+    file.managed:
+        - name: /etc/ssh/ssh_host_{{ key }}_certificate
+        - contents_pillar: openssh_server:host_{{ key }}_certificate
+        - user: root
+        - group: root
+        - mode: 644
+        - watch_in:
+            - service: openssh-server
+{% endif %}
 {% endfor %}
 
 
