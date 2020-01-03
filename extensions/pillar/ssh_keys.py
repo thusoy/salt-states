@@ -35,6 +35,7 @@ the keys.
 import fnmatch
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 from datetime import datetime, timedelta
@@ -93,8 +94,8 @@ def get_cert_for_minion(minion_id, root_key_path, key_type, keystore, validity):
     # Re-create cert when less than a third of the lifetime left
     temp_key_path = generate_ssh_key(key_type)
     temp_cert_path = sign_ssh_key(temp_key_path, root_key_path, minion_id, validity)
-    os.rename(temp_key_path, key_path)
-    os.rename(temp_cert_path, cert_path)
+    shutil.move(temp_key_path, key_path)
+    shutil.move(temp_cert_path, cert_path)
 
     # Remove the unused pubkey
     os.remove(temp_key_path + '.pub')
