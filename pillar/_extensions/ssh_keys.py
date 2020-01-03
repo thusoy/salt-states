@@ -47,7 +47,7 @@ def ext_pillar(
         minion_id,
         pillar,
         root_keys=None,
-        validity=timedelta(days=3),
+        validity_seconds=259200, # 3 days
         key_types=('ed25519',),
         keystore='/var/lib/salt-ssh-keys',
         **kwargs):
@@ -60,6 +60,7 @@ def ext_pillar(
         _logger.warning('No root key for minion %s', minion_id)
         return {}
 
+    validity = timedelta(seconds=validity_seconds)
     ret = {}
 
     for key_type in key_types:
@@ -171,4 +172,3 @@ def get_cert_expiry(cert_path, minion_id):
 
     # TODO: Ignore and create a new one?
     raise ValueError('Unparseable certificate: %s' % output)
-
