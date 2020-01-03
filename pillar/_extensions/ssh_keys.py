@@ -37,7 +37,7 @@ def ext_pillar(
         root_keys=None,
         validity=timedelta(days=3),
         key_types=('ed25519',),
-        keystore='/var/lib/salt/ssh_keys',
+        keystore='/var/lib/salt-ssh-keys',
         **kwargs):
     if not root_keys:
         _logger.warning('The ssh_keys pillar extension is not configured with any root certificates')
