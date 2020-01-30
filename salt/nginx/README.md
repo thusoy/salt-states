@@ -107,3 +107,17 @@ servers reload at the same time if you have multiple servers. But do note that a
 will not be reset if using `random`, so if you had `minute: '*/5'` in your config to reload every
 fifth minute, but later changed this to `minute: random` the reload interval will not change. This
 is due to how the salt `cron` state works.
+
+
+## Security.txt
+
+Normally when a request comes in without specifying a host in http, nginx will return a 444 that
+terminates the connection. If you want security researchers who found your server by IP to be able
+to report vulnerabilities you might want to redirect /.well-known/security.txt without a hostname
+to your actual security.txt or security information page. Do this by configuring where to redirect
+in pillar:
+
+```yaml
+nginx:
+    security_txt: https://example.com/.well-known/security.txt
+```
