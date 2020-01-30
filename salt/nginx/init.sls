@@ -205,6 +205,10 @@ nginx-ssl-session-ticket-{{ loop.index }}:
         - name: /etc/nginx/private/ssl_session_ticket_{{ loop.index }}.key
         - encoded_data: "{{ session_ticket }}"
         - encoding_type: base64
+        # show_changes isn't supported by file.decode, but the diff that is
+        # logged isn't the key, it's an md5 hash, which doesn't leak any
+        # sensitive data to the log even though md5 is very broken.
+        # - show_changes: False
         - require:
             - file: nginx-private-dir
         - watch_in:
