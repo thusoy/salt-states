@@ -14,8 +14,14 @@ Installing and configuring the extension:
     $ sudo chmod 750 /var/lib/salt-ssh-keys
     $ sudo -u saltmaster ssh-keygen -t ed25519 -N '' -f /var/lib/salt-ssh-keys/root
 
-Put this file in your saltmaster's `extension_modules` directory, and add the
-following to /etc/salt/master:
+Add the output of the following to each client's ~/.ssh/known_hosts or
+/etc/ssh/ssh_known_hosts to let them use the certificate to validate the
+connection:
+
+    $ echo "@cert-authority * $(sudo cat /var/lib/salt-ssh-keys/root.pub)"
+
+Put this file in your saltmaster's `extension_modules` directory (or in one of
+the `module_dirs`), and add the following to /etc/salt/master:
 
 ext_pillar:
     - ssh_keys:
@@ -25,11 +31,30 @@ ext_pillar:
                 - "*"
 
 Modify the root keys to your liking, eg by compartmentalizing by environment or
-similar. Distribute the root's public key (/var/lib/salt-ssh-keys/root.pub) to
-your clients to enable them to validate the connection.
+similar. The certificates will by default only have the minion id as a
+principal. To enable logging in from another hostname, or an ip address, these
+need to added as alternative principals. This can be specified in the module
+configuration too, with a set of principals to add for a minion glob:
+
+ext_pillar:
+    - ssh_keys:
+        root_keys:
+            - path: /var/lib/salt-ssh-keys/root
+              minion_globs:
+                - "*"
+        principals:
+            '*.example.com':
+                - example.com
+                - $ip
+
+This example shows how you can add both static principals ('example.com'), and
+one of the dynamic ones ('$ip'). '$ip' will expand to all IPs found in the
+grains for the minion. '$minion_id' will expand to the minion id. In addition
+you can specify '$domain', '$hostname' or '$fqdn', which all forward the
+property with the same name from grains.
 
 This extension works in conjunction with the openssh-server state to provision
-the keys.
+the keys to the servers.
 """
 
 import fnmatch
@@ -49,12 +74,14 @@ def ext_pillar(
         minion_id,
         pillar,
         root_keys=None,
+        principals=None,
         validity_seconds=259200, # 3 days
         key_types=('ed25519',),
         keystore='/var/lib/salt-ssh-keys',
         **kwargs):
     if not root_keys:
-        _logger.warning('The ssh_keys pillar extension is not configured with any root certificates')
+        _logger.warning('The ssh_keys pillar extension is not configured '
+            'with any root certificates')
         return {}
 
     root_key_path = get_root_key_path(minion_id, root_keys)
@@ -63,6 +90,7 @@ def ext_pillar(
         return {}
 
     validity = timedelta(seconds=validity_seconds)
+    cert_principals = resolve_principals(minion_id, principals)
     ret = {}
 
     for key_type in key_types:
@@ -72,6 +100,7 @@ def ext_pillar(
             key_type,
             keystore,
             validity,
+            cert_principals,
         )
 
         with open(key_path, 'rb') as fh:
@@ -84,7 +113,7 @@ def ext_pillar(
     }
 
 
-def get_cert_for_minion(minion_id, root_key_path, key_type, keystore, validity):
+def get_cert_for_minion(minion_id, root_key_path, key_type, keystore, validity, principals):
     key_path = os.path.join(keystore, '%s-%s' % (minion_id, key_type))
     cert_path = os.path.join(keystore, '%s-%s-cert.pub' % (minion_id, key_type))
     existing_cert_expiry = get_cert_expiry(cert_path, minion_id)
@@ -93,7 +122,8 @@ def get_cert_for_minion(minion_id, root_key_path, key_type, keystore, validity):
 
     # Re-create cert when less than a third of the lifetime left
     temp_key_path = generate_ssh_key(key_type)
-    temp_cert_path = sign_ssh_key(temp_key_path, root_key_path, minion_id, validity)
+    temp_cert_path = sign_ssh_key(temp_key_path, root_key_path, minion_id, validity,
+        principals)
     shutil.move(temp_key_path, key_path)
     shutil.move(temp_cert_path, cert_path)
 
@@ -129,16 +159,21 @@ def generate_ssh_key(key_type):
     return key_path
 
 
-def sign_ssh_key(key_path, root_key_path, name, validity):
-    subprocess.check_call([
+def sign_ssh_key(key_path, root_key_path, name, validity, principals):
+    args = [
         'ssh-keygen',
         '-s', root_key_path,
         '-h',
         '-I', name,
         '-q',
         '-V', get_ssh_validity(validity),
-        key_path,
-    ])
+    ]
+    if principals:
+        args.append('-n')
+        args.append(','.join(principals))
+
+    args.append(key_path)
+    subprocess.check_call(args)
 
     # ssh-keygen doesn't enable specifying an output filename, but naming
     # follows a consistent template
@@ -174,3 +209,38 @@ def get_cert_expiry(cert_path, minion_id):
 
     # TODO: Ignore and create a new one?
     raise ValueError('Unparseable certificate: %s' % output)
+
+
+def resolve_principals(minion_id, principals):
+    if not principals:
+        # Include only minion_id when no explicit principals have been defined
+        return [minion_id]
+
+    collected_principal_sources = set()
+    for minion_glob, principal_sources in principals.items():
+        if fnmatch.fnmatch(minion_id, minion_glob):
+            collected_principal_sources.update(principal_sources)
+
+    ret = set()
+    for principal_source in collected_principal_sources:
+        if principal_source == '$minion_id':
+            ret.add(minion_id)
+        elif principal_source == '$domain':
+            ret.add(__grains__['domain'])
+        elif principal_source == '$hostname':
+            ret.add(__grains__['hostname'])
+        elif principal_source == '$fqdn':
+            ret.add(__grains__['fqdn'])
+        elif principal_source == '$ip':
+            ret.update(get_nonlocal_ip_addresses())
+        else:
+            ret.add(principal_source)
+    return ret
+
+
+def get_nonlocal_ip_addresses():
+    for interface, ip_addresses in __grains__.get('ip_interfaces', {}).items():
+        if interface == 'lo':
+            continue
+        for ip in ip_addresses:
+            yield ip
