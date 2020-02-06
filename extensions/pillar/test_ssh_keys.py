@@ -136,6 +136,17 @@ def test_without_principals(ssh_key, keystore):
     assert get_cert_principals(cert_path) == []
 
 
+def test_preserves_hardcoded_keys(ssh_key, keystore):
+    ret = uut('foobar.example.com', {'openssh_server': {'host_ed25519_key': b'foo'}},
+        root_keys=[{
+            'path': ssh_key,
+        }],
+        keystore=keystore,
+    )
+
+    assert ret['openssh_server'] == {}
+
+
 def sign_cert_with_validity(key_path, root_key_path, validity):
     subprocess.check_call([
         'ssh-keygen',
