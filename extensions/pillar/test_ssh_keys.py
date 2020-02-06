@@ -168,7 +168,7 @@ def get_cert_principals(cert_path):
         'ssh-keygen',
         '-L',
         '-f', cert_path,
-    ])
+    ]).decode('utf-8')
     return sorted(parse_principals_from_cert_details(output))
 
 
