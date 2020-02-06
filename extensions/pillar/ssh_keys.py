@@ -93,7 +93,12 @@ def ext_pillar(
     cert_principals = resolve_principals(minion_id, principals)
     ret = {}
 
+    existing_ssh_pillar = pillar.get('openssh_server', {})
     for key_type in key_types:
+        if 'host_%s_key' % key_type in existing_ssh_pillar:
+            # Don't overwrite hardcoded keys
+            continue
+
         key_path, cert_path = get_cert_for_minion(
             minion_id,
             root_key_path,
