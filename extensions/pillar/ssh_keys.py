@@ -195,7 +195,7 @@ def get_cert_expiry(cert_path, minion_id):
             'ssh-keygen',
             '-L',
             '-f', cert_path,
-        ], stderr=subprocess.PIPE)
+        ], stderr=subprocess.PIPE).decode('utf-8')
     except Exception as e:
         return None
 
