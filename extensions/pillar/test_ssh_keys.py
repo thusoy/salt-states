@@ -30,9 +30,9 @@ def test_creates_new_key(ssh_key, keystore):
     assert 'host_ed25519_key' in ret['openssh_server']
     assert 'host_ed25519_certificate' in ret['openssh_server']
     key = ret['openssh_server']['host_ed25519_key']
-    assert key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----')
+    assert key.startswith(b'-----BEGIN OPENSSH PRIVATE KEY-----')
     cert = ret['openssh_server']['host_ed25519_certificate']
-    assert cert.startswith('ssh-ed25519-cert-v01@openssh.com ')
+    assert cert.startswith(b'ssh-ed25519-cert-v01@openssh.com ')
 
     # Should have put the files on disk in a predictable location
     assert os.path.exists(keystore + '/' + 'foo-ed25519')
@@ -64,7 +64,7 @@ def test_reuses_existing_valid_cert(ssh_key, root_ssh_key, keystore):
     assert 'host_ed25519_key' in ret['openssh_server']
     assert 'host_ed25519_certificate' in ret['openssh_server']
     key = ret['openssh_server']['host_ed25519_key']
-    assert key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----')
+    assert key.startswith(b'-----BEGIN OPENSSH PRIVATE KEY-----')
     cert = ret['openssh_server']['host_ed25519_certificate']
     assert cert == original_cert
 
