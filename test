@@ -3,8 +3,10 @@
 set -eu
 
 for venv in 'venv' 'venv3'; do
-    "./$venv/bin/py.test" \
+    "./$venv/bin/py.test" --doctest-modules \
         salt/tls-terminator/test.py \
         salt/hardening/test_print_dependent_modules.py "$@" \
-        salt/sentry-forwarder/test_forwarder.py
+        salt/sentry-forwarder/test_forwarder.py \
+        extensions/pillar/test_ssh_keys.py \
+        "$@"
 done
