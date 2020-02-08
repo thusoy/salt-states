@@ -115,11 +115,68 @@ def test_sets_principals(ssh_key, keystore):
             ],
         })
 
-    assert 'openssh_server' in ret
-    assert 'host_ed25519_key' in ret['openssh_server']
-    assert 'host_ed25519_certificate' in ret['openssh_server']
     cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
     assert get_cert_principals(cert_path) == ['1.2.3.4', 'example.com', 'foobar.example.com']
+
+
+def test_sets_principal_from_string_grain(ssh_key, keystore):
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x: 'foo',
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut('foobar.example.com', {}, root_keys=[{
+            'path': ssh_key,
+        }], keystore=keystore, principals={
+            '*': [
+                '$minion_id',
+                '$grain:random_grain',
+            ],
+        })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['foo', 'foobar.example.com']
+
+
+def test_sets_principal_from_list_grain(ssh_key, keystore):
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x: ['foo', 'bar'],
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut('foobar.example.com', {}, root_keys=[{
+            'path': ssh_key,
+        }], keystore=keystore, principals={
+            '*': [
+                '$minion_id',
+                '$grain:random_grain',
+            ],
+        })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['bar', 'foo', 'foobar.example.com']
+
+
+def test_sets_principal_from_unknown_grain(ssh_key, keystore):
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x: {'foo': 'bar'},
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut('foobar.example.com', {}, root_keys=[{
+            'path': ssh_key,
+        }], keystore=keystore, principals={
+            '*': [
+                '$minion_id',
+                '$grain:random_grain',
+            ],
+        })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['foobar.example.com']
 
 
 def test_without_principals(ssh_key, keystore):
