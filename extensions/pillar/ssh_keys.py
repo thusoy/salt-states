@@ -50,8 +50,8 @@ ext_pillar:
 This example shows how you can add both static principals ('example.com'), and
 one of the dynamic ones ('$ip'). '$ip' will expand to all IPs found in the
 grains for the minion. '$minion_id' will expand to the minion id. In addition
-you can specify '$domain', '$hostname' or '$fqdn', which all forward the
-property with the same name from grains.
+you can specify any grain key as '$grain:<key>', to include the grain with the
+given key. For example, set '$grain:domain' to include the minion's domain.
 
 This extension works in conjunction with the openssh-server state to provision
 the keys to the servers.
@@ -227,17 +227,22 @@ def resolve_principals(minion_id, principals):
             collected_principal_sources.update(principal_sources)
 
     ret = set()
+    grain_prefix = '$grain:'
     for principal_source in collected_principal_sources:
         if principal_source == '$minion_id':
             ret.add(minion_id)
-        elif principal_source == '$domain':
-            ret.add(__grains__['domain'])
-        elif principal_source == '$hostname':
-            ret.add(__grains__['hostname'])
-        elif principal_source == '$fqdn':
-            ret.add(__grains__['fqdn'])
         elif principal_source == '$ip':
             ret.update(get_nonlocal_ip_addresses())
+        elif principal_source.startswith(grain_prefix):
+            grain_key = principal_source[len(grain_prefix):]
+            grain_value = __salt__['grains.get'](grain_key)
+            if isinstance(grain_value, (list, tuple)):
+                ret.update(grain_value)
+            elif isinstance(grain_value, str):
+                ret.add(grain_value)
+            else:
+                _logger.warning('Unknown value of grain %r, was %r',
+                    grain_key, type(grain_value))
         else:
             ret.add(principal_source)
     return ret
