@@ -122,7 +122,7 @@ def test_sets_principals(ssh_key, keystore):
 def test_sets_principal_from_string_grain(ssh_key, keystore):
     mocked_salt_dunder = {
         '__salt__': {
-            'grains.get': lambda x: 'foo',
+            'grains.get': lambda x, default='': 'foo',
         },
     }
     with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
@@ -142,7 +142,7 @@ def test_sets_principal_from_string_grain(ssh_key, keystore):
 def test_sets_principal_from_list_grain(ssh_key, keystore):
     mocked_salt_dunder = {
         '__salt__': {
-            'grains.get': lambda x: ['foo', 'bar'],
+            'grains.get': lambda x, default='': ['foo', 'bar'],
         },
     }
     with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
@@ -162,7 +162,7 @@ def test_sets_principal_from_list_grain(ssh_key, keystore):
 def test_sets_principal_from_unknown_grain(ssh_key, keystore):
     mocked_salt_dunder = {
         '__salt__': {
-            'grains.get': lambda x: {'foo': 'bar'},
+            'grains.get': lambda x, default='': {'foo': 'bar'},
         },
     }
     with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
@@ -182,7 +182,7 @@ def test_sets_principal_from_unknown_grain(ssh_key, keystore):
 def test_sets_principal_from_string_pillar(ssh_key, keystore):
     mocked_salt_dunder = {
         '__salt__': {
-            'pillar.get': lambda x: 'foo',
+            'pillar.get': lambda x, default='': 'foo',
         },
     }
     with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
@@ -202,7 +202,7 @@ def test_sets_principal_from_string_pillar(ssh_key, keystore):
 def test_ignores_empty_principal(ssh_key, keystore):
     mocked_salt_dunder = {
         '__salt__': {
-            'pillar.get': lambda x: '',
+            'pillar.get': lambda x, default='': '',
         },
     }
     with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
