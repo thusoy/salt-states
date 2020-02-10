@@ -69,6 +69,12 @@ from logging import getLogger
 _logger = getLogger(__name__)
 VALID_RE = re.compile(r'Valid: .* ([0-9T:-]+)$')
 
+try:
+    basestring = basestring
+except NameError:
+    # python 3
+    basestring = str
+
 
 def ext_pillar(
         minion_id,
@@ -259,7 +265,7 @@ def add_flattened_value(dictionary, getter, key, kind):
     value = getter(key)
     if isinstance(value, (list, tuple)):
         dictionary.update(value)
-    elif isinstance(value, str):
+    elif isinstance(value, basestring):
         dictionary.add(value)
     else:
         _logger.warning('Unknown value of %s %r, was %r. Ignoring.',
