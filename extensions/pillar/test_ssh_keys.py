@@ -180,40 +180,28 @@ def test_sets_principal_from_unknown_grain(ssh_key, keystore):
 
 
 def test_sets_principal_from_string_pillar(ssh_key, keystore):
-    mocked_salt_dunder = {
-        '__salt__': {
-            'pillar.get': lambda x, default='': 'foo',
-        },
-    }
-    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
-        ret = uut('foobar.example.com', {}, root_keys=[{
-            'path': ssh_key,
-        }], keystore=keystore, principals={
-            '*': [
-                '$minion_id',
-                '$pillar:random_grain',
-            ],
-        })
+    ret = uut('foobar.example.com', {'random_pillar': 'foo'}, root_keys=[{
+        'path': ssh_key,
+    }], keystore=keystore, principals={
+        '*': [
+            '$minion_id',
+            '$pillar:random_pillar',
+        ],
+    })
 
     cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
     assert get_cert_principals(cert_path) == ['foo', 'foobar.example.com']
 
 
 def test_ignores_empty_principal(ssh_key, keystore):
-    mocked_salt_dunder = {
-        '__salt__': {
-            'pillar.get': lambda x, default='': '',
-        },
-    }
-    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
-        ret = uut('foobar.example.com', {}, root_keys=[{
-            'path': ssh_key,
-        }], keystore=keystore, principals={
-            '*': [
-                '$minion_id',
-                '$pillar:random_grain',
-            ],
-        })
+    ret = uut('foobar.example.com', {'random_pillar': ''}, root_keys=[{
+        'path': ssh_key,
+    }], keystore=keystore, principals={
+        '*': [
+            '$minion_id',
+            '$pillar:random_pillar',
+        ],
+    })
 
     cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
     assert get_cert_principals(cert_path) == ['foobar.example.com']

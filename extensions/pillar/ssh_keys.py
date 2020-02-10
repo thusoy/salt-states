@@ -96,7 +96,7 @@ def ext_pillar(
         return {}
 
     validity = timedelta(seconds=validity_seconds)
-    cert_principals = resolve_principals(minion_id, principals)
+    cert_principals = resolve_principals(minion_id, principals, pillar)
     ret = {}
 
     existing_ssh_pillar = pillar.get('openssh_server', {})
@@ -222,7 +222,7 @@ def get_cert_expiry(cert_path, minion_id):
     raise ValueError('Unparseable certificate: %s' % output)
 
 
-def resolve_principals(minion_id, principals):
+def resolve_principals(minion_id, principals, pillar):
     if not principals:
         # Include only minion_id when no explicit principals have been defined
         return [minion_id]
@@ -246,7 +246,7 @@ def resolve_principals(minion_id, principals):
             add_flattened_value(ret, getter, grain_key, 'grain')
         elif principal_source.startswith(pillar_prefix):
             pillar_key = principal_source[len(pillar_prefix):]
-            getter = __salt__['pillar.get']
+            getter = lambda key, default=None: get_dict_nested(pillar, key, default)
             add_flattened_value(ret, getter, pillar_key, 'pillar')
         else:
             ret.add(principal_source)
@@ -272,3 +272,23 @@ def add_flattened_value(dictionary, getter, key, kind):
     else:
         _logger.warning('Unknown value of %s %r, was %r. Ignoring.',
             kind, key, type(value))
+
+
+def get_dict_nested(data, key, default=None, delimiter=':'):
+    '''
+    Traverse a dict using a colon-delimited (or otherwise delimited, using the
+    'delimiter' param) target string. The target 'foo:bar:baz' will return
+    data['foo']['bar']['baz'] if this value exists, and will otherwise return
+    the dict in the default argument.
+    '''
+    # Lifted from salt.utils.data.traverse_dict_and_list to not rely on
+    # internals and enable testing without having salt installed
+    leaf = data
+    try:
+        for key_part in key.split(delimiter):
+            leaf = leaf[key_part]
+    except (KeyError, IndexError, TypeError):
+        # Encountered a non-indexable value in the middle of traversing
+        return default
+
+    return leaf
