@@ -239,7 +239,7 @@ def resolve_principals(minion_id, principals):
             getter = __salt__['grains.get']
             add_flattened_value(ret, getter, grain_key, 'grain')
         elif principal_source.startswith(pillar_prefix):
-            pillar_key = principal_source[len(pillar_prefix)]
+            pillar_key = principal_source[len(pillar_prefix):]
             getter = __salt__['pillar.get']
             add_flattened_value(ret, getter, pillar_key, 'pillar')
         else:
