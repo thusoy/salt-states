@@ -263,7 +263,9 @@ def get_nonlocal_ip_addresses():
 
 def add_flattened_value(dictionary, getter, key, kind):
     value = getter(key)
-    if isinstance(value, (list, tuple)):
+    if not value:
+        _logger.warning('Ignoring principal from %s with key %r, was %r', kind, key, value)
+    elif isinstance(value, (list, tuple)):
         dictionary.update(value)
     elif isinstance(value, basestring):
         dictionary.add(value)
