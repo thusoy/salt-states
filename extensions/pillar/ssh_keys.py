@@ -228,6 +228,7 @@ def resolve_principals(minion_id, principals):
 
     ret = set()
     grain_prefix = '$grain:'
+    pillar_prefix = '$pillar:'
     for principal_source in collected_principal_sources:
         if principal_source == '$minion_id':
             ret.add(minion_id)
@@ -235,14 +236,12 @@ def resolve_principals(minion_id, principals):
             ret.update(get_nonlocal_ip_addresses())
         elif principal_source.startswith(grain_prefix):
             grain_key = principal_source[len(grain_prefix):]
-            grain_value = __salt__['grains.get'](grain_key)
-            if isinstance(grain_value, (list, tuple)):
-                ret.update(grain_value)
-            elif isinstance(grain_value, str):
-                ret.add(grain_value)
-            else:
-                _logger.warning('Unknown value of grain %r, was %r',
-                    grain_key, type(grain_value))
+            getter = __salt__['grains.get']
+            add_flattened_value(ret, getter, grain_key, 'grain')
+        elif principal_source.startswith(pillar_prefix):
+            pillar_key = principal_source[len(pillar_prefix)]
+            getter = __salt__['pillar.get']
+            add_flattened_value(ret, getter, pillar_key, 'pillar')
         else:
             ret.add(principal_source)
     return ret
@@ -254,3 +253,14 @@ def get_nonlocal_ip_addresses():
             continue
         for ip in ip_addresses:
             yield ip
+
+
+def add_flattened_value(dictionary, getter, key, kind):
+    value = getter(key)
+    if isinstance(value, (list, tuple)):
+        dictionary.update(value)
+    elif isinstance(value, str):
+        dictionary.add(value)
+    else:
+        _logger.warning('Unknown value of %s %r, was %r. Ignoring.',
+            kind, key, type(value))
