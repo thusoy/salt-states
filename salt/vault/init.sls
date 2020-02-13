@@ -65,11 +65,12 @@ vault:
         - enable: True
         - reload: True
         # Don't watch on the archive since an upgrade requires a restart and manual unsealing
+        # If the init file changes we probably need a restart too for anything to take effect
         - require:
             - cmd: vault
+            - init_script: vault
         - watch:
             - file: vault
-            - init_script: vault
 
 
 vault-restart:
@@ -77,3 +78,4 @@ vault-restart:
         - name: service vault restart
         - watch:
             - cmd: vault
+            - init_script: vault
