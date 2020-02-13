@@ -71,6 +71,31 @@ vault:
             - init_script: vault
         - watch:
             - file: vault
+            {% if not dev %}
+            - file: vault-tls-cert
+            - file: vault-tls-key
+            {% endif %}
+
+
+{% if not dev %}
+vault-tls-cert:
+    file.managed:
+        - name: /etc/vault/cert.pem
+        - user: root
+        - group: vault
+        - mode: 644
+        - contents_pillar: vault:tls_cert
+
+
+vault-tls-key:
+    file.managed:
+        - name: /etc/vault/key.pem
+        - user: root
+        - group: vault
+        - mode: 640
+        - show_changes: False
+        - contents_pillar: vault:tls_key
+{% endif %}
 
 
 vault-restart:

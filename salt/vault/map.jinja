@@ -3,8 +3,13 @@
 {% set vault = salt['grains.filter_by']({
     'default': {
         'version_spec': '1.3.2 sha256=6e72132de0421b74d909f50be1823fe57182694c4268ba9a38c31213d9497ec9',
-    },
-    'config': {
-
+        'config': {
+            'listener': {
+                'tcp': {
+                    'tls_cert_file': '/etc/vault/cert.pem',
+                    'tls_key_file': '/etc/vault/key.pem',
+                },
+            },
+        },
     },
 }, merge=pillar_get('vault')) %}
