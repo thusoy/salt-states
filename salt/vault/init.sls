@@ -1,4 +1,10 @@
-{% from 'vault/map.jinja' import vault with context %}
+{% set temp_vault = pillar.get('vault', {}) %}
+{% set dev = temp_vault.get('dev') %}
+{% if dev %}
+    {% from 'vault/map-dev.jinja' import vault with context %}
+{% else %}
+    {% from 'vault/map.jinja' import vault with context %}
+{% endif %}
 {% set version, version_hash = vault.version_spec.split(' ') %}
 {% set flags = vault.get('flags', []) %}
 
