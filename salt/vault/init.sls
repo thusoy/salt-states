@@ -1,5 +1,6 @@
 {% from 'vault/map.jinja' import vault with context %}
 {% set version, version_hash = vault.version_spec.split(' ') %}
+{% set flags = vault.get('flags', []) %}
 
 
 vault:
@@ -25,6 +26,9 @@ vault:
 
     init_script.managed:
         - systemd: salt://vault/job-systemd
+        - template: jinja
+        - context:
+            flags: {{ flags | json }}
 
     user.present:
         - name: vault
