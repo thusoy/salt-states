@@ -3,6 +3,10 @@
 {% set flags = vault.get('flags', []) %}
 
 
+include:
+    - .pillar_check
+
+
 vault-user:
     user.present:
         - name: vault
