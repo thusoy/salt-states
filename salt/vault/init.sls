@@ -3,6 +3,25 @@
 {% set flags = vault.get('flags', []) %}
 
 
+vault-user:
+    user.present:
+        - name: vault
+        - fullname: vault worker
+        - system: True
+        - createhome: False
+        - shell: /usr/sbin/nologin
+
+
+vault-config-directory:
+    file.directory:
+        - name: /etc/vault
+        - user: root
+        - group: vault
+        - mode: 750
+        - require:
+            - user: vault-user
+
+
 vault:
     pkg.installed:
         - name: libcap2-bin
@@ -30,15 +49,8 @@ vault:
         - context:
             flags: {{ flags | json }}
 
-    user.present:
-        - name: vault
-        - fullname: vault worker
-        - system: True
-        - createhome: False
-        - shell: /usr/sbin/nologin
-
     file.managed:
-        - name: /etc/vault.json
+        - name: /etc/vault/config.json
         - template: jinja
         - source: salt://vault/config
         - context:
@@ -47,7 +59,7 @@ vault:
         - group: vault
         - mode: 640
         - require:
-            - user: vault
+            - user: vault-user
 
     service.running:
         - enable: True

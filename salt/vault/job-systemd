@@ -4,7 +4,7 @@
 Description=Vault
 Requires=network-online.target
 After=network-online.target
-ConditionFileNotEmpty=/etc/vault.json
+ConditionFileNotEmpty=/etc/vault/config.json
 
 [Service]
 Type=simple
@@ -16,7 +16,7 @@ LimitMEMLOCK=infinity
 LimitNOFILE=65536
 KillMode=process
 KillSignal=SIGINT
-ExecStart=/usr/local/bin/vault server -config /etc/vault.json {{ ' '.join(flags) }}
+ExecStart=/usr/local/bin/vault server -config /etc/vault/config.json {{ ' '.join(flags) }}
 Restart=on-failure
 TimeoutStopSec=30
 ProtectSystem=full
