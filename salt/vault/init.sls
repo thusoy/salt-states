@@ -108,6 +108,68 @@ vault-tls-key:
 {% endif %}
 
 
+# This assumes Vault is being run on the standard ports and binding to 0.0.0.0,
+# otherwise we'd have to parse the listener address.
+{% for family in ('ipv4', 'ipv6') %}
+{% for protocol in ('udp', 'tcp') %}
+vault-firewall-outbound-dns-{{ family }}-{{ protocol }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: {{ protocol }}
+        - destination: system_dns
+        - dport: 53
+        - match:
+            - comment
+            - owner
+        - comment: 'Vault: Allow DNS'
+        - uid-owner: vault
+        - jump: ACCEPT
+        - require:
+            - user: vault-user
+{% endfor %}
+
+
+vault-firewall-outbound-server-to-server-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: tcp
+        - dport: 8201
+        - match:
+            - comment
+            - owner
+        - comment: 'Vault: Allow communication to other servers'
+        - uid-owner: vault
+        - jump: ACCEPT
+        - require:
+            - user: vault-user
+
+
+vault-firewall-inbound-server-to-server-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - protocol: tcp
+        - dport: 8201
+        - match:
+            - comment
+        - comment: 'Vault: Allow communication from other servers'
+        - jump: ACCEPT
+
+
+vault-firewall-inbound-client-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - protocol: tcp
+        - dport: 8200
+        - match:
+            - comment
+        - comment: 'Vault: Allow client communication'
+{% endfor %}
+
+
 vault-restart:
     cmd.watch:
         - name: service vault restart
