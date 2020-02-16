@@ -58,12 +58,16 @@ vault:
         - template: jinja
         - context:
             flags: {{ flags | json }}
+            {% if vault.get('auth') %}
             environment_variables:
                 {% for auth_method in vault.get('auth', {}) %}
                 {% if auth_method == 'gc' %}
                 GOOGLE_APPLICATION_CREDENTIALS: /etc/vault/gc.json
                 {% endif %}
                 {% endfor %}
+            {% else %}
+            environment_variables: {}
+            {% endif %}
 
     file.managed:
         - name: /etc/vault/config.json
