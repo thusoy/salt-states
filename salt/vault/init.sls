@@ -58,6 +58,12 @@ vault:
         - template: jinja
         - context:
             flags: {{ flags | json }}
+            environment_variables:
+                {% for auth_method in vault.get('auth', {}) %}
+                {% if auth_method == 'gc' %}
+                GOOGLE_APPLICATION_CREDENTIALS: /etc/vault/gc.json
+                {% endif %}
+                {% endfor %}
 
     file.managed:
         - name: /etc/vault/config.json
@@ -176,3 +182,20 @@ vault-restart:
         - watch:
             - cmd: vault
             - init_script: vault
+
+
+{% for auth_method in vault.get('auth', {}) %}
+vault-auth-{{ auth_method }}:
+    file.managed:
+        - name: /etc/vault/{{ auth_method }}.json
+        - user: root
+        - group: vault
+        - mode: 640
+        - contents_pillar: vault:auth:{{ auth_method }}
+        - show_changes: False
+        - require:
+            - user: vault-user
+            - file: vault-config-directory
+        - watch_in:
+            - cmd: vault-restart
+{% endfor %}

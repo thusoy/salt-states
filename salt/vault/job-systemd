@@ -11,6 +11,9 @@ Type=simple
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/usr/local/bin/vault step-down
 TimeoutStartSec=1
+{% for key, val in environment_variables -%}
+Environment={{ key }}={{ val }}
+{%- endfor %}
 # Turn on mlock for the binary as a safety net around adding the capabilties directly
 LimitMEMLOCK=infinity
 LimitNOFILE=65536
