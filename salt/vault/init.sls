@@ -60,10 +60,8 @@ vault:
             flags: {{ flags | json }}
             {% if vault.get('auth') %}
             environment_variables:
-                {% for auth_method in vault.get('auth', {}) %}
-                {% if auth_method == 'gc' %}
-                GOOGLE_APPLICATION_CREDENTIALS: /etc/vault/gc.json
-                {% endif %}
+                {% for auth_name, auth_properties in vault.get('auth', {}).items() %}
+                {{ auth_properties.environment_variable_name }}: /etc/vault/{{ auth_properties.filename }}
                 {% endfor %}
             {% else %}
             environment_variables: {}
@@ -188,14 +186,14 @@ vault-restart:
             - init_script: vault
 
 
-{% for auth_method in vault.get('auth', {}) %}
-vault-auth-{{ auth_method }}:
+{% for auth_name, auth_properties in vault.get('auth', {}).items() %}
+vault-auth-{{ auth_name }}:
     file.managed:
-        - name: /etc/vault/{{ auth_method }}.json
+        - name: /etc/vault/{{ auth_properties.filename }}
         - user: root
         - group: vault
         - mode: 640
-        - contents_pillar: vault:auth:{{ auth_method }}
+        - contents_pillar: vault:auth:{{ auth_name }}:secret
         - show_changes: False
         - require:
             - user: vault-user
