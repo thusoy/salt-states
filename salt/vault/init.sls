@@ -175,6 +175,7 @@ vault-firewall-inbound-client-{{ family }}:
         - match:
             - comment
         - comment: 'Vault: Allow client communication'
+        - jump: ACCEPT
 
 
 vault-firewall-outbound-storage-{{ family }}:
