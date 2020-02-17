@@ -29,4 +29,11 @@ def run():
             "Couldn't autodetect vault api address from addresses, specify "
             'vault:config:api_addr in pillar. (found %s)' % ','.join(ipv4_addresses))
 
+    auth = vault.get('auth', {})
+    required_properties = ('environment_variable_name', 'filename', 'secret')
+    for auth_name, auth_properties in auth.items():
+        for required_property in required_properties:
+            assert required_property in auth_properties, ('pillar vault:auth:%s must '
+                'specify the %s key' % (auth_name, required_property))
+
     return {}

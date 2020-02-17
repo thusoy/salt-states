@@ -61,7 +61,7 @@ vault:
             {% if vault.get('auth') %}
             environment_variables:
                 {% for auth_name, auth_properties in vault.get('auth', {}).items() %}
-                {{ auth_properties.environment_variable_name }}: /etc/vault/{{ auth_properties.filename }}
+                {{ auth_properties.environment_variable_name }}: /etc/vault/{{ auth_properties.get('filename') }}
                 {% endfor %}
             {% else %}
             environment_variables: {}
@@ -206,7 +206,7 @@ vault-restart:
 {% for auth_name, auth_properties in vault.get('auth', {}).items() %}
 vault-auth-{{ auth_name }}:
     file.managed:
-        - name: /etc/vault/{{ auth_properties.filename }}
+        - name: /etc/vault/{{ auth_properties.get('filename') }}
         - user: root
         - group: vault
         - mode: 640
