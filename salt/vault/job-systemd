@@ -8,6 +8,8 @@ ConditionFileNotEmpty=/etc/vault/config.json
 
 [Service]
 Type=simple
+User=vault
+Group=vault
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/usr/local/bin/vault step-down
 TimeoutStartSec=1
