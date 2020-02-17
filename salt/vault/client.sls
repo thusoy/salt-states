@@ -31,12 +31,8 @@ vault-firewall-outbound-dns-{{ family }}-{{ protocol }}:
         - dport: 53
         - match:
             - comment
-            - owner
         - comment: 'Vault: Allow DNS'
-        - uid-owner: vault
         - jump: ACCEPT
-        - require:
-            - user: vault-user
 {% endfor %}
 
 
@@ -50,6 +46,4 @@ vault-firewall-outbound-client-{{ family }}:
             - comment
         - comment: 'Vault: Allow communication to other servers'
         - jump: ACCEPT
-        - require:
-            - user: vault-user
 {% endfor %}
