@@ -5,7 +5,7 @@
     {% set interfaces = grains.get('ip4_interfaces', {}) %}
     {% set lo = interfaces.pop('lo') %} {# just to remove it from the map #}
     {% set nonlocal_interface = interfaces.popitem()[1] %}
-    {% set api_addr = 'https://' + nonlocal_interface[0] %}
+    {% set api_addr = 'https://' + nonlocal_interface[0] + ':8200' %}
 {% endif %}
 
 {% set vault = salt['grains.filter_by']({
