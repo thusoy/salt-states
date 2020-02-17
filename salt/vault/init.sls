@@ -175,6 +175,22 @@ vault-firewall-inbound-client-{{ family }}:
         - match:
             - comment
         - comment: 'Vault: Allow client communication'
+
+
+vault-firewall-outbound-storage-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: tcp
+        - dport: 443
+        - match:
+            - comment
+            - owner
+        - comment: 'vault: Allow communicating with storage over HTTPS'
+        - uid-owner: vault
+        - jump: ACCEPT
+        - require:
+            - user: vault-user
 {% endfor %}
 
 
