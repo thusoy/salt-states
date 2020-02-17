@@ -13,7 +13,7 @@ def run():
         assert 'tls_key' in vault, 'Must speicfy pillar vault:tls_key'
 
     # Verify that we can reliably autodetect the api_addr if unset
-    if not 'api_addr' in vault:
+    if not 'api_addr' in vault.get('config', {}):
         # ip4_interfaces seems buggy as lots of interfaces don't show up there
         # when fetched from here, thus using ip_interfaces and filtering manually
         ip_interfaces = __grains__.get('ip_interfaces', {})
