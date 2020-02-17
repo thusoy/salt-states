@@ -33,6 +33,39 @@ vault:
 ```
 
 
+### Authentication
+
+If your vault setup requires authentication to external services like GCS for
+storage or an external KMS, you can add config for that in pillar, and it'll
+be deployed as files only accessible to the vault user:
+
+```yaml
+vault:
+    auth:
+        <auth-name>:
+            filename: <filename in /etc/vault>
+            environment_variable_name: <name of envvar>
+            secret: |
+                <the contents of the file>
+```
+
+Example:
+
+```yaml
+vault:
+    auth:
+        gc:
+            filename: gc.json
+            environment_variable_name: GOOGLE_APPLICATION_CREDENTIALS
+            secret: |
+                {
+                    "type": "service_account",
+                    "project_id": "vault-XXX",
+                    ..
+                }
+```
+
+
 ## Operations
 
 The version of vault to use is coded into the state and/or pillar. The state
