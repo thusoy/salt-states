@@ -20,6 +20,12 @@ salt-minion-tornado:
 {% endif %}
 
 
+# Ref. https://github.com/saltstack/salt/issues/55116
+salt-minion-pycryptodome:
+    pkg.installed:
+        - name: python3-pycryptodome
+
+
 salt-minion-apply-cron:
     cron.present:
         - name: cronic salt-call state.apply --log-level {{ log_level }} --state-verbose False
