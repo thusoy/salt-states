@@ -69,8 +69,8 @@ packages in `./tools/add-package-state.sh`, can be used for simple stuff.
 
 ## Guidelines
 
-1) When adding a file to a host, always add a marker to the top of the file
-   saying which state added it. When debugging this makes it easier to determine
+1) **Always add a marker to managed files**. In the marker you should specify
+   which state is managing it. When debugging this makes it easier to determine
    if something is a default config file or something explictly put in place:
    ```
    #############################################
@@ -78,10 +78,10 @@ packages in `./tools/add-package-state.sh`, can be used for simple stuff.
    #############################################
    ```
 
-2) Assume the state is going to be applied to a host with locked down inbound
-   and outbound firewall. Any networking your state is going to do needs to be
-   explicitly allowed through the firewall, again with a comment saying which
-   state added the rule:
+2) **Explicitly open up firewalls**. Assume the state is going to be applied to
+   a host with locked down inbound and outbound firewall. Any networking your
+   state is going to do needs to be explicitly allowed through the firewall,
+   with a comment saying which state added the rule:
     ```
     - dport: 443
     - match:
@@ -89,9 +89,9 @@ packages in `./tools/add-package-state.sh`, can be used for simple stuff.
     - comment: 'nginx: Allow inbound https'
     ```
 
-3) Explicitly validate pillar data to ensure invalid configuration is caught as
-   early as possible with clear error messages as to what is missing. In the
-   state:
+3) **Explicitly validate pillar data**. This ensures invalid configuration is
+   caught as early as possible with clear error messages as to what is missing.
+   In the state:
    ```yaml
    include:
        - .pillar_check
@@ -106,12 +106,12 @@ packages in `./tools/add-package-state.sh`, can be used for simple stuff.
        return {}
    ```
 
-4) Never write sensitive data to logs. In other words, every file that contains
-   secrets should be run include `show_changes: False`. If possible through
-   includes or similar, put the secrets in it's own file so that one still gets
-   a useful diff for the rest of the file.
+4) **Never write sensitive data to the salt output**. In other words, every file
+   that contains secrets should include `- show_changes: False`. If possible
+   through includes or similar, put the secrets in it's own file so that one
+   still gets a useful diff for the rest of the file.
 
-5) Don't put values into the statement name. The names are identifiers and
+5) **Don't put values into the statement name**. The names are identifiers and
    should look as such. Ie, do this:
    ```yaml
    mystate-file:
@@ -121,6 +121,7 @@ packages in `./tools/add-package-state.sh`, can be used for simple stuff.
    ```
    Don't do this:
    ```yaml
+   # BAD EXAMPLE - DON'T DO THIS
    /etc/mystate/config.yml:
        file.managed:
            - contents: 'foobar'
@@ -128,16 +129,17 @@ packages in `./tools/add-package-state.sh`, can be used for simple stuff.
    This makes them easier to modify from pillar and reference from other states
    and statements.
 
-6) Secure by default. Where a service doesn't already apply hardening measures
-   by default, try to remedy that from the state.
+6) **Secure by default**. Where a service doesn't already apply hardening
+   measures by default, try to remedy that from the state.
 
-7) Specify pillar defaults in `map.jinja`. This makes it easier to find default
-   values and import the values from several locations, ie the state and the
-   its config file.
+7) **Specify pillar defaults in `map.jinja`**. This makes it easier to find
+   default values and import the values from several locations, ie the state
+   and the its config file.
 
-8) Avoid over-complicated jinja states. If you can't easily express the state as
-   jinja+yaml, just use python. This also makes it easy for you to add simple
-   unit tests verifing that it outputs what you want.
+8) **Avoid over-complicated jinja states**. If you can't easily express the
+   state as jinja+yaml, just use python. This also makes it easy for you to add
+   simple unit tests verifing that it outputs what you want.
 
-9) You don't need to enable customizing every possible property from the start.
-   When you find it's necessary, then enable customizing it from pillar.
+9) **Keep it simple**. You don't need to enable customizing every possible
+   property from the start. When you find it's necessary, then enable
+   customizing it from pillar (or change the default).
