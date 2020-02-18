@@ -143,3 +143,8 @@ packages in `./tools/add-package-state.sh`, can be used for simple stuff.
 9) **Keep it simple**. You don't need to enable customizing every possible
    property from the start. When you find it's necessary, then enable
    customizing it from pillar (or change the default).
+
+10) **Namespace your statements**. Always namespace each statement with the name
+   of the state. Ie in `postgres/init.sls` every statement should start with
+   `postgres-`, and in `postgres/client.sls` every statement should start with
+   `postgres-client-`.
