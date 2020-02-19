@@ -4,5 +4,5 @@
 vault-policy-{{ name }}:
     vault.policy_present:
         - name: {{ name }}
-        - rules: {{ policy | json }}
+        - rules: '{{ policy | json }}'
 {% endfor %}
