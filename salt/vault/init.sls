@@ -154,6 +154,20 @@ vault-firewall-outbound-server-to-server-{{ family }}:
             - user: vault-user
 
 
+vault-firewall-outbound-minion-to-server-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: OUTPUT
+        - protocol: tcp
+        - dport: 8200
+        - match:
+            - comment
+            - owner
+        - comment: 'Vault: Allow salt minion to communicate with servers'
+        - uid-owner: root
+        - jump: ACCEPT
+
+
 vault-firewall-inbound-server-to-server-{{ family }}:
     firewall.append:
         - family: {{ family }}
