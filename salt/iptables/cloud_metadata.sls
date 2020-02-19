@@ -7,7 +7,7 @@ iptables-cloud-metadata-firewall-tcp:
         - protocol: tcp
         - dport: 80
         - match:
-            - comment:
+            - comment
         - comment: 'iptables.cloud_metadata: Allow http to metadata service'
         - jump: ACCEPT
 
