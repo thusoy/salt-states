@@ -8,5 +8,6 @@ for venv in 'venv' 'venv3'; do
         salt/hardening/test_print_dependent_modules.py "$@" \
         salt/sentry-forwarder/test_forwarder.py \
         extensions/pillar/test_ssh_keys.py \
+        extensions/pillar/test_terraform.py \
         "$@"
 done
