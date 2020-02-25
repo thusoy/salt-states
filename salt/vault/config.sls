@@ -29,7 +29,8 @@ vault-config-audit-{{ audit.get('backend_name', audit.backend_type) }}:
 
 
 {% for auth_backend in vault.get('auth_backends', []) %}
-vault-config-auth-backend-{{ auth_backend.get('mount_point', auth_backend.backend_type) }}:
+{% set mount_point = auth_backend.get('mount_point', auth_backend.backend_type) %}
+vault-config-auth-backend-{{ mount_point }}:
     mdl_vault.auth_backend_enabled:
         - backend_type: {{ auth_backend.backend_type }}
         - mount_point: {{ auth_backend.get('mount_point', '~') }}
@@ -37,12 +38,12 @@ vault-config-auth-backend-{{ auth_backend.get('mount_point', auth_backend.backen
 
 
 {% if 'config' in auth_backend %}
-vault-config-auth-backend-config-{{ auth_backend.get('mount_point', auth_backend.backend_type) }}:
+vault-config-auth-backend-config-{{ mount_point }}:
     mdl_vault.auth_backend_configured:
-        - mount_point: {{ auth_backend.get('mount_point', auth_backend.backend_type) }}
+        - mount_point: {{ mount_point }}
         - config: {{ auth_backend.config | json }}
         - require:
-            - mdl_vault: vault-config-auth-backend-{{ auth_backend.get('mount_point', auth_backend.backend_type) }}
+            - mdl_vault: vault-config-auth-backend-{{ mount_point }}
 {% endif %}
 
 {% endfor %}
