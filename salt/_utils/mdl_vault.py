@@ -1097,6 +1097,18 @@ class VaultClient(object):
         """
         return self.read('auth/{0}/config'.format(mount_point))
 
+    def configure_auth_backend_role(self, mount_point, role_name, config):
+        """
+        POST /auth/<mount point>/role/:role_name
+        """
+        self._post('/v1/auth/{0}/role/{1}'.format(mount_point, role_name), json=config)
+
+    def get_auth_backend_role(self, mount_point, role_name):
+        """
+        GET /auth/<mount point>/role/:role_name
+        """
+        return self.read('auth/{0}/role/{1}'.format(mount_point, role_name))
+
     def create_role(self, role_name, **kwargs):
         """
         POST /auth/approle/role/<role name>

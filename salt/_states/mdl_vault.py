@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 # Based on https://github.com/mitodl/vault-formula/blob/master/_states/vault.py (BSD 3-clause)
 
+import copy
 import logging
 import os
 
@@ -130,6 +131,81 @@ def auth_backend_configured(name, mount_point, config):
         new_config = __salt__['mdl_vault.get_auth_backend_config'](mount_point)['data']
         ret['changes'] = _dict_diff(existing_config, new_config)
         ret['comment'] = 'Modified config for auth backend {0}'.format(mount_point)
+
+    return ret
+
+
+def auth_backend_role_present(name, mount_point, config):
+    """
+    Configure a role for an auth backend that has the /auth/<mount point/role/:name
+    endpoint. This includes AWS, Azure, Google Cloud and probably more.
+
+    Config keys can be suffixed with `_pillar` to use the corresponding value from pillar.
+    This can be used like
+        mdl_vault.auth_backend_role_present:
+            - mount_point: gcp
+            - name: my-role
+            - config:
+                type: iam
+                bound_service_accounts_pillar:
+                    - some_pillar:service_account
+
+    :param name: ID for the state definition and name of the role
+    :param mount_point: The mount point of the backend
+    :param config: The parameters to configure the role. This will vary between the auth
+        backends, see the documentation for details, like
+        https://www.vaultproject.io/api-docs/auth/gcp/#parameters-1
+    """
+    ret = {
+        'name': name,
+        'comment': '',
+        'result': True,
+        'changes': {},
+    }
+    existing_config = __salt__['mdl_vault.get_auth_backend_role'](mount_point, name)
+    needs_update = True
+    config = _resolve_pillar_keys(config)
+
+    if existing_config:
+        existing_config = existing_config['data']
+        # This can't detect all types of changes, if you're removing a value with the
+        # intention of reverting to the default you have to explicitly set it back to the
+        # default for vault to pick up the changes.
+        needs_update = any(existing_config[key] != val for key, val in config.items())
+
+    if not needs_update:
+        ret['comment'] = 'Auth role {0} for backend {1} is already configured'.format(
+            name, mount_point)
+    elif __opts__['test']:
+        ret['result'] = None
+    elif existing_config is None:
+        try:
+            __salt__['mdl_vault.configure_auth_backend_role'](mount_point, name, config)
+        except __utils__['mdl_vault.vault_error']() as e:
+            log.exception(error)
+            ret['result'] = False
+            ret['comment'] = 'Failed to add role {0} for auth backend {1}: {2}'.format(
+                name, mount_point, e.errors)
+            return ret
+
+        ret['changes']['old'] = {}
+        ret['changes']['new'] = config
+        ret['comment'] = 'Added config for auth backend {0} role {1}'.format(
+            mount_point, name)
+    else:
+        try:
+            __salt__['mdl_vault.configure_auth_backend_role'](mount_point, name, config)
+        except __utils__['mdl_vault.vault_error']() as e:
+            log.exception(error)
+            ret['result'] = False
+            ret['comment'] = 'Failed to modify role {0} for auth backend {1}: {2}'.format(
+                name, mount_point, e.errors)
+            return ret
+
+        new_config = __salt__['mdl_vault.get_auth_backend_role'](mount_point, name)['data']
+        ret['changes'] = _dict_diff(existing_config, new_config)
+        ret['comment'] = 'Modified role {0} for auth backend {1}'.format(
+            name, mount_point)
 
     return ret
 
@@ -460,3 +536,22 @@ def role_absent(name, mount_point):
 
 def _dict_diff(old_dict, new_dict):
     return RecursiveDictDiffer(old_dict, new_dict, ignore_missing_keys=False).diffs
+
+
+def _resolve_pillar_keys(dictionary):
+    ret = copy.deepcopy(dictionary)
+    pillar_suffix = '_pillar'
+    pillar_get = __salt__['pillar.get']
+    for key, value in dictionary.items():
+        if key.endswith(pillar_suffix):
+            pure_key = key[:-len(pillar_suffix)]
+            del ret[key]
+            if isinstance(value, (tuple, list)):
+                # Resolve for each item in the list
+                pillar_values = []
+                for list_value in value:
+                    pillar_values.append(pillar_get(list_value))
+                ret[pure_key] = pillar_values
+            else:
+                ret[pure_key] = pillar_get(value)
+    return ret
