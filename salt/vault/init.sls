@@ -98,7 +98,7 @@ vault:
 {% if not dev %}
 vault-tls-cert:
     file.managed:
-        - name: /etc/vault/cert.pem
+        - name: /etc/vault-ca.pem
         - user: root
         - group: vault
         - mode: 644
