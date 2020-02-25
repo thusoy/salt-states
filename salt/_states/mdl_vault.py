@@ -55,6 +55,7 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
                           ' enabled.'.format(auth_type=backend_type,
                                              mount=mount_point))
         ret['result'] = True
+        ret['changes'] = {}
     elif __opts__['test']:
         ret['result'] = None
     else:
