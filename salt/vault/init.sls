@@ -22,7 +22,7 @@ vault-user:
         - shell: /usr/sbin/nologin
 
 
-vault-config-directory:
+vault-server-config-directory:
     file.directory:
         - name: /etc/vault
         - user: root
@@ -70,9 +70,9 @@ vault:
     file.managed:
         - name: /etc/vault/config.json
         - template: jinja
-        - source: salt://vault/config
+        - source: salt://vault/server_config
         - context:
-            config: {{ vault.get('config', {}) | json }}
+            config: {{ vault.get('server_config', {}) | json }}
         - user: root
         - group: vault
         - mode: 640
@@ -228,7 +228,7 @@ vault-auth-{{ auth_name }}:
         - show_changes: False
         - require:
             - user: vault-user
-            - file: vault-config-directory
+            - file: vault-server-config-directory
         - watch_in:
             - cmd: vault-restart
 {% endfor %}

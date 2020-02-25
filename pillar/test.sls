@@ -1,5 +1,5 @@
 vault:
-    config:
+    server_config:
         api_addr: https://10.10.10.23
         storage:
             file:

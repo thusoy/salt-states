@@ -14,8 +14,9 @@ References:
 
 ## Configuration
 
-The config given in the pillar `vault:config` will be merged with the defaults defined in `map.jinja` and written to the
-config files as json. This means that instead of writing
+The config given in the pillar `vault:server_config` will be merged with the defaults
+defined in `map.jinja` and written to the server config files as json. This means that
+instead of writing
 ```
 variable "ami" {
     description = "the AMI to use"
@@ -26,7 +27,7 @@ You should write
 
 ```yaml
 vault:
-    config:
+    server_config:
         variable:
             ami:
                 description: 'the AMI to use'

@@ -13,21 +13,21 @@ def run():
         assert 'tls_key' in vault, 'Must speicfy pillar vault:tls_key'
 
     # Verify that we can reliably autodetect the api_addr if unset
-    if not 'api_addr' in vault.get('config', {}):
+    if not 'api_addr' in vault.get('server_config', {}):
         # ip4_interfaces seems buggy as lots of interfaces don't show up there
         # when fetched from here, thus using ip_interfaces and filtering manually
         ip_interfaces = __grains__.get('ip_interfaces', {})
         nonlocal_interfaces = [key for key in ip_interfaces if key != 'lo']
         # Only has one interface
         assert len(nonlocal_interfaces) == 1, ("Couldn't autodetect vault api "
-            'address from interfaces, specify vault:config:api_addr in pillar (found %s)' %
+            'address from interfaces, specify vault:server_config:api_addr in pillar (found %s)' %
             ','.join(nonlocal_interfaces))
         # That interface only has one address
         all_addresses = ip_interfaces[nonlocal_interfaces[0]]
         ipv4_addresses = [a for a in all_addresses if ipaddress.ip_address(a).version == 4]
         assert len(ipv4_addresses) == 1, (
             "Couldn't autodetect vault api address from addresses, specify "
-            'vault:config:api_addr in pillar. (found %s)' % ','.join(ipv4_addresses))
+            'vault:server_config:api_addr in pillar. (found %s)' % ','.join(ipv4_addresses))
 
     auth = vault.get('auth', {})
     required_properties = ('environment_variable_name', 'filename', 'secret')
