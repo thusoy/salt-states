@@ -38,13 +38,15 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
     :returns: The result of the state execution
     :rtype: dict
     """
-    backends = __salt__['mdl_vault.list_auth_backends']()
+    existing_backends = __salt__['mdl_vault.list_auth_backends']()['data']
     setting_dict = {'type': backend_type, 'description': description}
     backend_enabled = False
-    ret = {'name': name,
-           'comment': '',
-           'result': '',
-           'changes': {'old': backends}}
+    ret = {
+        'name': name,
+        'comment': '',
+        'result': '',
+        'changes': {},
+    }
 
     for path, settings in __salt__['mdl_vault.list_auth_backends']().get('data', {}).items():
         if (path.strip('/') == mount_point or backend_type and
@@ -54,7 +56,7 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
     if backend_enabled:
         ret['comment'] = ('The {auth_type} backend mounted at {mount} is already'
                           ' enabled.'.format(auth_type=backend_type,
-                                             mount=mount_point))
+                                             mount=mount_point or backend_type))
         ret['result'] = True
         ret['changes'] = {}
     elif __opts__['test']:
@@ -65,8 +67,8 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
                                                   description=description,
                                                   mount_point=mount_point)
             ret['result'] = True
-            ret['changes']['new'] = __salt__[
-                'mdl_vault.list_auth_backends']()
+            new_backends = __salt__['mdl_vault.list_auth_backends']()['data']
+            ret['changes'] = _dict_diff(existing_backends, new_backends)
         except __utils__['mdl_vault.vault_error']() as e:
             ret['result'] = False
             log.exception(e)
@@ -118,7 +120,6 @@ def auth_backend_configured(name, mount_point, config):
     else:
         try:
             __salt__['mdl_vault.configure_auth_backend'](mount_point, config)
-            new_config = __salt__['mdl_vault.get_auth_backend_config'](mount_point)['data']
         except __utils__['mdl_vault.vault_error']() as e:
             log.exception(error)
             ret['result'] = False
@@ -126,8 +127,8 @@ def auth_backend_configured(name, mount_point, config):
                 mount_point, e.errors)
             return ret
 
-        config_diff = RecursiveDictDiffer(new_config, existing_config, ignore_missing_keys=False)
-        ret['changes'] = config_diff.diffs
+        new_config = __salt__['mdl_vault.get_auth_backend_config'](mount_point)['data']
+        ret['changes'] = _dict_diff(existing_config, new_config)
         ret['comment'] = 'Modified config for auth backend {0}'.format(mount_point)
 
     return ret
@@ -455,3 +456,7 @@ def role_absent(name, mount_point):
         log.exception(e)
         raise salt.exceptions.SaltInvocationError(e)
     return ret
+
+
+def _dict_diff(old_dict, new_dict):
+    return RecursiveDictDiffer(old_dict, new_dict, ignore_missing_keys=False).diffs
