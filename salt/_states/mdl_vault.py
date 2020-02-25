@@ -9,6 +9,7 @@ import salt.config
 import salt.syspaths
 import salt.utils
 import salt.exceptions
+from salt.utils.dictdiffer import RecursiveDictDiffer
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +73,63 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
         ret['comment'] = ('The {backend} backend has been successfully mounted at '
                           '{mount}.'.format(backend=backend_type,
                                             mount=mount_point))
+    return ret
+
+
+def auth_backend_configured(name, mount_point, config):
+    """
+    Configure the given, already enabled, backend.
+
+    :param name: ID for state definition
+    :param mount_point: The mount point of the backend
+    :param config: Dictionary with the config values to set.
+    """
+    ret = {
+        'name': name,
+        'comment': '',
+        'result': True,
+        'changes': {},
+    }
+    existing_config = __salt__['mdl_vault.get_auth_backend_config'](mount_point)['data']
+    needs_update = True
+    if existing_config:
+        # This can't detect all types of changes, if you're removing a value with the
+        # intention of reverting to the default you have to explicitly set it back to the
+        # default for vault to pick up the changes.
+        needs_update = any(existing_config[key] != val for key, val in config.items())
+
+    if not needs_update:
+        ret['comment'] = 'Auth backend {0} is already configured'.format(mount_point)
+    elif __opts__['test']:
+        ret['result'] = None
+    elif existing_config is None:
+        try:
+            __salt__['mdl_vault.configure_auth_backend'](mount_point, config)
+        except __utils__['mdl_vault.vault_error']() as e:
+            log.exception(error)
+            ret['result'] = False
+            ret['comment'] = 'Failed to add config for auth backend {0}: {1}'.format(
+                mount_point, e.errors)
+            return ret
+
+        ret['changes']['old'] = {}
+        ret['changes']['new'] = config
+        ret['comment'] = 'Added config for auth backend {0}'.format(mount_point)
+    else:
+        try:
+            __salt__['mdl_vault.configure_auth_backend'](mount_point, config)
+            new_config = __salt__['mdl_vault.get_auth_backend_config'](mount_point)['data']
+        except __utils__['mdl_vault.vault_error']() as e:
+            log.exception(error)
+            ret['result'] = False
+            ret['comment'] = 'Failed to modify config for auth backend {0}: {1}'.format(
+                mount_point, e.errors)
+            return ret
+
+        config_diff = RecursiveDictDiffer(new_config, existing_config, ignore_missing_keys=False)
+        ret['changes'] = config_diff.diffs
+        ret['comment'] = 'Modified config for auth backend {0}'.format(mount_point)
+
     return ret
 
 
