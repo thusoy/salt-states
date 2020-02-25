@@ -6,3 +6,10 @@ vault-policy-{{ name }}:
         - name: {{ name }}
         - rules: '{{ policy | json }}'
 {% endfor %}
+
+
+{% for name in vault.get('policies.absent', []) %}
+vault-absent-policy-{{ name }}:
+    mdl_vault.policy_absent:
+        - name: {{ name }}
+{% endfor %}
