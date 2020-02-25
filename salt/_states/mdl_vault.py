@@ -39,7 +39,7 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
     :returns: The result of the state execution
     :rtype: dict
     """
-    existing_backends = __salt__['mdl_vault.list_auth_backends']()['data']
+    existing_backends = __salt__['mdl_vault.list_auth_backends']()
     setting_dict = {'type': backend_type, 'description': description}
     backend_enabled = False
     ret = {
@@ -69,7 +69,7 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
                                                   mount_point=mount_point)
             ret['result'] = True
             new_backends = __salt__['mdl_vault.list_auth_backends']()['data']
-            ret['changes'] = _dict_diff(existing_backends, new_backends)
+            ret['changes'] = _dict_diff(existing_backends['data'], new_backends)
         except __utils__['mdl_vault.vault_error']() as e:
             ret['result'] = False
             log.exception(e)
@@ -81,7 +81,7 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
 
 def auth_backend_configured(name, mount_point, config):
     """
-    Configure the given, already enabled, backend.
+    Configure the already enabled backend.
 
     :param name: ID for state definition
     :param mount_point: The mount point of the backend
@@ -93,9 +93,10 @@ def auth_backend_configured(name, mount_point, config):
         'result': True,
         'changes': {},
     }
-    existing_config = __salt__['mdl_vault.get_auth_backend_config'](mount_point)['data']
+    existing_config = __salt__['mdl_vault.get_auth_backend_config'](mount_point)
     needs_update = True
     if existing_config:
+        existing_config = existing_config['data']
         # This can't detect all types of changes, if you're removing a value with the
         # intention of reverting to the default you have to explicitly set it back to the
         # default for vault to pick up the changes.
