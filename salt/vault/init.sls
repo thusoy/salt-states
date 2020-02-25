@@ -192,7 +192,7 @@ vault-firewall-inbound-client-{{ family }}:
         - jump: ACCEPT
 
 
-vault-firewall-outbound-storage-{{ family }}:
+vault-firewall-outbound-https-{{ family }}:
     firewall.append:
         - family: {{ family }}
         - chain: OUTPUT
@@ -201,7 +201,7 @@ vault-firewall-outbound-storage-{{ family }}:
         - match:
             - comment
             - owner
-        - comment: 'vault: Allow communicating with storage over HTTPS'
+        - comment: 'vault: Allow communicating with storage and auth backends over HTTPS'
         - uid-owner: vault
         - jump: ACCEPT
         - require:
