@@ -1764,7 +1764,7 @@ def build_client(url='https://localhost:8200',
     for k, v in client_kwargs.items():
         if k.startswith('_'):
             continue
-        arg_val = __salt__['config.get']('vault.{key}'.format(key=k), v)
+        arg_val = __salt__['config.get']('vault:{key}'.format(key=k), v)
         log.debug('Setting {0} parameter for HVAC client to {1}.'
                   .format(k, arg_val))
         client_kwargs[k] = arg_val
