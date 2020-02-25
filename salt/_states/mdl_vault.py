@@ -230,9 +230,9 @@ def secret_backend_enabled(name, backend_type, description='', mount_point=None,
                                   'length could not be configured\n'.format(e))
                 log.exception(e)
                 raise salt.exceptions.CommandExecutionError(str(e))
-        ret['comment'] += ('The {backend} has been successfully mounted at '
+        ret['comment'] += ('The {backend} backend has been successfully mounted at '
                           '{mount}.'.format(backend=backend_type,
-                                            mount=mount_point))
+                                            mount=mount_point or backend_type))
     return ret
 
 
