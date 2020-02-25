@@ -46,4 +46,15 @@ vault-config-auth-backend-config-{{ mount_point }}:
             - mdl_vault: vault-config-auth-backend-{{ mount_point }}
 {% endif %}
 
+
+{% for role in auth_backend.get('roles', []) %}
+vault-config-auth-backend-role-{{ mount_point }}-{{ role.name }}:
+    mdl_vault.auth_backend_role_present:
+        - mount_point: {{ mount_point }}
+        - name: {{ role.name }}
+        - config: {{ role.config | json }}
+        - require:
+            - mdl_vault: vault-config-auth-backend-{{ mount_point }}
+{% endfor %}
+
 {% endfor %}
