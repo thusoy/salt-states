@@ -1,3 +1,8 @@
 id: vagrant
 file_client: local
 state_verbose: False
+vault:
+    url: https://localhost:8200
+    verify: /etc/vault-ca.pem
+    # Initialize and unseal the vault and put the root token here to test the vault states
+    token: ''
