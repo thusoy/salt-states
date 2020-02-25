@@ -243,7 +243,7 @@ def policy_present(name, rules):
     :returns: The result of the state execution
     :rtype: dict
     """
-    current_policy = __salt__['mdl_vault.get_policy'](name, parse=True)
+    current_policy = __salt__['mdl_vault.get_policy'](name)
     ret = {'name': name,
            'comment': '',
            'result': False,
