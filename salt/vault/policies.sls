@@ -2,7 +2,7 @@
 
 {% for name, policy in vault.get('policies', {}).items() %}
 vault-policy-{{ name }}:
-    vault.policy_present:
+    mdl_vault.policy_present:
         - name: {{ name }}
         - rules: '{{ policy | json }}'
 {% endfor %}
