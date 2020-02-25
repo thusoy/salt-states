@@ -69,7 +69,7 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
         except __utils__['mdl_vault.vault_error']() as e:
             ret['result'] = False
             log.exception(e)
-        ret['comment'] = ('The {backend} has been successfully mounted at '
+        ret['comment'] = ('The {backend} backend has been successfully mounted at '
                           '{mount}.'.format(backend=backend_type,
                                             mount=mount_point))
     return ret
