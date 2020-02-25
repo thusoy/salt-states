@@ -34,4 +34,15 @@ vault-config-auth-backend-{{ auth_backend.get('mount_point', auth_backend.backen
         - backend_type: {{ auth_backend.backend_type }}
         - mount_point: {{ auth_backend.get('mount_point', '~') }}
         - description: {{ auth_backend.get('description', '~') }}
+
+
+{% if 'config' in auth_backend %}
+vault-config-auth-backend-config-{{ auth_backend.get('mount_point', auth_backend.backend_type) }}:
+    mdl_vault.auth_backend_configured:
+        - mount_point: {{ auth_backend.get('mount_point', auth_backend.backend_type) }}
+        - config: {{ auth_backend.config | json }}
+        - require:
+            - mdl_vault: vault-config-auth-backend-{{ auth_backend.get('mount_point', auth_backend.backend_type) }}
+{% endif %}
+
 {% endfor %}
