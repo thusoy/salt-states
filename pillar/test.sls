@@ -3,7 +3,7 @@ vault:
         api_addr: https://10.10.10.23
         storage:
             file:
-                path: /etc/vault/data
+                path: /tmp/vault
     tls_cert: |
         -----BEGIN CERTIFICATE-----
         MIIByTCCAW+gAwIBAgIUP9dSMiMTNhTGWlp/Xkk3FwubO14wCgYIKoZIzj0EAwIw
