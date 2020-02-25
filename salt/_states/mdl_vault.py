@@ -95,6 +95,7 @@ def audit_backend_enabled(name, backend_type, description='', options=None,
         ret['comment'] = ('The {audit_type} backend is already enabled.'
                           .format(audit_type=backend_type))
         ret['result'] = True
+        ret['changes'] = {}
     elif __opts__['test']:
         ret['result'] = None
     else:
