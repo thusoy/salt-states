@@ -519,26 +519,26 @@ class VaultClient(object):
         """
         self._put('/v1/auth/token/revoke-self')
 
-    def list_secret_backends(self):
+    def list_secrets_engines(self):
         """
         GET /sys/mounts
         """
         return self._get('/v1/sys/mounts').json()
 
-    def enable_secret_backend(self,
-                              backend_type,
+    def enable_secrets_engine(self,
+                              engine_type,
                               description=None,
                               mount_point=None,
                               config=None,
                               options=None):
         """
-        POST /sys/auth/<mount point>
+        POST /sys/mounts/<mount point>
         """
         if not mount_point:
-            mount_point = backend_type
+            mount_point = engine_type
 
         params = {
-            'type': backend_type,
+            'type': engine_type,
             'description': description,
             'config': config,
             'options': options,
@@ -1115,21 +1115,18 @@ class VaultClient(object):
         """
         POST /auth/approle/role/<role name>
         """
-
         self._post('/v1/auth/approle/role/{0}'.format(role_name), json=kwargs)
 
     def list_roles(self):
         """
         GET /auth/approle/role
         """
-
         return self._get('/v1/auth/approle/role?list=true').json()
 
     def get_role_id(self, role_name):
         """
         GET /auth/approle/role/<role name>/role-id
         """
-
         url = '/v1/auth/approle/role/{0}/role-id'.format(role_name)
         return self._get(url).json()['data']['role_id']
 
@@ -1137,7 +1134,6 @@ class VaultClient(object):
         """
         POST /auth/approle/role/<role name>/role-id
         """
-
         url = '/v1/auth/approle/role/{0}/role-id'.format(role_name)
         params = {'role_id': role_id}
         self._post(url, json=params)
@@ -1152,7 +1148,6 @@ class VaultClient(object):
         """
         POST /auth/approle/role/<role name>/secret-id
         """
-
         url = '/v1/auth/approle/role/{0}/secret-id'.format(role_name)
         params = {}
         if meta is not None:
