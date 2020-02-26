@@ -34,6 +34,43 @@ vault:
 ```
 
 
+The state allows settings both server configuration (the stuff that goes in the config
+file and the service), and the stuff you would normally set from the CLI or via the API
+like auth backends, audit logging, secret engines, etc.
+
+Some examples of the latter:
+
+```yaml
+vault:
+    audit:
+        - backend_type: syslog
+
+    policies:
+        read-only:
+            path:
+                '*':
+                    capabilities: ['read']
+
+    auth_backends:
+        - backend_type: gcp
+          description: Google Cloud
+          roles:
+            - name: my-read-only-role
+              config:
+                type: iam
+                policies: read-only
+                bound_service_accounts:
+                    - myserviceaccount@example.com
+
+    secrets_engines:
+        - type: kv
+          description: kv version 2 engine
+          mount_point: secrets
+          options:
+            version: 2
+```
+
+
 ### Authentication
 
 If your vault setup requires authentication to external services like GCS for
