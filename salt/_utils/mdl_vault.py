@@ -580,17 +580,6 @@ class VaultClient(object):
         """
         self._delete('/v1/sys/mounts/{0}'.format(mount_point))
 
-    def remount_secret_backend(self, from_mount_point, to_mount_point):
-        """
-        POST /sys/remount
-        """
-        params = {
-            'from': from_mount_point,
-            'to': to_mount_point,
-        }
-
-        self._post('/v1/sys/remount', json=params)
-
     def list_policies(self):
         """
         GET /sys/policy
