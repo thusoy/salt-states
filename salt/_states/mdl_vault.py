@@ -287,7 +287,7 @@ def secret_backend_enabled(name, backend_type, description='', mount_point=None,
            'result': '',
            'changes': {'old': backends}}
 
-    for path, settings in __salt__['mdl_vault.list_secret_backends']().get('data', {}).items():
+    for path, settings in backends.items():
         if (path.strip('/') == mount_point and
             settings['type'] == backend_type):
             backend_enabled = True
