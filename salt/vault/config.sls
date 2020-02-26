@@ -58,3 +58,14 @@ vault-config-auth-backend-role-{{ mount_point }}-{{ role.name }}:
 {% endfor %}
 
 {% endfor %}
+
+
+{% for secrets_engine in vault.get('secrets_engines', []) %}
+{% set mount_point = secrets_engine.get('mount_point', secrets_engine.type) %}
+vault-config-secrets-engine-{{ mount_point }}:
+    mdl_vault.secrets_engine_enabled:
+        - mount_point: {{ secrets_engine.get('mount_point', '~') }}
+        - engine_type: {{ secrets_engine.type }}
+        - description: {{ secrets_engine.get('description', '~') }}
+        - options: {{ secrets_engine.get('options', {}) | json }}
+{% endfor %}
