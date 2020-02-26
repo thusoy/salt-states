@@ -255,7 +255,7 @@ def audit_backend_enabled(name, backend_type, description='', options=None,
 def secret_backend_enabled(name, backend_type, description='', mount_point=None,
                            connection_config_path=None, connection_config=None,
                            lease_max=None, lease_default=None, ttl_max=None,
-                           ttl_default=None, override=False):
+                           ttl_default=None, override=False, options=None):
     """
 
     :param name: The ID for the state definition
@@ -303,7 +303,8 @@ def secret_backend_enabled(name, backend_type, description='', mount_point=None,
         try:
             __salt__['mdl_vault.enable_secret_backend'](backend_type,
                                                     description=description,
-                                                    mount_point=mount_point)
+                                                    mount_point=mount_point,
+                                                    options=options)
             ret['result'] = True
             ret['changes']['new'] = __salt__[
                 'mdl_vault.list_secret_backends']()

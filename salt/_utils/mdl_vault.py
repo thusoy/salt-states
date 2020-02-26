@@ -529,7 +529,8 @@ class VaultClient(object):
                               backend_type,
                               description=None,
                               mount_point=None,
-                              config=None):
+                              config=None,
+                              options=None):
         """
         POST /sys/auth/<mount point>
         """
@@ -540,6 +541,7 @@ class VaultClient(object):
             'type': backend_type,
             'description': description,
             'config': config,
+            'options': options,
         }
 
         self._post('/v1/sys/mounts/{0}'.format(mount_point), json=params)
