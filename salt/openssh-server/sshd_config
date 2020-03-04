@@ -25,12 +25,12 @@ HostCertificate /etc/ssh/ssh_host_{{ key }}_certificate
 {% endif %}
 {% endfor %}
 
-{% if openssh_server.use_deprecated_privilege_separation %}
+{% if openssh_server.use_deprecated_privilege_separation -%}
 {# This has been on by default for some time and deprecated in newer versions of
 ssh (7.5 and up), thus only specify where necessary to avoid warnings #}
 # Privilege Separation is turned on for security
 UsePrivilegeSeparation sandbox
-{% endif %}
+{%- endif %}
 
 # Limit key exchange to safe algos
 KexAlgorithms {{ ','.join(openssh_server.kex_algorithms) }}
