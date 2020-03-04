@@ -1,7 +1,7 @@
 {% set salt_minion = salt['grains.filter_by']({
     'default': {
         'apply_schedule': {
-            'hours': '*/8',
+            'hour': '*/8',
             'minute': 'random',
         }
     },
