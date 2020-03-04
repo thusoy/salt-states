@@ -30,5 +30,9 @@
         'minumum_modulus_size': 2048,
         'listen_addresses': [],
         'gateway_ports': 'clientspecified',
+        'use_deprecated_privilege_separation': False,
     },
-}, merge=pillar_get('openssh_server')) %}
+    'stretch': {
+        'use_deprecated_privilege_separation': True,
+    }
+}, grain='oscodename', merge=pillar_get('openssh_server')) %}
