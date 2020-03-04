@@ -5,7 +5,7 @@ extension to load them into the saltmasters pillar and use the
 `salt-master.minion-firewall` state to only allow incoming connections from
 those IPs.
 
-Configure the extension with the master minion id:
+Configure the extension with the master minion id (or a glob):
 
 ext_pillar:
     - minion_ips:
@@ -19,6 +19,7 @@ salt_master:
             - 1.2.3.4
 '''
 
+import fnmatch
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def ext_pillar(minion_id, pillar, master=None, minion_ip_path='/etc/salt/minion_
             'a saltmaster, thus not returning anything')
         return {}
 
-    if minion_id != master:
+    if not fnmatch.fnmatch(minion_id, master):
         return {}
 
     try:
