@@ -50,8 +50,8 @@ ext_pillar:
 This example shows how you can add both static principals ('example.com'), and
 one of the dynamic ones ('$ip'). '$ip' will expand to all IPs found in the
 grains for the minion. '$minion_id' will expand to the minion id. In addition
-you can specify '$domain', '$hostname' or '$fqdn', which all forward the
-property with the same name from grains.
+you can specify any grain key as '$grain:<key>', to include the grain with the
+given key. For example, set '$grain:domain' to include the minion's domain.
 
 This extension works in conjunction with the openssh-server state to provision
 the keys to the servers.
@@ -68,6 +68,12 @@ from logging import getLogger
 
 _logger = getLogger(__name__)
 VALID_RE = re.compile(r'Valid: .* ([0-9T:-]+)$')
+
+try:
+    basestring = basestring
+except NameError:
+    # python 3
+    basestring = str
 
 
 def ext_pillar(
@@ -90,10 +96,15 @@ def ext_pillar(
         return {}
 
     validity = timedelta(seconds=validity_seconds)
-    cert_principals = resolve_principals(minion_id, principals)
+    cert_principals = resolve_principals(minion_id, principals, pillar)
     ret = {}
 
+    existing_ssh_pillar = pillar.get('openssh_server', {})
     for key_type in key_types:
+        if 'host_%s_key' % key_type in existing_ssh_pillar:
+            # Don't overwrite hardcoded keys
+            continue
+
         key_path, cert_path = get_cert_for_minion(
             minion_id,
             root_key_path,
@@ -195,7 +206,7 @@ def get_cert_expiry(cert_path, minion_id):
             'ssh-keygen',
             '-L',
             '-f', cert_path,
-        ], stderr=subprocess.PIPE)
+        ], stderr=subprocess.PIPE).decode('utf-8')
     except Exception as e:
         return None
 
@@ -211,7 +222,7 @@ def get_cert_expiry(cert_path, minion_id):
     raise ValueError('Unparseable certificate: %s' % output)
 
 
-def resolve_principals(minion_id, principals):
+def resolve_principals(minion_id, principals, pillar):
     if not principals:
         # Include only minion_id when no explicit principals have been defined
         return [minion_id]
@@ -222,17 +233,21 @@ def resolve_principals(minion_id, principals):
             collected_principal_sources.update(principal_sources)
 
     ret = set()
+    grain_prefix = '$grain:'
+    pillar_prefix = '$pillar:'
     for principal_source in collected_principal_sources:
         if principal_source == '$minion_id':
             ret.add(minion_id)
-        elif principal_source == '$domain':
-            ret.add(__grains__['domain'])
-        elif principal_source == '$hostname':
-            ret.add(__grains__['hostname'])
-        elif principal_source == '$fqdn':
-            ret.add(__grains__['fqdn'])
         elif principal_source == '$ip':
             ret.update(get_nonlocal_ip_addresses())
+        elif principal_source.startswith(grain_prefix):
+            grain_key = principal_source[len(grain_prefix):]
+            getter = __salt__['grains.get']
+            add_flattened_value(ret, getter, grain_key, 'grain')
+        elif principal_source.startswith(pillar_prefix):
+            pillar_key = principal_source[len(pillar_prefix):]
+            getter = lambda key, default=None: get_dict_nested(pillar, key, default)
+            add_flattened_value(ret, getter, pillar_key, 'pillar')
         else:
             ret.add(principal_source)
     return ret
@@ -244,3 +259,36 @@ def get_nonlocal_ip_addresses():
             continue
         for ip in ip_addresses:
             yield ip
+
+
+def add_flattened_value(dictionary, getter, key, kind):
+    value = getter(key, default=None)
+    if not value:
+        _logger.warning('Ignoring principal from %s with key %r, was %r', kind, key, value)
+    elif isinstance(value, (list, tuple)):
+        dictionary.update(value)
+    elif isinstance(value, basestring):
+        dictionary.add(value)
+    else:
+        _logger.warning('Unknown value of %s %r, was %r. Ignoring.',
+            kind, key, type(value))
+
+
+def get_dict_nested(data, key, default=None, delimiter=':'):
+    '''
+    Traverse a dict using a colon-delimited (or otherwise delimited, using the
+    'delimiter' param) target string. The target 'foo:bar:baz' will return
+    data['foo']['bar']['baz'] if this value exists, and will otherwise return
+    the dict in the default argument.
+    '''
+    # Lifted from salt.utils.data.traverse_dict_and_list to not rely on
+    # internals and enable testing without having salt installed
+    leaf = data
+    try:
+        for key_part in key.split(delimiter):
+            leaf = leaf[key_part]
+    except (KeyError, IndexError, TypeError):
+        # Encountered a non-indexable value in the middle of traversing
+        return default
+
+    return leaf

@@ -34,9 +34,9 @@ def test_creates_new_key(ssh_key, keystore):
     assert 'host_ed25519_key' in ret['openssh_server']
     assert 'host_ed25519_certificate' in ret['openssh_server']
     key = ret['openssh_server']['host_ed25519_key']
-    assert key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----')
+    assert key.startswith(b'-----BEGIN OPENSSH PRIVATE KEY-----')
     cert = ret['openssh_server']['host_ed25519_certificate']
-    assert cert.startswith('ssh-ed25519-cert-v01@openssh.com ')
+    assert cert.startswith(b'ssh-ed25519-cert-v01@openssh.com ')
 
     # Should have put the files on disk in a predictable location
     assert os.path.exists(keystore + '/' + 'foo-ed25519')
@@ -70,7 +70,7 @@ def test_reuses_existing_valid_cert(ssh_key, root_ssh_key, keystore):
     assert 'host_ed25519_key' in ret['openssh_server']
     assert 'host_ed25519_certificate' in ret['openssh_server']
     key = ret['openssh_server']['host_ed25519_key']
-    assert key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----')
+    assert key.startswith(b'-----BEGIN OPENSSH PRIVATE KEY-----')
     cert = ret['openssh_server']['host_ed25519_certificate']
     assert cert == original_cert
 
@@ -115,11 +115,96 @@ def test_sets_principals(ssh_key, keystore):
             ],
         })
 
-    assert 'openssh_server' in ret
-    assert 'host_ed25519_key' in ret['openssh_server']
-    assert 'host_ed25519_certificate' in ret['openssh_server']
     cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
     assert get_cert_principals(cert_path) == ['1.2.3.4', 'example.com', 'foobar.example.com']
+
+
+def test_sets_principal_from_string_grain(ssh_key, keystore):
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x, default='': 'foo',
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut('foobar.example.com', {}, root_keys=[{
+            'path': ssh_key,
+        }], keystore=keystore, principals={
+            '*': [
+                '$minion_id',
+                '$grain:random_grain',
+            ],
+        })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['foo', 'foobar.example.com']
+
+
+def test_sets_principal_from_list_grain(ssh_key, keystore):
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x, default='': ['foo', 'bar'],
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut('foobar.example.com', {}, root_keys=[{
+            'path': ssh_key,
+        }], keystore=keystore, principals={
+            '*': [
+                '$minion_id',
+                '$grain:random_grain',
+            ],
+        })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['bar', 'foo', 'foobar.example.com']
+
+
+def test_sets_principal_from_unknown_grain(ssh_key, keystore):
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x, default='': {'foo': 'bar'},
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut('foobar.example.com', {}, root_keys=[{
+            'path': ssh_key,
+        }], keystore=keystore, principals={
+            '*': [
+                '$minion_id',
+                '$grain:random_grain',
+            ],
+        })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['foobar.example.com']
+
+
+def test_sets_principal_from_string_pillar(ssh_key, keystore):
+    ret = uut('foobar.example.com', {'random_pillar': 'foo'}, root_keys=[{
+        'path': ssh_key,
+    }], keystore=keystore, principals={
+        '*': [
+            '$minion_id',
+            '$pillar:random_pillar',
+        ],
+    })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['foo', 'foobar.example.com']
+
+
+def test_ignores_empty_principal(ssh_key, keystore):
+    ret = uut('foobar.example.com', {'random_pillar': ''}, root_keys=[{
+        'path': ssh_key,
+    }], keystore=keystore, principals={
+        '*': [
+            '$minion_id',
+            '$pillar:random_pillar',
+        ],
+    })
+
+    cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
+    assert get_cert_principals(cert_path) == ['foobar.example.com']
 
 
 def test_without_principals(ssh_key, keystore):
@@ -134,6 +219,17 @@ def test_without_principals(ssh_key, keystore):
     assert 'host_ed25519_certificate' in ret['openssh_server']
     cert_path = keystore + '/' + 'foobar.example.com-ed25519-cert.pub'
     assert get_cert_principals(cert_path) == []
+
+
+def test_preserves_hardcoded_keys(ssh_key, keystore):
+    ret = uut('foobar.example.com', {'openssh_server': {'host_ed25519_key': b'foo'}},
+        root_keys=[{
+            'path': ssh_key,
+        }],
+        keystore=keystore,
+    )
+
+    assert ret['openssh_server'] == {}
 
 
 def sign_cert_with_validity(key_path, root_key_path, validity):
@@ -168,7 +264,7 @@ def get_cert_principals(cert_path):
         'ssh-keygen',
         '-L',
         '-f', cert_path,
-    ])
+    ]).decode('utf-8')
     return sorted(parse_principals_from_cert_details(output))
 
 

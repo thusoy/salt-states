@@ -1,4 +1,6 @@
 locales:
+    pkg.installed: []
+
     file.managed:
         - name: /etc/locale.gen
         - source: salt://locale/locale.gen
@@ -8,6 +10,7 @@ locales:
         - name: locale-gen
         - watch:
             - file: locales
+            - pkg: locales
 
 
 system-locale:

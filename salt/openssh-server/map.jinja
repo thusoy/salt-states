@@ -1,7 +1,7 @@
 {% set pillar_get = salt['pillar.get'] %}
 
 {% set openssh_server = salt['grains.filter_by']({
-    'default': {
+    'base': {
         'port': 22,
         'kex_algorithms': [
             'curve25519-sha256@libssh.org',
@@ -18,11 +18,9 @@
         'macs': [
             'hmac-sha2-512-etm@openssh.com',
             'hmac-sha2-256-etm@openssh.com',
-            'hmac-ripemd160-etm@openssh.com',
             'umac-128-etm@openssh.com',
             'hmac-sha2-512',
             'hmac-sha2-256',
-            'hmac-ripemd160',
             'umac-128@openssh.com',
         ],
         'allow_groups': [
@@ -32,5 +30,9 @@
         'minumum_modulus_size': 2048,
         'listen_addresses': [],
         'gateway_ports': 'clientspecified',
+        'use_deprecated_privilege_separation': False,
     },
-}, merge=pillar_get('openssh_server')) %}
+    'stretch': {
+        'use_deprecated_privilege_separation': True,
+    }
+}, grain='oscodename', merge=pillar_get('openssh_server'), base='base') %}
