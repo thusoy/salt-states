@@ -57,5 +57,7 @@ def test_partial_access():
         })
 
         assert ret == {
-            'some_namespace_key': 'permitted value',
+            'terraform': {
+                'some_namespace_key': 'permitted value',
+            }
         }

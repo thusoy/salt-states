@@ -59,7 +59,9 @@ def ext_pillar(
                 ret[key] = value
                 break
 
-    return ret
+    return {
+        'terraform': ret,
+    }
 
 
 def extract_minion_key_globs(minion_id, access_control):
