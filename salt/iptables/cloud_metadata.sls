@@ -1,7 +1,3 @@
-include:
-    - .
-
-
 iptables-cloud-metadata-firewall-tcp:
     firewall.append:
         - chain: OUTPUT
