@@ -224,7 +224,11 @@ vault-auth-{{ auth_name }}:
         - user: root
         - group: vault
         - mode: 640
+        {% if 'secret' in auth_properties %}
         - contents_pillar: vault:auth:{{ auth_name }}:secret
+        {% else %}
+        - contents_pillar: {{ auth_properties.secret_pillar }}
+        {% endif %}
         - show_changes: False
         - require:
             - user: vault-user
