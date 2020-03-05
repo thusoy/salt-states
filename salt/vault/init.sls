@@ -72,7 +72,7 @@ vault:
         - template: jinja
         - source: salt://vault/server_config
         - context:
-            config: {{ vault.get('server_config', {}) | json }}
+            config: {{ salt['mdl_pillar.resolve_leaf_values'](vault.get('server_config', {})) | json }}
         - user: root
         - group: vault
         - mode: 640
