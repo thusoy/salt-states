@@ -165,7 +165,7 @@ def auth_backend_role_present(name, mount_point, config):
     }
     existing_config = __salt__['mdl_vault.get_auth_backend_role'](mount_point, name)
     needs_update = True
-    config = _resolve_pillar_keys(config)
+    config = __salt__['mdl_pillar.resolve_leaf_values'](config)
 
     if existing_config:
         existing_config = existing_config['data']
@@ -539,24 +539,3 @@ def role_absent(name, mount_point):
 
 def _dict_diff(old_dict, new_dict):
     return RecursiveDictDiffer(old_dict, new_dict, ignore_missing_keys=False).diffs
-
-
-def _resolve_pillar_keys(dictionary):
-    ret = copy.deepcopy(dictionary)
-    pillar_suffix = '_pillar'
-    pillar_get = __salt__['pillar.get']
-    for key, value in dictionary.items():
-        if key.endswith(pillar_suffix):
-            pure_key = key[:-len(pillar_suffix)]
-            del ret[key]
-            if isinstance(value, (tuple, list)):
-                # Resolve for each item in the list
-                pillar_values = []
-                for list_value in value:
-                    pillar_values.append(pillar_get(list_value))
-                ret[pure_key] = pillar_values
-            else:
-                ret[pure_key] = pillar_get(value)
-        elif isinstance(value, dict):
-            ret[key] = _resolve_pillar_keys(value)
-    return ret

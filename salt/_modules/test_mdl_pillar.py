@@ -7,11 +7,11 @@ except:
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-import mdl_vault
+import mdl_pillar
 
 
 def test_pillar_resolver():
-    uut = mdl_vault._resolve_pillar_keys
+    uut = mdl_pillar.resolve_leaf_values
     mocked_salt_dunder = {
         '__salt__': {
             'pillar.get': lambda x: 'pillar value',
@@ -29,7 +29,7 @@ def test_pillar_resolver():
 
 
 def test_pillar_resolver_list():
-    uut = mdl_vault._resolve_pillar_keys
+    uut = mdl_pillar.resolve_leaf_values
     mocked_salt_dunder = {
         '__salt__': {
             'pillar.get': lambda x: 'pillar value',
@@ -47,7 +47,7 @@ def test_pillar_resolver_list():
 
 
 def test_pillar_resolver_recursive():
-    uut = mdl_vault._resolve_pillar_keys
+    uut = mdl_pillar.resolve_leaf_values
     mocked_salt_dunder = {
         '__salt__': {
             'pillar.get': lambda x: 'pillar value',

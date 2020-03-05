@@ -9,6 +9,6 @@ for venv in 'venv' 'venv3'; do
         salt/sentry-forwarder/test_forwarder.py \
         extensions/pillar/test_ssh_keys.py \
         extensions/pillar/test_terraform.py \
-        salt/_states/test_mdl_vault.py \
+        salt/_modules/test_mdl_pillar.py \
         "$@"
 done
