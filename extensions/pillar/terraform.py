@@ -14,11 +14,16 @@ ext_pillar:
 
 The access control dictionary should be a map from a minion glob to a list of
 globs for which keys to expose the given minion.
+
+If there's any environment variables you need to set, you can use the environment
+key to provide a dict with values to set before calling out to terraform. This
+can be convenient to set where to find credentials and similar.
 '''
 
 import fnmatch
 import json
 import logging
+import os
 import subprocess
 
 
@@ -30,6 +35,7 @@ def ext_pillar(
         pillar,
         terraform_directory=None,
         access_control=None,
+        environment=None,
         **kwargs):
     if terraform_directory is None or access_control is None:
         _logger.warning('terraform pillar extension is not configured with '
@@ -39,6 +45,9 @@ def ext_pillar(
     key_globs = extract_minion_key_globs(minion_id, access_control)
     if not key_globs:
         return {}
+
+    for variable, value in (environment or {}).items():
+        os.environ[variable] = value
 
     terraform_values = get_terraform_output(terraform_directory)
 
