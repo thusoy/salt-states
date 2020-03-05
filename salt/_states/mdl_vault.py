@@ -557,4 +557,6 @@ def _resolve_pillar_keys(dictionary):
                 ret[pure_key] = pillar_values
             else:
                 ret[pure_key] = pillar_get(value)
+        elif isinstance(value, dict):
+            ret[key] = _resolve_pillar_keys(value)
     return ret
