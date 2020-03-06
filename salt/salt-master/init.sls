@@ -13,7 +13,7 @@ salt-master:
         - source: salt://salt-master/config-yaml
         - template: jinja
         - context:
-            config: {{ salt_master.master_config | json }}
+            config_pillar: salt_master:master_config
         {% else %}
         - contents_pillar: salt_master:master_config
         {% endif %}
@@ -32,7 +32,7 @@ salt-master-minion-config:
         - source: salt://salt-master/config-yaml
         - template: jinja
         - context:
-            config: {{ salt_master.master_minion_config | json }}
+            config_pillar: salt_master:master_minion_config
         {% else %}
         - contents_pillar: salt_master:master_minion_config
         {% endif %}
