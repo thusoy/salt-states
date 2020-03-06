@@ -149,7 +149,7 @@ def _get_vault_connection():
         return _get_token_and_url_from_master()
 
 
-def make_request(method, resource, **args):
+def make_request(session, method, resource, **args):
     '''
     Make a request to Vault
     '''
@@ -161,7 +161,7 @@ def make_request(method, resource, **args):
 
     url = "{0}/{1}".format(vault_url, resource)
     headers = {'X-Vault-Token': token, 'Content-Type': 'application/json'}
-    response = requests.request(method, url, headers=headers, **args)
+    response = session.request(method, url, headers=headers, **args)
 
     return response
 
@@ -1492,8 +1492,6 @@ class VaultClient(object):
         return self.__request('delete', url, **kwargs)
 
     def __request(self, method, url, headers=None, **kwargs):
-        url = urljoin(self._url, url)
-
         if not headers:
             headers = {}
 
@@ -1507,14 +1505,14 @@ class VaultClient(object):
         _kwargs = self._kwargs.copy()
         _kwargs.update(kwargs)
 
-        response = self.session.request(
-            method, url, headers=headers, allow_redirects=False, **_kwargs)
+        response = make_request(self.session, method, url, headers=headers,
+            allow_redirects=False, **_kwargs)
 
         # NOTE(ianunruh): workaround for https://github.com/ianunruh/hvac/issues/51
         while response.is_redirect and self.allow_redirects:
             url = urljoin(self._url, response.headers['Location'])
-            response = self.session.request(
-                method, url, headers=headers, allow_redirects=False, **_kwargs)
+            response = make_request(self.session, method, url, headers=headers,
+                allow_redirects=False, **_kwargs)
 
         if response.status_code >= 400 and response.status_code < 600:
             text = errors = None
