@@ -2,4 +2,4 @@
 # File configured from salt state salt-master #
 ###############################################
 
-{{ config | yaml(False) }}
+{{ salt['pillar.get'](config_pillar) | yaml(False) }}
