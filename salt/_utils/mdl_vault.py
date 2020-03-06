@@ -160,7 +160,7 @@ def make_request(session, method, resource, **args):
         args['verify'] = connection['verify']
 
     url = "{0}/{1}".format(vault_url, resource)
-    headers = args.get('headers', {})
+    headers = args.pop('headers', {})
     headers.update({'X-Vault-Token': token, 'Content-Type': 'application/json'})
     response = session.request(method, url, headers=headers, **args)
 
