@@ -1,5 +1,6 @@
 {% from 'vault/map.jinja' import vault with context %}
 {% set version, version_hash = vault.version_spec.split(' ') %}
+{% set user = vault.get('client', {}).get('user', 'root') %}
 
 
 vault-client:
@@ -33,7 +34,7 @@ vault-firewall-outbound-dns-{{ family }}-{{ protocol }}:
             - comment
             - owner
         - comment: 'Vault: Allow DNS'
-        - uid-owner: root
+        - uid-owner: {{ user }}
         - jump: ACCEPT
 {% endfor %}
 
@@ -48,6 +49,6 @@ vault-firewall-outbound-client-{{ family }}:
             - comment
             - owner
         - comment: 'Vault: Allow communication to other servers'
-        - uid-owner: root
+        - uid-owner: {{ user }}
         - jump: ACCEPT
 {% endfor %}
