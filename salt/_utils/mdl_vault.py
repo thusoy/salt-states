@@ -1523,7 +1523,9 @@ class VaultClient(object):
                 errors = response.json().get('errors')
             if errors is None:
                 text = response.text
-            self.__raise_error(response.status_code, text, errors=errors)
+            message = 'Minion got vault error trying %s %s: %s (%s)' % (
+                method, url, response.status_code, text)
+            self.__raise_error(response.status_code, message, errors=errors)
 
         return response
 
