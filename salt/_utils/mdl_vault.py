@@ -159,7 +159,7 @@ def make_request(session, method, resource, **args):
     if 'verify' not in args:
         args['verify'] = connection['verify']
 
-    url = "{0}/{1}".format(vault_url, resource)
+    url = "{0}{1}".format(vault_url, resource)
     headers = args.pop('headers', {})
     headers.update({'X-Vault-Token': token, 'Content-Type': 'application/json'})
     response = session.request(method, url, headers=headers, **args)
