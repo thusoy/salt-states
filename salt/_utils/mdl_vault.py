@@ -1562,7 +1562,7 @@ def cache_client(client_builder):
 def build_client(url='https://localhost:8200',
                  token=None,
                  cert=None,
-                 verify=True,
+                 verify=None,
                  timeout=30,
                  proxies=None,
                  allow_redirects=True,
