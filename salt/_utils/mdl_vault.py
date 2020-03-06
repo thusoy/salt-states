@@ -189,7 +189,7 @@ def _selftoken_expired():
 class VaultError(Exception):
     def __init__(self, message=None, errors=None):
         if errors:
-            message = ', '.join(errors)
+            message = '%s (errors=%s)' % (message, ', '.join(errors))
 
         self.errors = errors
 
