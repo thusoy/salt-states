@@ -237,7 +237,7 @@ class VaultClient(object):
                  url='http://localhost:8200',
                  token=None,
                  cert=None,
-                 verify=True,
+                 verify=None,
                  timeout=30,
                  proxies=None,
                  allow_redirects=True,
@@ -252,10 +252,12 @@ class VaultClient(object):
         self._url = url
         self._kwargs = {
             'cert': cert,
-            'verify': verify,
             'timeout': timeout,
             'proxies': proxies,
         }
+        if verify is not None:
+            self._kwargs['verify'] = verify
+
 
     def read(self, path, wrap_ttl=None):
         """
