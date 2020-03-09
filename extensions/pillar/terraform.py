@@ -79,7 +79,7 @@ def get_terraform_output(terraform_directory):
         'output',
         '-json',
     ], cwd=terraform_directory)
-    parsed_output = json.loads(output)
+    parsed_output = json.loads(output.decode('utf-8'))
     ret = {}
     for key, data in parsed_output.items():
         ret[key] = data['value']
