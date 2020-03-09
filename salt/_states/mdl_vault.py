@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 # Based on https://github.com/mitodl/vault-formula/blob/master/_states/vault.py (BSD 3-clause)
 
-import copy
 import logging
 import os
 
