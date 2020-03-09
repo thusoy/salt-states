@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module provides methods for interacting with Hashicorp Vault via the HVAC
-library.
+This module provides methods for interacting with Hashicorp Vault.
 """
 
 # Based on https://github.com/mitodl/vault-formula/blob/master/_modules/vault.py (BSD 3-clause)

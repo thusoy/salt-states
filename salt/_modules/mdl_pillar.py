@@ -1,6 +1,30 @@
+'''
+Extensions to work with pillar data.
+'''
+
 import copy
 
+
 def resolve_leaf_values(dictionary):
+    '''
+    Replace all leaf values with keys that end in `_pillar` with the value from pillar
+    with the key given in the value.
+
+    For example:
+
+    example:
+        key_pillar: other:thing
+
+    with the pillar:
+
+    other:
+        thing: pillar value
+
+    becomes
+
+    example:
+        key: pillar value
+    '''
     ret = copy.deepcopy(dictionary)
     pillar_suffix = '_pillar'
     pillar_get = __salt__['pillar.get']
