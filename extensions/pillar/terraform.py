@@ -46,8 +46,7 @@ def ext_pillar(
     if not key_globs:
         return {}
 
-    for variable, value in (environment or {}).items():
-        os.environ[variable] = value
+    os.environ.update(environment or {})
 
     terraform_values = get_terraform_output(terraform_directory)
 
