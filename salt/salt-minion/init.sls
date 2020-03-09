@@ -17,13 +17,14 @@ include:
 salt-minion-tornado:
     pkg.installed:
         - name: python3-tornado
-{% endif %}
 
 
 # Ref. https://github.com/saltstack/salt/issues/55116
+# The package is only available in buster and newer
 salt-minion-pycryptodome:
     pkg.installed:
         - name: python3-pycryptodome
+{% endif %}
 
 
 salt-minion-apply-cron:
