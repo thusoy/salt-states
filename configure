@@ -10,6 +10,8 @@ main () {
 
     virtualenv venv3 -p $(which python3)
     ./venv3/bin/pip install -U pip setuptools wheel
+    # Ref https://github.com/saltstack/salt/issues/55029
+    ./venv3/bin/pip install -U distro
     ./venv3/bin/pip install $deps
 }
 
