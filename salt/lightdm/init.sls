@@ -1,2 +1,0 @@
-lightdm:
-    pkg.installed: []
