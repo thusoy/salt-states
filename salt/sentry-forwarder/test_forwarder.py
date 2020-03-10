@@ -23,13 +23,15 @@ def test_samples(client):
 
     app.config['SAMPLING_RATE'] = 10
     response_codes = defaultdict(int)
-    for _ in range(100):
+    trials = 200
+    for _ in range(trials):
         response = client.post('/foo/bar', data=b'foo')
         response_codes[response.status_code] += 1
 
     assert len(response_codes) == 2, 'should only have 200 and 202 responses'
-    assert 5 <= response_codes[200] <= 15
-    assert 85 <= response_codes[202] <= 95
+    # Parameters chosen for the test to have a success rate of 99.99%
+    assert 2 <= response_codes[200] <= 38
+    assert trials - response_codes[202] == response_codes[200]
 
 
 @responses.activate
