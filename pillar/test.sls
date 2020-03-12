@@ -2,6 +2,7 @@ sentry_forwarder:
     port: 5010
     sampling_rate: 10
 
+
 honeytail:
     write_key: foobar
     log_file: /var/log/nginx/access.log
@@ -18,15 +19,15 @@ honeytail:
         - kernelrelease
         - mem_total
 
+
 docker-ce:
     iptables: False
+
 
 ghost-cli:
     # this is the hash for 'vagrant'
     user_password: $6$8jtQaRqHihuwm4Iu$cKidi.pA/oms3hFHpZ73GF/lVkWQcsIMhHMCpBfPM2iaxJb4.JQeWMSVBnfJY4orVbcC.nGq7HJcpkiRPnsvn.
 
-sublime-text:
-    channel: dev
 
 rsyslog:
     configs:
@@ -39,15 +40,6 @@ rsyslog:
 
 os:
     temp_directories_in_memory: False
-
-
-nvm:
-    target_directory: /home/vagrant/.local/nvm
-    user: vagrant
-
-
-spotify:
-    user: vagrant
 
 
 git:
@@ -85,25 +77,12 @@ cachish:
                 url: https://api.github.com/meta
                 field: git
 
+
 timezone: UTC
+
 
 cron:
     mailto: test@example.com
-
-powerdns:
-    dnsupdate: True
-    db_password: vagrant
-    allow_dnsupdate_from:
-        - 0.0.0.0/0
-    allow_axfr_ips:
-        - 1.2.3.4
-        - 2.3.4.5
-    repo: auth-40
-
-
-poff:
-    secret_key: randomsecretkey
-    db_password: vagrant2
 
 
 tls-terminator:
@@ -174,6 +153,7 @@ dotfiles:
     thing: |
         hello
         is there anybody out there?
+
 
 users:
     vagrant:
@@ -255,6 +235,7 @@ nginx:
         uQzxQaXj4QJB0eR3IZ5n6kLLWiLEe/Hu
         -----END CERTIFICATE-----
 
+
 postgres.host: '10.20.30.40'
 postgres:
     version: 9.5
@@ -280,16 +261,16 @@ postgres:
         HkqkvMN6Bqw8yxeZ2v5HApf4/X4qMg==
         -----END EC PRIVATE KEY-----
 
-newrelic-sysmond:
-    license_key: bogusbogusbogusbogusbogusbogusbogusbogus
 
 # Don't actually apply iptables to prevent locking ourselves out
 iptables:
     apply: False
 
+
 memcached:
     memory: 128
     port: 11212
+
 
 sasl2:
     service: memcached
