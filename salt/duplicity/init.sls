@@ -3,7 +3,12 @@
 
 
 duplicity:
-    pkg.installed
+    pkg.installed: []
+
+    # Define a custom temp directory outside /tmp since that is memory-backed and
+    # undesirable to use for backups
+    file.directory:
+        - name: /var/lib/duplicity-temp-dir
 
 
 {% for family in ('ipv4', 'ipv6') %}
