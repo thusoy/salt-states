@@ -1,4 +1,0 @@
-less
-====
-
-Installs less.

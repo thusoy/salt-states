@@ -1,2 +1,0 @@
-autocutsel:
-    pkg.installed: []

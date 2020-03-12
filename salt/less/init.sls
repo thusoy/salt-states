@@ -1,2 +1,0 @@
-less:
-    pkg.installed
