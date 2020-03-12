@@ -9,6 +9,8 @@ vault-config-policy-{{ name }}:
     mdl_vault.policy_present:
         - name: {{ name }}
         - rules: '{{ policy | json }}'
+        - require:
+            - service: vault
 {% endfor %}
 
 
@@ -16,6 +18,8 @@ vault-config-policy-{{ name }}:
 vault-config-absent-policy-{{ name }}:
     mdl_vault.policy_absent:
         - name: {{ name }}
+        - require:
+            - service: vault
 {% endfor %}
 
 
@@ -25,6 +29,8 @@ vault-config-audit-{{ audit.get('backend_name', audit.backend_type) }}:
         - backend_type: {{ audit.backend_type }}
         - backend_name: {{ audit.get('backend_name', '~') }}
         - description: {{ audit.get('description', '~') }}
+        - require:
+            - service: vault
 {% endfor %}
 
 
@@ -35,6 +41,8 @@ vault-config-auth-backend-{{ mount_point }}:
         - backend_type: {{ auth_backend.backend_type }}
         - mount_point: {{ auth_backend.get('mount_point', '~') }}
         - description: {{ auth_backend.get('description', '~') }}
+        - require:
+            - service: vault
 
 
 {% if 'config' in auth_backend %}
@@ -68,4 +76,6 @@ vault-config-secrets-engine-{{ mount_point }}:
         - engine_type: {{ secrets_engine.type }}
         - description: {{ secrets_engine.get('description', '~') }}
         - options: {{ secrets_engine.get('options', {}) | json }}
+        - require:
+            - service: vault
 {% endfor %}
