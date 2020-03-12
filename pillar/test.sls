@@ -1,3 +1,68 @@
+vault:
+    server_config:
+        api_addr: https://10.10.10.23
+        storage:
+            file:
+                path: /tmp/vault
+    tls_cert: |
+        -----BEGIN CERTIFICATE-----
+        MIIByTCCAW+gAwIBAgIUP9dSMiMTNhTGWlp/Xkk3FwubO14wCgYIKoZIzj0EAwIw
+        UTEZMBcGA1UEBwwQVGVzdCBFbnZpcm9ubWVudDERMA8GA1UECgwITWVnYWNvb2wx
+        ETAPBgNVBAsMCEludGVybmFsMQ4wDAYDVQQDDAV2YXVsdDAeFw0yMDAyMTMxODI3
+        MDBaFw0zMDAyMTAxODI3MDBaMFExGTAXBgNVBAcMEFRlc3QgRW52aXJvbm1lbnQx
+        ETAPBgNVBAoMCE1lZ2Fjb29sMREwDwYDVQQLDAhJbnRlcm5hbDEOMAwGA1UEAwwF
+        dmF1bHQwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARNDBJFaCx2MAYL9iyOO045
+        GtnPKutvieDjja00uQC3nC1Y7r28jpuKYjbxBVJLX4yhjWTEiaAmTLBnKwmiD2VZ
+        oyUwIzAhBgNVHREEGjAYhwR/AAABgglsb2NhbGhvc3SCBXZhdWx0MAoGCCqGSM49
+        BAMCA0gAMEUCIDONzX81HWq5wiW7oN129anj6g5Pr6QFoEpLuGlm0RNNAiEA1y17
+        0lOWRrcUsIQHc+niF8cZ2yiFhBML+C6o787BphU=
+        -----END CERTIFICATE-----
+    tls_key: |
+        -----BEGIN EC PARAMETERS-----
+        BggqhkjOPQMBBw==
+        -----END EC PARAMETERS-----
+        -----BEGIN EC PRIVATE KEY-----
+        MHcCAQEEIGtx9TuAD2rXW3jpXFa90qxxgdI/NS09FvPbOnTpduRNoAoGCCqGSM49
+        AwEHoUQDQgAETQwSRWgsdjAGC/YsjjtOORrZzyrrb4ng442tNLkAt5wtWO69vI6b
+        imI28QVSS1+MoY1kxImgJkywZysJog9lWQ==
+        -----END EC PRIVATE KEY-----
+    # dev: True
+    policies:
+        read-only:
+            path:
+                '*':
+                    capabilities: ['read']
+
+    auth_backends:
+        - backend_type: github
+          description: 'github backend description'
+          config:
+            organization: some-github-org
+
+        - backend_type: gcp
+          description: Google Cloud
+          roles:
+            - name: my-read-only-role
+              config:
+                type: iam
+                policies: read-only
+                bound_service_accounts_pillar:
+                    - terraform:vault_service_account
+
+    secrets_engines:
+        - type: kv
+          description: kv version 2 engine
+          mount_point: secrets
+          options:
+            version: 2
+
+    audit:
+        - backend_type: syslog
+
+terraform:
+    vault_service_account: test-app@test-project.iam.gserviceaccount.com
+
+
 sentry_forwarder:
     port: 5010
     sampling_rate: 10

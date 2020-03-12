@@ -3,13 +3,15 @@
 set -eu
 
 main () {
-    local deps='watchdog mock pytest responses -r salt/sentry-forwarder/requirements.txt'
+    local deps='salt watchdog mock pytest responses -r salt/sentry-forwarder/requirements.txt'
     virtualenv venv -p $(which python2)
     ./venv/bin/pip install -U pip setuptools wheel
     ./venv/bin/pip install $deps mock
 
     virtualenv venv3 -p $(which python3)
     ./venv3/bin/pip install -U pip setuptools wheel
+    # Ref https://github.com/saltstack/salt/issues/55029
+    ./venv3/bin/pip install -U distro
     ./venv3/bin/pip install $deps
 }
 

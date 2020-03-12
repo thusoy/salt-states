@@ -1,0 +1,30 @@
+{% set pillar_vault = pillar.get('vault', {}) %}
+
+{% set api_addr = pillar_vault.get('api_addr') %}
+{% if not api_addr %}
+    {% set interfaces = grains.get('ip4_interfaces', {}).copy() %}
+    {% set lo = interfaces.pop('lo') if 'lo' in interfaces else None %} {# just to remove it from the map #}
+    {% set nonlocal_interface = interfaces.popitem()[1] %}
+    {% set api_addr = 'https://' + nonlocal_interface[0] + ':8200' %}
+{% endif %}
+
+{% set vault = salt['grains.filter_by']({
+    'default': {
+        'version_spec': '1.3.2 sha256=6e72132de0421b74d909f50be1823fe57182694c4268ba9a38c31213d9497ec9',
+        'server_config': {
+            'api_addr': api_addr,
+            'listener': {
+                'tcp': {
+                    'tls_cert_file': '/etc/vault-ca.pem',
+                    'tls_key_file': '/etc/vault/key.pem',
+                    'tls_prefer_server_ciphers': 'true',
+                    'tls_cipher_suites': ','.join([
+                        'TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384',
+                        'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256',
+                        'TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305',
+                    ]),
+                },
+            },
+        },
+    },
+}, merge=pillar_vault) %}

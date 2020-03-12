@@ -1,0 +1,37 @@
+# Based on https://learn.hashicorp.com/vault/operations/ops-deployment-guide#step-3-configure-systemd
+
+[Unit]
+Description=Vault
+Requires=network-online.target
+After=network-online.target
+ConditionFileNotEmpty=/etc/vault/config.json
+
+[Service]
+Type=simple
+User=vault
+Group=vault
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/usr/local/bin/vault step-down
+TimeoutStartSec=1
+{% for key, val in environment_variables.items() -%}
+Environment={{ key }}={{ val }}
+{%- endfor %}
+# Turn on mlock for the binary as a safety net around adding the capabilties directly
+LimitMEMLOCK=infinity
+LimitNOFILE=65536
+KillMode=process
+KillSignal=SIGINT
+ExecStart=/usr/local/bin/vault server -config /etc/vault/config.json {{ ' '.join(flags) }}
+Restart=on-failure
+TimeoutStopSec=30
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+SecureBits=keep-caps
+AmbientCapabilities=CAP_IPC_LOCK
+CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target
