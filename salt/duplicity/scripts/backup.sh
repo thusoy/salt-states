@@ -21,9 +21,7 @@ duplicity \
     --name {{ backupname }} \
     --s3-use-new-style \
     --archive-dir /var/cache/duplicity \
-    {% if tempdir -%}
-    --tempdir "{{ tempdir }}" \
-    {% endif -%}
+    --tempdir "/var/lib/duplicity-temp-dir" \
     {% for option in config.get('options', []) -%}
     {{ option }} \
     {% endfor -%}
