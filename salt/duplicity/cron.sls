@@ -1,5 +1,4 @@
-{% set duplicity = pillar.get('duplicity', {}) %}
-{% set tempdir = duplicity.get('tempdir') %}
+{% from 'duplicity/map.jinja' import duplicity with context %}
 
 include:
     - .
@@ -19,14 +18,6 @@ duplicity-job-directory:
         - mode: 750
 
 
-{% if tempdir %}
-duplicity-tempdir:
-    file.directory:
-        - name: {{ tempdir }}
-        - makedirs: True
-{% endif %}
-
-
 {% for backupname, values in duplicity.get('targets', {}).items() %}
 duplicity-backup-{{ backupname }}:
     file.managed:
@@ -36,7 +27,7 @@ duplicity-backup-{{ backupname }}:
         - show_changes: False
         - context:
             backupname: {{ backupname }}
-            tempdir: {{ tempdir if tempdir else '~' }}
+            tempdir: {{ duplicity.tempdir }}
         - user: root
         - group: root
         - mode: 750

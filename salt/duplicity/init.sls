@@ -1,5 +1,4 @@
-{% set duplicity = pillar.get('duplicity', {}) %}
-{% set target_port = duplicity.get('target_port', 443) %}
+{% from 'duplicity/map.jinja' import duplicity with context %}
 
 
 duplicity:
@@ -8,7 +7,8 @@ duplicity:
     # Define a custom temp directory outside /tmp since that is memory-backed and
     # undesirable to use for backups
     file.directory:
-        - name: /var/lib/duplicity-temp-dir
+        - name: {{ duplicity.tempdir }}
+        - makedirs: True
 
 
 {% for family in ('ipv4', 'ipv6') %}
@@ -32,7 +32,7 @@ duplicity-firewall-allow-outgoing-https-{{ family }}:
         - family: {{ family }}
         - chain: OUTPUT
         - proto: tcp
-        - dport: {{ target_port }}
+        - dport: {{ duplicity.target_port }}
         - match:
             - comment
             - owner
