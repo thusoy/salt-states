@@ -1,6 +1,7 @@
 {% from 'duplicity/map.jinja' import duplicity with context -%}
 {% set targets = duplicity.get('targets', {}) -%}
-{% set config = targets.get(backupname, {}) -%}
+{% set config = salt['mdl_pillar.resolve_leaf_values'](targets.get(backupname, {})) -%}
+
 
 #!/bin/sh
 
