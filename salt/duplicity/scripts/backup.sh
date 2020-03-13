@@ -1,4 +1,4 @@
-{% set duplicity = pillar.get('duplicity', {}) -%}
+{% from 'duplicity/map.jinja' import duplicity with context -%}
 {% set targets = duplicity.get('targets', {}) -%}
 {% set config = targets.get(backupname, {}) -%}
 

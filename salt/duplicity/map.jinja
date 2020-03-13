@@ -1,6 +1,6 @@
 {% set duplicity = salt['grains.filter_by']({
-    'default': {
+    'base': {
         'target_port': 443,
         'tempdir': '/var/lib/duplicity-temp',
     },
-}, merge=salt['pillar.get']('duplicity')) %}
+}, merge=salt['pillar.get']('duplicity'), base='base') %}
