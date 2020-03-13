@@ -109,7 +109,7 @@ def auth_backend_configured(name, mount_point, config):
         try:
             __salt__['mdl_vault.configure_auth_backend'](mount_point, config)
         except __utils__['mdl_vault.vault_error']() as e:
-            log.exception(error)
+            log.exception(e)
             ret['result'] = False
             ret['comment'] = 'Failed to add config for auth backend {0}: {1}'.format(
                 mount_point, e.errors)
@@ -122,7 +122,7 @@ def auth_backend_configured(name, mount_point, config):
         try:
             __salt__['mdl_vault.configure_auth_backend'](mount_point, config)
         except __utils__['mdl_vault.vault_error']() as e:
-            log.exception(error)
+            log.exception(e)
             ret['result'] = False
             ret['comment'] = 'Failed to modify config for auth backend {0}: {1}'.format(
                 mount_point, e.errors)
@@ -182,7 +182,7 @@ def auth_backend_role_present(name, mount_point, config):
         try:
             __salt__['mdl_vault.configure_auth_backend_role'](mount_point, name, config)
         except __utils__['mdl_vault.vault_error']() as e:
-            log.exception(error)
+            log.exception(e)
             ret['result'] = False
             ret['comment'] = 'Failed to add role {0} for auth backend {1}: {2}'.format(
                 name, mount_point, e.errors)
@@ -196,7 +196,7 @@ def auth_backend_role_present(name, mount_point, config):
         try:
             __salt__['mdl_vault.configure_auth_backend_role'](mount_point, name, config)
         except __utils__['mdl_vault.vault_error']() as e:
-            log.exception(error)
+            log.exception(e)
             ret['result'] = False
             ret['comment'] = 'Failed to modify role {0} for auth backend {1}: {2}'.format(
                 name, mount_point, e.errors)
