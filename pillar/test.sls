@@ -1,3 +1,13 @@
+boto:
+    access_key_id: foobar
+    secret_access_key: secretbar
+    # secret_access_key_pillar: test_pillar:value
+
+
+test_pillar:
+    value: other pillar value
+
+
 vault:
     server_config:
         api_addr: https://10.10.10.23
