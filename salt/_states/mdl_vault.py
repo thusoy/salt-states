@@ -48,7 +48,7 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
         'changes': {},
     }
 
-    for path, settings in __salt__['mdl_vault.list_auth_backends']().get('data', {}).items():
+    for path, settings in existing_backends.get('data', {}).items():
         if (path.strip('/') == mount_point or backend_type and
             settings['type'] == backend_type):
             backend_enabled = True
