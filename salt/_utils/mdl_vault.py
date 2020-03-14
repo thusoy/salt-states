@@ -191,7 +191,7 @@ class VaultError(Exception):
         if errors:
             message = '%s (errors=%s)' % (message, ', '.join(errors))
 
-        self.errors = errors
+        self.errors = errors or []
 
         super(VaultError, self).__init__(message)
 
