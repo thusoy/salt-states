@@ -313,16 +313,33 @@ def secrets_engine_enabled(name, engine_type, description='', mount_point=None,
         ret['result'] = None
     else:
         try:
-            __salt__['mdl_vault.enable_secrets_engine'](engine_type,
-                                                    description=description,
-                                                    mount_point=mount_point,
-                                                    options=options)
-            ret['result'] = True
-            new_engines = __salt__['mdl_vault.list_secrets_engines']()['data']
-            ret['changes'] = _dict_diff(engines, new_engines)
+            try:
+                __salt__['mdl_vault.enable_secrets_engine'](engine_type,
+                                                        description=description,
+                                                        mount_point=mount_point,
+                                                        options=options)
+                ret['result'] = True
+                new_engines = __salt__['mdl_vault.list_secrets_engines']()['data']
+                ret['changes'] = _dict_diff(engines, new_engines)
+            except __utils__['mdl_vault.vault_error']('InvalidRequest') as e:
+                # This guards against a race condition where multiple minions tried to
+                # mount at the same time
+                if (len(e.errors) == 1 and
+                        e.errors[0].startswith('path is already in use')):
+                    ret['result'] = True
+                    ret['comment'] = ('The secrets engine {type} was already mounted at '
+                        '{mount} by someone else\n'.format(
+                            type=engine_type,
+                            mount=mount_point or engine_type))
+                else:
+                    raise
         except __utils__['mdl_vault.vault_error']() as e:
             ret['result'] = False
+            ret['comment'] = 'The secrets engine could not be mounted: %s' % (
+                '\n'.join(e.errors))
             log.exception(e)
+            raise salt.exceptions.CommandExecutionError(str(e))
+
         if connection_config:
             if not connection_config_path:
                 connection_config_path = '{mount}/config/connection'.format(
