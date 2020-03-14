@@ -63,18 +63,30 @@ def auth_backend_enabled(name, backend_type, description='', mount_point=None):
         ret['result'] = None
     else:
         try:
-            __salt__['mdl_vault.enable_auth_backend'](backend_type,
-                                                  description=description,
-                                                  mount_point=mount_point)
-            ret['result'] = True
-            new_backends = __salt__['mdl_vault.list_auth_backends']()['data']
-            ret['changes'] = _dict_diff(existing_backends['data'], new_backends)
+            try:
+                __salt__['mdl_vault.enable_auth_backend'](backend_type,
+                                                      description=description,
+                                                      mount_point=mount_point)
+                ret['result'] = True
+                new_backends = __salt__['mdl_vault.list_auth_backends']()['data']
+                ret['changes'] = _dict_diff(existing_backends['data'], new_backends)
+            except __utils__['mdl_vault.vault_error']('InvalidRequest') as e:
+                if (len(e.errors) == 1 and
+                        e.errors[0].startswith('path is already in use')):
+                    ret['result'] = True
+                    ret['comment'] = ('The {backend} backend was already mounted at '
+                        '/{mount} by someone else'.format(
+                            backend=backend_type,
+                            mount=mount_point or backend_type))
+                    return ret
+                raise
         except __utils__['mdl_vault.vault_error']() as e:
             ret['result'] = False
             log.exception(e)
+            raise salt.exceptions.CommandExecutionError(str(e))
+
         ret['comment'] = ('The {backend} backend has been successfully mounted at '
-                          '{mount}.'.format(backend=backend_type,
-                                            mount=mount_point))
+            '/{mount}.'.format(backend=backend_type, mount=mount_point or backend_type))
     return ret
 
 
