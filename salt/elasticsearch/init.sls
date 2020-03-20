@@ -25,10 +25,10 @@ elasticsearch:
 
 /etc/elasticsearch/jvm.options:
     file.managed:
-        - source:
-          - salt://elasticsearch/jvm.options
+        - source: salt://elasticsearch/jvm.options
+        - template: jinja
 
 /etc/elasticsearch/elasticsearch.yml:
     file.managed:
-        - source:
-          - salt://elasticsearch/elasticsearch.yml
+        - source: salt://elasticsearch/elasticsearch.yml
+        - template: jinja

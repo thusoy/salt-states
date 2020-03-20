@@ -2,6 +2,13 @@ sentry_forwarder:
     port: 5010
     sampling_rate: 10
 
+elasticsearch:
+    es_cluster_name: medal-test-cluster
+    es_memory: 1g
+    es_seed_hosts:
+        - 127.0.0.1
+        - 10.10.10.24
+
 honeytail:
     write_key: foobar
     log_file: /var/log/nginx/access.log
