@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import tempfile
 try:
     from unittest import mock
 except:
@@ -25,7 +26,7 @@ def test_get_terraform_output():
             }
         }).encode('utf-8')
 
-        ret = get_terraform_output('/some_dir')
+        ret = get_terraform_output('/some_dir', None)
 
         subprocess_mock.assert_called_with(['terraform', 'output', '-json'], cwd='/some_dir')
         assert ret == {
@@ -61,3 +62,20 @@ def test_partial_access():
                 'some_namespace_key': 'permitted value',
             }
         }
+
+
+def test_terraform_output_file():
+    output_file = tempfile.NamedTemporaryFile(delete=False)
+    output_file.write(json.dumps({
+        'output_variable': {
+            'sensitive': False,
+            'type': 'string',
+            'value': 'some variable',
+        }
+    }).encode('utf-8'))
+    output_file.close()
+
+    ret = get_terraform_output(None, output_file.name)
+    assert ret == {
+        'output_variable': 'some variable',
+    }
