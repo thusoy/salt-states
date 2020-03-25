@@ -5,12 +5,11 @@ elasticsearch-deps:
 elasticsearch:
     # add repo to managed repositories
     pkgrepo.managed:
-        - name: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+        - name: deb https://artifacts.elastic.co/packages/7.6.1/apt stable main
         - key_url: salt://elasticsearch/release-key
         - require:
             - pkg: elasticsearch-deps
     # install elastic search package
-    # TODO versioning
     pkg.installed:
         - pkgs:
             - elasticsearch
@@ -23,12 +22,14 @@ elasticsearch:
           - file: /etc/elasticsearch/elasticsearch.yml
           - file: /etc/elasticsearch/jvm.options
 
-/etc/elasticsearch/jvm.options:
+elasticsearch-jvm-options:
     file.managed:
+        - name: /etc/elasticsearch/jvm.options
         - source: salt://elasticsearch/jvm.options
         - template: jinja
 
-/etc/elasticsearch/elasticsearch.yml:
+elasticsearch-elasticsearch-yml:
     file.managed:
+        - name: /etc/elasticsearch/elasticsearch.yml
         - source: salt://elasticsearch/elasticsearch.yml
         - template: jinja

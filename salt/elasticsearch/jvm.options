@@ -2,6 +2,10 @@
 
 ## JVM configuration
 
+############################################
+# File managed by salt state elasticsearch #
+############################################
+
 ################################################################
 ## IMPORTANT: JVM heap size
 ################################################################
@@ -21,8 +25,8 @@
 # Xms represents the initial size of total heap space
 # Xmx represents the maximum size of total heap space
 
--Xms{{elasticsearch.es_memory}}
--Xmx{{elasticsearch.es_memory}}
+-Xms{{elasticsearch.memory}}
+-Xmx{{elasticsearch.memory}}
 
 ################################################################
 ## Expert settings

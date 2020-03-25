@@ -1,5 +1,8 @@
 {% set elasticsearch = pillar.get('elasticsearch', {}) -%}
 
+############################################
+# File managed by salt state elasticsearch #
+############################################
 # ======================== Elasticsearch Configuration =========================
 #
 # NOTE: Elasticsearch comes with reasonable defaults for most settings.
@@ -16,13 +19,13 @@
 #
 # Use a descriptive name for your cluster:
 #
-cluster.name: {{ elasticsearch.es_cluster_name }}
+cluster.name: {{ elasticsearch.cluster_name }}
 #
 # ------------------------------------ Node ------------------------------------
 #
 # Use a descriptive name for the node:
 #
-node.name: {{ opts.id }}
+node.name: {{ grains.id }}
 #
 # Add custom attributes to the node:
 #
@@ -67,7 +70,7 @@ network.host: 0.0.0.0
 # Pass an initial list of hosts to perform discovery when this node is started:
 # The default list of hosts is ["127.0.0.1", "[::1]"]
 #
-discovery.seed_hosts: {{ elasticsearch.es_seed_hosts }}
+discovery.seed_hosts: {{ elasticsearch.seed_hosts }}
 #
 # Bootstrap the cluster using an initial set of master-eligible nodes:
 #
