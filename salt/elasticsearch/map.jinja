@@ -2,6 +2,5 @@
 
 {% set elasticsearch = salt['grains.filter_by']({
     'default': {
-        'version': '7.6'
     },
 }, merge=pillar_get('elasticsearch')) %}

@@ -11,8 +11,7 @@ elasticsearch:
             - pkg: elasticsearch-deps
     # install elastic search package
     pkg.installed:
-        - pkgs:
-            - elasticsearch
+        - name: elasticsearch
         - require:
             - pkgrepo: elasticsearch
         - version: 7.6.1
