@@ -5,7 +5,7 @@ elasticsearch-deps:
 elasticsearch:
     # add repo to managed repositories
     pkgrepo.managed:
-        - name: deb https://artifacts.elastic.co/packages/7.6.1/apt stable main
+        - name: deb https://artifacts.elastic.co/packages/7.x/apt stable main
         - key_url: salt://elasticsearch/release-key
         - require:
             - pkg: elasticsearch-deps
@@ -15,6 +15,7 @@ elasticsearch:
             - elasticsearch
         - require:
             - pkgrepo: elasticsearch
+        - version: 7.6.1
 
     # start service and watch the config files for restarting the service
     service.running:
