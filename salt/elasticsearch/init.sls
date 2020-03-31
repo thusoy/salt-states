@@ -1,3 +1,6 @@
+include:
+    - .pillar_check
+
 elasticsearch-deps:
     pkg.installed:
         - name: apt-transport-https
