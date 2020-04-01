@@ -36,3 +36,34 @@ elasticsearch-elasticsearch-yml:
         - name: /etc/elasticsearch/elasticsearch.yml
         - source: salt://elasticsearch/elasticsearch.yml
         - template: jinja
+
+
+{% set user = '_apt' if grains['os_family'] == 'Debian' and grains['osmajorrelease']|int >= 9 else 'root' %}
+
+{% for family in ('ipv4', 'ipv6') %}
+elasticsearch-outbound-firewall-{{ family }}:
+    firewall.append:
+        - table: filter
+        - chain: OUTPUT
+        - family: {{ family }}
+        - proto: tcp
+        - dport: 9300
+        - match:
+            - comment
+            - owner
+        - comment: 'elasticsearch: Allow outgoing traffic for for internal comms'
+        - uid-owner: {{ user }}
+        - jump: ACCEPT
+
+elasticsearch-inbound-firewall-{{ family }}:
+    firewall.append:
+        - table: filter
+        - family: {{ family }}
+        - chain: INPUT
+        - protocol: tcp
+        - dports: 9200,9300
+        - match:
+            - comment
+        - comment: 'elasticsearch: Allow incoming traffic for http and internal comms'
+        - jump: ACCEPT
+{% endfor %}
