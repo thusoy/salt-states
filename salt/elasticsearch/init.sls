@@ -38,8 +38,6 @@ elasticsearch-elasticsearch-yml:
         - template: jinja
 
 
-{% set user = '_apt' if grains['os_family'] == 'Debian' and grains['osmajorrelease']|int >= 9 else 'root' %}
-
 {% for family in ('ipv4', 'ipv6') %}
 elasticsearch-outbound-firewall-{{ family }}:
     firewall.append:
@@ -51,9 +49,11 @@ elasticsearch-outbound-firewall-{{ family }}:
         - match:
             - comment
             - owner
-        - comment: 'elasticsearch: Allow outgoing traffic for for internal comms'
-        - uid-owner: {{ user }}
+        - comment: 'elasticsearch: Allow outgoing traffic for internal comms'
+        - uid-owner: elasticsearch
         - jump: ACCEPT
+        - require:
+            - pkg: elasticsearch
 
 elasticsearch-inbound-firewall-{{ family }}:
     firewall.append:
