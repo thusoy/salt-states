@@ -1,7 +1,5 @@
 {% set plex = pillar.get('plex-media-server', {}) %}
 {% set allow_from = plex.get('allow_from', {}) %}
-{% set allow_ipv4 = allow_from.get('ipv4', '0/0') %}
-{% set allow_ipv6 = allow_from.get('ipv6', '::/0') %}
 
 {% set network_ports = {
     'Plex Media Server': ('tcp', 32400),
@@ -41,7 +39,9 @@ plex-media-server-inbound-firewall-{{ family }}-{{ service.lower().replace(' ', 
         - chain: INPUT
         - protocol: {{ protocol }}
         - dports: {{ port }}
-        - source: {{ allow_ipv4 if family == 'ipv4' else allow_ipv6 }}
+        {% if family in allow_from %}
+        - source: {{ allow_from[family] }}
+        {% endif %}
         - match:
             - comment
             - owner
