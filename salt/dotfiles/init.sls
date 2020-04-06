@@ -1,5 +1,12 @@
 #!py
 
+try:
+    basestring = basestring
+except NameError:
+    # python 3
+    basestring = str
+
+
 def run():
     states = {
         'include': [
