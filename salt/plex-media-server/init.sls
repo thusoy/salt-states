@@ -1,6 +1,6 @@
 {% set plex = pillar.get('plex-media-server', {}) %}
 {% set allow_from = plex.get('allow_from', {}) %}
-{% set allow_ipv4 = allow_from.get('ipv4', '0/0')) %}
+{% set allow_ipv4 = allow_from.get('ipv4', '0/0') %}
 {% set allow_ipv6 = allow_from.get('ipv6', '::/0') %}
 
 {% set network_ports = {
