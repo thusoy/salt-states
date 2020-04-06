@@ -8,7 +8,7 @@
     'Plex DLNA Server': ('udp', 1900),
     'Plex Companion': ('tcp', 3005),
     'Plex TCP DLNA Server': ('tcp', 32469),
-    'network discovery': ('udp', '5353,32410,32412-32414'),
+    'network discovery': ('udp', '5353,32410,32412,32413,32414'),
     'Roku via Plex Companion': ('tcp', 8324),
 } %}
 
