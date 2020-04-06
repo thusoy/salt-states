@@ -44,9 +44,7 @@ plex-media-server-inbound-firewall-{{ family }}-{{ service.lower().replace(' ', 
         {% endif %}
         - match:
             - comment
-            - owner
         - comment: 'plex-media-server: Allow inbound {{ service }}'
-        - uid-owner: plex
         - jump: ACCEPT
         - require:
             - pkg: plex-media-server
