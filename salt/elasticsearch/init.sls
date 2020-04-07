@@ -1,9 +1,11 @@
 include:
     - .pillar_check
 
+
 elasticsearch-deps:
     pkg.installed:
         - name: apt-transport-https
+
 
 elasticsearch:
     # add repo to managed repositories
@@ -21,15 +23,36 @@ elasticsearch:
 
     # start service and watch the config files for restarting the service
     service.running:
+        - require:
+            - file: elasticsearch
         - watch:
-          - file: /etc/elasticsearch/elasticsearch.yml
-          - file: /etc/elasticsearch/jvm.options
+            - file: elasticsearch-environment-variables
+            - file: elasticsearch-jvm-options
+            - file: elasticsearch-elasticsearch-yml
+
+    # Created a dedicated temp directory to not conflict with hardening of /tmp
+    file.directory:
+        - name: /var/lib/elasticsearch-temp
+        - makedirs: True
+        - user: root
+        - group: elasticsearch
+        - mode: 775
+        - require:
+            - pkg: elasticsearch
+
+
+elasticsearch-environment-variables:
+    file.managed:
+        - name: /etc/default/elasticsearch
+        - source: salt://elasticsearch/default
+
 
 elasticsearch-jvm-options:
     file.managed:
         - name: /etc/elasticsearch/jvm.options
         - source: salt://elasticsearch/jvm.options
         - template: jinja
+
 
 elasticsearch-elasticsearch-yml:
     file.managed:
@@ -54,6 +77,7 @@ elasticsearch-outbound-firewall-{{ family }}:
         - jump: ACCEPT
         - require:
             - pkg: elasticsearch
+
 
 elasticsearch-inbound-firewall-{{ family }}:
     firewall.append:
