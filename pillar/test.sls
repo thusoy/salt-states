@@ -78,6 +78,14 @@ sentry_forwarder:
     sampling_rate: 10
 
 
+elasticsearch:
+    cluster_name: medal-test-cluster
+    memory: 1g
+    seed_hosts:
+        - 127.0.0.1
+        - 10.10.10.24
+
+
 honeytail:
     write_key: foobar
     log_file: /var/log/nginx/access.log

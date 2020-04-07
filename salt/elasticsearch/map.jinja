@@ -1,0 +1,6 @@
+{% set pillar_get = salt['pillar.get'] %}
+
+{% set elasticsearch = salt['grains.filter_by']({
+    'default': {
+    },
+}, merge=pillar_get('elasticsearch')) %}

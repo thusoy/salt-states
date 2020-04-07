@@ -5,3 +5,4 @@ venv3
 .vagrant
 .cache
 *.pyc
+.DS_Store
