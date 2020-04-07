@@ -1,4 +1,4 @@
-{% set elasticsearch = pillar.get('elasticsearch', {}) -%}
+{% from 'elasticsearch/map.jinja' import elasticsearch with context -%}
 
 ############################################
 # File managed by salt state elasticsearch #
@@ -70,11 +70,11 @@ network.host: 0.0.0.0
 # Pass an initial list of hosts to perform discovery when this node is started:
 # The default list of hosts is ["127.0.0.1", "[::1]"]
 #
-discovery.seed_hosts: {{ elasticsearch.seed_hosts }}
+discovery.seed_hosts: {{ elasticsearch.seed_hosts | json }}
 #
 # Bootstrap the cluster using an initial set of master-eligible nodes:
 #
-#cluster.initial_master_nodes: ["node-1", "node-2"]
+cluster.initial_master_nodes: {{ elasticsearch.initial_master_nodes | json }}
 #
 # For more information, consult the discovery and cluster formation module documentation.
 #

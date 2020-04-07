@@ -2,5 +2,6 @@
 
 {% set elasticsearch = salt['grains.filter_by']({
     'default': {
+        'initial_master_nodes': [grains.id]
     },
 }, merge=pillar_get('elasticsearch')) %}
