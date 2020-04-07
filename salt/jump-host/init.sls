@@ -14,7 +14,6 @@ jump-host-outbound-firewall-{{ target.name }}:
         {% endif %}
         - match:
             - comment
-            - owner
         - comment: 'jump-host: Allow outgoing traffic to {{ target.name }}'
         - jump: ACCEPT
 {% endfor %}
