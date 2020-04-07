@@ -1,4 +1,0 @@
-unscd
-=====
-
-Installs unscd.

@@ -1,0 +1,5 @@
+###############################################
+# File configured from salt state salt-master #
+###############################################
+
+{{ salt['pillar.get'](config_pillar) | yaml(False) }}

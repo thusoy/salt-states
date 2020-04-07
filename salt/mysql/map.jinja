@@ -1,0 +1,8 @@
+{% set mysql = salt['grains.filter_by']({
+    'base': {
+        'server': {
+            'version': '5.7',
+            'bind': '0.0.0.0',
+        },
+    },
+}, merge=salt['pillar.get']('mysql'), base='base') %}

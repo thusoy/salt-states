@@ -1,6 +1,82 @@
+boto:
+    access_key_id: foobar
+    secret_access_key: secretbar
+    # secret_access_key_pillar: test_pillar:value
+
+
+test_pillar:
+    value: other pillar value
+
+
+vault:
+    server_config:
+        api_addr: https://10.10.10.23
+        storage:
+            file:
+                path: /tmp/vault
+    tls_cert: |
+        -----BEGIN CERTIFICATE-----
+        MIIByTCCAW+gAwIBAgIUP9dSMiMTNhTGWlp/Xkk3FwubO14wCgYIKoZIzj0EAwIw
+        UTEZMBcGA1UEBwwQVGVzdCBFbnZpcm9ubWVudDERMA8GA1UECgwITWVnYWNvb2wx
+        ETAPBgNVBAsMCEludGVybmFsMQ4wDAYDVQQDDAV2YXVsdDAeFw0yMDAyMTMxODI3
+        MDBaFw0zMDAyMTAxODI3MDBaMFExGTAXBgNVBAcMEFRlc3QgRW52aXJvbm1lbnQx
+        ETAPBgNVBAoMCE1lZ2Fjb29sMREwDwYDVQQLDAhJbnRlcm5hbDEOMAwGA1UEAwwF
+        dmF1bHQwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARNDBJFaCx2MAYL9iyOO045
+        GtnPKutvieDjja00uQC3nC1Y7r28jpuKYjbxBVJLX4yhjWTEiaAmTLBnKwmiD2VZ
+        oyUwIzAhBgNVHREEGjAYhwR/AAABgglsb2NhbGhvc3SCBXZhdWx0MAoGCCqGSM49
+        BAMCA0gAMEUCIDONzX81HWq5wiW7oN129anj6g5Pr6QFoEpLuGlm0RNNAiEA1y17
+        0lOWRrcUsIQHc+niF8cZ2yiFhBML+C6o787BphU=
+        -----END CERTIFICATE-----
+    tls_key: |
+        -----BEGIN EC PARAMETERS-----
+        BggqhkjOPQMBBw==
+        -----END EC PARAMETERS-----
+        -----BEGIN EC PRIVATE KEY-----
+        MHcCAQEEIGtx9TuAD2rXW3jpXFa90qxxgdI/NS09FvPbOnTpduRNoAoGCCqGSM49
+        AwEHoUQDQgAETQwSRWgsdjAGC/YsjjtOORrZzyrrb4ng442tNLkAt5wtWO69vI6b
+        imI28QVSS1+MoY1kxImgJkywZysJog9lWQ==
+        -----END EC PRIVATE KEY-----
+    # dev: True
+    policies:
+        read-only:
+            path:
+                '*':
+                    capabilities: ['read']
+
+    auth_backends:
+        - backend_type: github
+          description: 'github backend description'
+          config:
+            organization: some-github-org
+
+        - backend_type: gcp
+          description: Google Cloud
+          roles:
+            - name: my-read-only-role
+              config:
+                type: iam
+                policies: read-only
+                bound_service_accounts_pillar:
+                    - terraform:vault_service_account
+
+    secrets_engines:
+        - type: kv
+          description: kv version 2 engine
+          mount_point: secrets
+          options:
+            version: 2
+
+    audit:
+        - backend_type: syslog
+
+terraform:
+    vault_service_account: test-app@test-project.iam.gserviceaccount.com
+
+
 sentry_forwarder:
     port: 5010
     sampling_rate: 10
+
 
 elasticsearch:
     cluster_name: medal-test-cluster
@@ -8,6 +84,7 @@ elasticsearch:
     seed_hosts:
         - 127.0.0.1
         - 10.10.10.24
+
 
 honeytail:
     write_key: foobar
@@ -25,15 +102,15 @@ honeytail:
         - kernelrelease
         - mem_total
 
+
 docker-ce:
     iptables: False
+
 
 ghost-cli:
     # this is the hash for 'vagrant'
     user_password: $6$8jtQaRqHihuwm4Iu$cKidi.pA/oms3hFHpZ73GF/lVkWQcsIMhHMCpBfPM2iaxJb4.JQeWMSVBnfJY4orVbcC.nGq7HJcpkiRPnsvn.
 
-sublime-text:
-    channel: dev
 
 rsyslog:
     configs:
@@ -46,15 +123,6 @@ rsyslog:
 
 os:
     temp_directories_in_memory: False
-
-
-nvm:
-    target_directory: /home/vagrant/.local/nvm
-    user: vagrant
-
-
-spotify:
-    user: vagrant
 
 
 git:
@@ -92,25 +160,12 @@ cachish:
                 url: https://api.github.com/meta
                 field: git
 
+
 timezone: UTC
+
 
 cron:
     mailto: test@example.com
-
-powerdns:
-    dnsupdate: True
-    db_password: vagrant
-    allow_dnsupdate_from:
-        - 0.0.0.0/0
-    allow_axfr_ips:
-        - 1.2.3.4
-        - 2.3.4.5
-    repo: auth-40
-
-
-poff:
-    secret_key: randomsecretkey
-    db_password: vagrant2
 
 
 tls-terminator:
@@ -181,6 +236,7 @@ dotfiles:
     thing: |
         hello
         is there anybody out there?
+
 
 users:
     vagrant:
@@ -262,6 +318,7 @@ nginx:
         uQzxQaXj4QJB0eR3IZ5n6kLLWiLEe/Hu
         -----END CERTIFICATE-----
 
+
 postgres.host: '10.20.30.40'
 postgres:
     version: 9.5
@@ -287,16 +344,16 @@ postgres:
         HkqkvMN6Bqw8yxeZ2v5HApf4/X4qMg==
         -----END EC PRIVATE KEY-----
 
-newrelic-sysmond:
-    license_key: bogusbogusbogusbogusbogusbogusbogusbogus
 
 # Don't actually apply iptables to prevent locking ourselves out
 iptables:
     apply: False
 
+
 memcached:
     memory: 128
     port: 11212
+
 
 sasl2:
     service: memcached

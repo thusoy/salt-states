@@ -1,6 +1,7 @@
-{% set duplicity = pillar.get('duplicity', {}) -%}
+{% from 'duplicity/map.jinja' import duplicity with context -%}
 {% set targets = duplicity.get('targets', {}) -%}
-{% set config = targets.get(backupname, {}) -%}
+{% set config = salt['mdl_pillar.resolve_leaf_values'](targets.get(backupname, {})) -%}
+
 
 #!/bin/sh
 
@@ -21,9 +22,7 @@ duplicity \
     --name {{ backupname }} \
     --s3-use-new-style \
     --archive-dir /var/cache/duplicity \
-    {% if tempdir -%}
-    --tempdir "{{ tempdir }}" \
-    {% endif -%}
+    --tempdir "{{ duplicity.tempdir }}" \
     {% for option in config.get('options', []) -%}
     {{ option }} \
     {% endfor -%}

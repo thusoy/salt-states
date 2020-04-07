@@ -1,7 +1,7 @@
 {% set pillar_get = salt['pillar.get'] %}
 
 {% set openssh_server = salt['grains.filter_by']({
-    'default': {
+    'base': {
         'port': 22,
         'kex_algorithms': [
             'curve25519-sha256@libssh.org',
@@ -29,5 +29,9 @@
         'allow_users': [],
         'minumum_modulus_size': 2048,
         'listen_addresses': [],
+        'use_deprecated_privilege_separation': False,
     },
-}, merge=pillar_get('openssh_server')) %}
+    'stretch': {
+        'use_deprecated_privilege_separation': True,
+    }
+}, grain='oscodename', merge=pillar_get('openssh_server'), base='base') %}

@@ -1,2 +1,0 @@
-rdesktop:
-    pkg.installed

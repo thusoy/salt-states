@@ -9,3 +9,6 @@ set expandtab
 set shiftwidth=4
 set tabstop=4
 syntax on
+
+" Turn off mouse-awareness as it messes with system copy/paste
+set mouse-=a
