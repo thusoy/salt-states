@@ -16,6 +16,5 @@ jump-host-outbound-firewall-{{ target.name }}:
             - comment
             - owner
         - comment: 'jump-host: Allow outgoing traffic to {{ target.name }}'
-        - gid-owner: ssh
         - jump: ACCEPT
 {% endfor %}
