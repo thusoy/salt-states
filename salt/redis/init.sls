@@ -6,6 +6,10 @@ redis:
         - name: /etc/redis/redis.conf
         - source: salt://redis/redis.conf
         - template: jinja
+        - user: root
+        - group: redis
+        - mode: 640
+        - show_changes: False
         - require:
             - pkg: redis
 
