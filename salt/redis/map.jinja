@@ -1,0 +1,5 @@
+{% set redis = salt['grains.filter_by']({
+    'base': {
+        'maxmemory-policy': 'noeviction',
+    },
+}, merge=salt['pillar.get']('redis'), base='base') %}
