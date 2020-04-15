@@ -13,3 +13,17 @@ redis:
         - name: redis-server
         - watch:
             - file: redis
+
+
+{% for family in ('ipv4', 'ipv6') %}
+redis-inbound-firewall-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - proto: tcp
+        - dport: 6379
+        - match:
+            - comment
+        - comment: 'redis: Allow incoming connections'
+        - jump: ACCEPT
+{% endfor %}
