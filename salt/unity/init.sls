@@ -12,4 +12,3 @@ unity:
                 /usr/sbin/installer -verbose -pkg Unity-{{ version }}.pkg -target /
         - watch:
             - file: unity
-
