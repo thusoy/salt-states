@@ -233,14 +233,17 @@ def build_redirect(redirect):
     if not redirect:
         return None
 
-    if isinstance(redirect, dict):
-        return redirect
-
-    return {
+    ret = {
         'status': 301,
-        'url': redirect,
-        'include_query': True,
+        'include_uri': True,
     }
+
+    if isinstance(redirect, dict):
+        ret.update(redirect)
+        return ret
+
+    ret['url'] = redirect
+    return ret
 
 
 def build_backend_context(site, site_config, backend_config, nginx_version):

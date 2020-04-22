@@ -100,12 +100,19 @@ tls-terminator:
                       "A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5"]}]';
 ```
 
-You can also add a redirect to another site:
+You can also add a redirect to another site, in this case `www.example.com/foo` will 301
+to `https://example.com/foo`, while `other.example.com/foo` will 307 to `https://example.com`.
 
 ```yaml
 tls-terminator:
     www.example.com:
-        redirect: 301 https://example.com/$request_uri
+        redirect: https://example.com
+
+    other.example.com:
+        redirect:
+            status: 307
+            url: https://example.com
+            include_uri: False
 
     example.com:
         backend: https://example-app.herokuapp.com

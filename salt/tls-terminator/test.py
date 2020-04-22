@@ -494,7 +494,7 @@ def test_domain_redirect_plain():
     redirect_spec = context['backends']['/']['redirect']
     assert redirect_spec['url'] == 'https://foo.com'
     assert redirect_spec['status'] == 301
-    assert redirect_spec['include_query'] == True
+    assert redirect_spec['include_uri'] == True
 
 
 def test_domain_redirect_details():
@@ -503,7 +503,7 @@ def test_domain_redirect_details():
             'redirect': {
                 'url': 'https://foo.com',
                 'status': 302,
-                'include_query': False,
+                'include_uri': False,
             }
         }
     })
@@ -511,7 +511,7 @@ def test_domain_redirect_details():
     redirect_spec = context['backends']['/']['redirect']
     assert redirect_spec['url'] == 'https://foo.com'
     assert redirect_spec['status'] == 302
-    assert redirect_spec['include_query'] == False
+    assert redirect_spec['include_uri'] == False
 
 
 def test_redirect_single_location():
@@ -531,7 +531,7 @@ def test_redirect_single_location():
     redirect_spec = context['backends']['/foo']['redirect']
     assert redirect_spec['url'] == 'https://foo.com'
     assert redirect_spec['status'] == 301
-    assert redirect_spec['include_query'] == True
+    assert redirect_spec['include_uri'] == True
 
 
 def test_redirect_single_location_details():
@@ -545,7 +545,7 @@ def test_redirect_single_location_details():
                     'redirect': {
                         'url': 'https://foo.com',
                         'status': 307,
-                        'include_query': False,
+                        'include_uri': False,
                     },
                 }
             }
@@ -555,7 +555,23 @@ def test_redirect_single_location_details():
     redirect_spec = context['backends']['/foo']['redirect']
     assert redirect_spec['url'] == 'https://foo.com'
     assert redirect_spec['status'] == 307
-    assert redirect_spec['include_query'] == False
+    assert redirect_spec['include_uri'] == False
+
+
+def test_redirect_single_location_without_optionals():
+    state = module.build_state({
+        'example.com': {
+            'redirect': {
+                'url': 'https://foo.com',
+                'status': 307,
+            },
+        },
+    })
+    context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
+    redirect_spec = context['backends']['/']['redirect']
+    assert redirect_spec['url'] == 'https://foo.com'
+    assert redirect_spec['status'] == 307
+    assert redirect_spec['include_uri'] == True
 
 
 def test_proxy_client_certs():
