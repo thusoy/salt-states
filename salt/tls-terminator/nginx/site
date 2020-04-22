@@ -43,7 +43,7 @@ server {
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     {% if backend.redirect -%}
-    return {{ backend.redirect.status }} {{ backend.redirect.url }}{% if backend.redirect.include_query %}$request_uri{% endif %};
+    return {{ backend.redirect.status }} {{ backend.redirect.url }}{% if backend.redirect.include_uri %}$request_uri{% endif %};
     {% else -%}
     {% if backend.use_upstream_block -%}
     {# Only use the upstream block if necessary -#}
