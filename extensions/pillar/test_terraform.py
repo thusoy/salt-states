@@ -79,3 +79,8 @@ def test_terraform_output_file():
     assert ret == {
         'output_variable': 'some variable',
     }
+
+
+def test_terraform_output_file_missing():
+    ret = get_terraform_output(None, '/nonexisting')
+    assert ret == {}

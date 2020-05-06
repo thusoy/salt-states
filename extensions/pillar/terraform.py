@@ -92,8 +92,13 @@ def get_terraform_output(terraform_directory, terraform_output_file):
             '-json',
         ], cwd=terraform_directory)
     else:
-        with open(terraform_output_file, 'rb') as fh:
-            output = fh.read()
+        try:
+            with open(terraform_output_file, 'rb') as fh:
+                output = fh.read()
+        except IOError:
+            _logger.warning('The terraform output file at %r could not be found',
+                terraform_output_file)
+            return {}
 
     parsed_output = json.loads(output.decode('utf-8'))
     ret = {}
