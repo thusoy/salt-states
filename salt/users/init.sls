@@ -9,6 +9,9 @@
 {{ name }}_user:
     group.present:
         - name: {{ name }}
+        {% if 'gid' in user -%}
+        - gid: {{ user['gid'] }}
+        {% endif %}
 
     user.present:
         - name: {{ name }}
