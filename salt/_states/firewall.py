@@ -228,7 +228,7 @@ def _apply_rule_for_family(filename, context, restore_command, apply):
     else:
         result = 0
         stderr = ''
-    return (result, stderr, changes)
+    return (result, stderr.decode('utf-8'), changes)
 
 
 def _is_ipv4(address):
