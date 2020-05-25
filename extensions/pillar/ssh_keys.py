@@ -68,6 +68,7 @@ from logging import getLogger
 
 _logger = getLogger(__name__)
 VALID_RE = re.compile(r'Valid: .* ([0-9T:-]+)$')
+CERT_TRAILER = '-cert.pub'
 
 try:
     basestring = basestring
@@ -119,6 +120,8 @@ def ext_pillar(
         with open(cert_path, 'rb') as fh:
             ret['host_%s_certificate' % key_type] = fh.read()
 
+    delete_expired_certificates(keystore)
+
     return {
         'openssh_server': ret,
     }
@@ -142,6 +145,21 @@ def get_cert_for_minion(minion_id, root_key_path, key_type, keystore, validity, 
     os.remove(temp_key_path + '.pub')
 
     return key_path, cert_path
+
+
+def delete_expired_certificates(keystore):
+    '''Clean up certs for old minions on disk'''
+    now = datetime.utcnow()
+    for filename in os.listdir(keystore):
+        if not filename.endswith(CERT_TRAILER):
+            continue
+
+        cert_path = os.path.join(keystore, filename)
+        cert_expiry = get_cert_expiry(cert_path)
+        if cert_expiry < now:
+            os.remove(cert_path)
+            key_name = filename[:-len(CERT_TRAILER)]
+            os.remove(os.path.join(keystore, key_name))
 
 
 def get_root_key_path(minion_id, root_keys):
@@ -188,7 +206,7 @@ def sign_ssh_key(key_path, root_key_path, name, validity, principals):
 
     # ssh-keygen doesn't enable specifying an output filename, but naming
     # follows a consistent template
-    return key_path + '-cert.pub'
+    return key_path + CERT_TRAILER
 
 
 def get_ssh_validity(validity):

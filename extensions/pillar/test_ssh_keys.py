@@ -93,6 +93,22 @@ def test_recreates_cert_close_to_expiry(ssh_key, root_ssh_key, keystore):
     assert cert != original_cert
 
 
+def test_deletes_expired_certs(ssh_key, root_ssh_key, keystore):
+    cert_path = sign_cert_with_validity(ssh_key, root_ssh_key, timedelta(hours=-2))
+    other_cert_path = os.path.join(keystore, 'other-ed25519-cert.pub')
+    other_key_path = os.path.join(keystore, 'other-ed25519')
+    os.rename(cert_path, other_cert_path)
+    os.rename(ssh_key, other_key_path)
+
+    ret = uut('foo', {}, root_keys=[{
+        'path': root_ssh_key,
+    }], keystore=keystore)
+
+    assert 'openssh_server' in ret
+    assert not os.path.exists(other_cert_path)
+    assert not os.path.exists(other_key_path)
+
+
 def test_sets_principals(ssh_key, keystore):
     grains = {
         'ip_interfaces': {
@@ -239,7 +255,10 @@ def sign_cert_with_validity(key_path, root_key_path, validity):
         '-h',
         '-I', 'testidentifier',
         '-q',
-        '-V', get_ssh_validity(datetime.utcnow() - timedelta(minutes=2), datetime.utcnow() + validity),
+        '-V', get_ssh_validity(
+            datetime.utcnow() - timedelta(hours=3),
+            datetime.utcnow() + validity,
+        ),
         key_path,
     ])
     return key_path + '-cert.pub'
