@@ -127,7 +127,7 @@ def ext_pillar(
 def get_cert_for_minion(minion_id, root_key_path, key_type, keystore, validity, principals):
     key_path = os.path.join(keystore, '%s-%s' % (minion_id, key_type))
     cert_path = os.path.join(keystore, '%s-%s-cert.pub' % (minion_id, key_type))
-    existing_cert_expiry = get_cert_expiry(cert_path, minion_id)
+    existing_cert_expiry = get_cert_expiry(cert_path)
     if existing_cert_expiry and existing_cert_expiry - datetime.utcnow() > validity/3:
         return key_path, cert_path
 
@@ -200,7 +200,7 @@ def get_ssh_validity(validity):
     return '%s:%s' % (now.strftime(ssh_time_format), validity_end.strftime(ssh_time_format))
 
 
-def get_cert_expiry(cert_path, minion_id):
+def get_cert_expiry(cert_path):
     try:
         output = subprocess.check_output([
             'ssh-keygen',
