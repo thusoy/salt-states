@@ -41,6 +41,9 @@ Ciphers {{ ','.join(openssh_server.ciphers) }}
 # Secure subset of MACs
 MACs {{ ','.join(openssh_server.macs) }}
 
+# Secure subset of host key algorithms
+HostKeyAlgorithms {{ ','.join(openssh_server.host_key_algorithms) }}
+
 {% if openssh_server.allow_groups %}
 # Only allow login for users in whitelisted groups
 AllowGroups {{ ' '.join(openssh_server.allow_groups) }}

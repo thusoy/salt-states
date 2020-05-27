@@ -11,6 +11,7 @@ Available configuration through the pillar `openssh_server`:
 - `port`: Which port to listen to
 - `host_ed25519_key | host_rsa_key | host_ecdsa_key`: Set the server key to these keys.
 - `kex_algorithms`: Which key exchange algorithms to allow
+- `host_key_algorithms`: Which host key exchange algorithms to allow
 - `ciphers`: Which ciphers to allow
 - `macs`: Which MACs to allow
 - `allow_groups`: Groups allowed to log in
