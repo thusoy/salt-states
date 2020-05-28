@@ -1116,7 +1116,9 @@ def create_secret(
     if source:
         data = __read_and_render_yaml_file(source, template, saltenv)
     elif data_pillar:
-        data = __salt__['pillar.get'](data_pillar)
+        data = {}
+        for key, pillar_key in data_pillar.items():
+            data[key] = __salt__['pillar.get'](pillar_key)
     elif data is None:
         data = {}
 

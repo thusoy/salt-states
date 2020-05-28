@@ -4,6 +4,7 @@
 """
 # pylint: disable=no-value-for-parameter
 
+import base64
 import os
 import sys
 from contextlib import contextmanager
@@ -63,6 +64,29 @@ class KubernetesTestCase(TestCase):
                 mock_kubernetes_lib.client.CoreV1Api()\
                     .create_namespaced_secret()\
                     .to_dict.assert_called()
+
+
+    def test_create_secret_from_pillar(self):
+        with mock_kubernetes_library() as mock_kubernetes_lib:
+            with patch.dict(
+                kubernetes.__salt__, {
+                    "config.option": Mock(side_effect=self.settings),
+                    "pillar.get": lambda k: 'pillar_value',
+                }
+            ):
+                mock_kubernetes_lib.client.CoreV1Api.return_value = Mock(
+                    **{
+                        "create_namespaced_secret.return_value.to_dict.return_value":
+                            {'code': 200},
+                    }
+                )
+                self.assertEqual(
+                    kubernetes.create_secret("test", "default", data_pillar={'key': 'pillar:key'}),
+                    {'code': 200},
+                )
+                secret_kwargs = mock_kubernetes_lib.client.V1Secret.call_args[1]
+                expected_secret = base64.b64encode(b'pillar_value').decode('ascii')
+                assert secret_kwargs['data'] == {'key': expected_secret}
 
 
     def test_replace_secret(self):
