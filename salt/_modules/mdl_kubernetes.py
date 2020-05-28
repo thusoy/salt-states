@@ -1123,7 +1123,7 @@ def create_secret(
 
     # encode the secrets using base64 as required by kubernetes
     for key in data:
-        data[key] = base64.b64encode(data[key].encode('utf-8'))
+        data[key] = base64.b64encode(data[key].encode('utf-8')).decode('ascii')
 
     body = kubernetes.client.V1Secret(
         metadata=__dict_to_object_meta(name, namespace, {}),
