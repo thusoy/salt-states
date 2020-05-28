@@ -696,12 +696,13 @@ def show_secret(name, namespace='default', decode=False, **kwargs):
         api_instance = kubernetes.client.CoreV1Api()
         api_response = api_instance.read_namespaced_secret(name, namespace)
 
-        if api_response.data and (decode or decode == 'True'):
-            for key in api_response.data:
-                value = api_response.data[key]
-                api_response.data[key] = base64.b64decode(value)
+        ret = api_response.to_dict()
+        data = ret['data']
+        if data and (decode or decode == 'True'):
+            for key, value in data.items():
+                data[key] = base64.b64decode(value).decode('utf-8')
 
-        return api_response.to_dict()
+        return ret
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
             return None

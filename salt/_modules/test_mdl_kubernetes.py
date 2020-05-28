@@ -64,6 +64,25 @@ class KubernetesTestCase(TestCase):
                     .create_namespaced_secret()\
                     .to_dict.assert_called()
 
+    def test_show_secret(self):
+        with mock_kubernetes_library() as mock_kubernetes_lib:
+            with patch.dict(
+                kubernetes.__salt__, {"config.option": Mock(side_effect=self.settings)}
+            ):
+                mock_kubernetes_lib.client.CoreV1Api.return_value = Mock(
+                    **{
+                        "read_namespaced_secret.return_value.to_dict.return_value":
+                            {'data': {'key': 'Zm9vYmFy'}}, # "foobar" encoded with base64
+                    }
+                )
+                self.assertEqual(
+                    kubernetes.show_secret("test", "default", {'key': 'secret'}),
+                    {'data': {'key': 'foobar'}},
+                )
+                mock_kubernetes_lib.client.CoreV1Api()\
+                    .read_namespaced_secret()\
+                    .to_dict.assert_called()
+
     def test_nodes(self):
         """
         Test node listing.
