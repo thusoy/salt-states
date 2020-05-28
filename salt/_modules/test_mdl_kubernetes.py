@@ -64,6 +64,26 @@ class KubernetesTestCase(TestCase):
                     .create_namespaced_secret()\
                     .to_dict.assert_called()
 
+
+    def test_replace_secret(self):
+        with mock_kubernetes_library() as mock_kubernetes_lib:
+            with patch.dict(
+                kubernetes.__salt__, {"config.option": Mock(side_effect=self.settings)}
+            ):
+                mock_kubernetes_lib.client.CoreV1Api.return_value = Mock(
+                    **{
+                        "replace_namespaced_secret.return_value.to_dict.return_value":
+                            {'code': 200},
+                    }
+                )
+                self.assertEqual(
+                    kubernetes.replace_secret("test", {'key': 'secret'}),
+                    {'code': 200},
+                )
+                mock_kubernetes_lib.client.CoreV1Api()\
+                    .replace_namespaced_secret()\
+                    .to_dict.assert_called()
+
     def test_show_secret(self):
         with mock_kubernetes_library() as mock_kubernetes_lib:
             with patch.dict(
