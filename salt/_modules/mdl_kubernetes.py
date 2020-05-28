@@ -88,7 +88,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-__virtualname__ = 'kubernetes'
+__virtualname__ = 'mdl_kubernetes'
 
 
 def __virtual__():
