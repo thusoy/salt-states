@@ -93,9 +93,9 @@ log = logging.getLogger(__name__)
 
 def __virtual__():
     '''
-    Only load if the kubernetes module is available in __salt__
+    Only load if the mdl_kubernetes module is available in __salt__
     '''
-    return 'kubernetes.ping' in __salt__
+    return 'mdl_kubernetes' if 'mdl_kubernetes.ping' in __salt__ else False
 
 
 def _error(ret, err_msg):
@@ -124,7 +124,7 @@ def deployment_absent(name, namespace='default', **kwargs):
            'result': False,
            'comment': ''}
 
-    deployment = __salt__['kubernetes.show_deployment'](name, namespace, **kwargs)
+    deployment = __salt__['mdl_kubernetes.show_deployment'](name, namespace, **kwargs)
 
     if deployment is None:
         ret['result'] = True if not __opts__['test'] else None
@@ -136,7 +136,7 @@ def deployment_absent(name, namespace='default', **kwargs):
         ret['result'] = None
         return ret
 
-    res = __salt__['kubernetes.delete_deployment'](name, namespace, **kwargs)
+    res = __salt__['mdl_kubernetes.delete_deployment'](name, namespace, **kwargs)
     if res['code'] == 200:
         ret['result'] = True
         ret['changes'] = {
@@ -200,14 +200,14 @@ def deployment_present(
     if spec is None:
         spec = {}
 
-    deployment = __salt__['kubernetes.show_deployment'](name, namespace, **kwargs)
+    deployment = __salt__['mdl_kubernetes.show_deployment'](name, namespace, **kwargs)
 
     if deployment is None:
         if __opts__['test']:
             ret['result'] = None
             ret['comment'] = 'The deployment is going to be created'
             return ret
-        res = __salt__['kubernetes.create_deployment'](name=name,
+        res = __salt__['mdl_kubernetes.create_deployment'](name=name,
                                                        namespace=namespace,
                                                        metadata=metadata,
                                                        spec=spec,
@@ -226,7 +226,7 @@ def deployment_present(
         # TODO: improve checks  # pylint: disable=fixme
         log.info('Forcing the recreation of the deployment')
         ret['comment'] = 'The deployment is already present. Forcing recreation'
-        res = __salt__['kubernetes.replace_deployment'](
+        res = __salt__['mdl_kubernetes.replace_deployment'](
             name=name,
             namespace=namespace,
             metadata=metadata,
@@ -295,14 +295,14 @@ def service_present(
     if spec is None:
         spec = {}
 
-    service = __salt__['kubernetes.show_service'](name, namespace, **kwargs)
+    service = __salt__['mdl_kubernetes.show_service'](name, namespace, **kwargs)
 
     if service is None:
         if __opts__['test']:
             ret['result'] = None
             ret['comment'] = 'The service is going to be created'
             return ret
-        res = __salt__['kubernetes.create_service'](name=name,
+        res = __salt__['mdl_kubernetes.create_service'](name=name,
                                                     namespace=namespace,
                                                     metadata=metadata,
                                                     spec=spec,
@@ -321,7 +321,7 @@ def service_present(
         # TODO: improve checks  # pylint: disable=fixme
         log.info('Forcing the recreation of the service')
         ret['comment'] = 'The service is already present. Forcing recreation'
-        res = __salt__['kubernetes.replace_service'](
+        res = __salt__['mdl_kubernetes.replace_service'](
             name=name,
             namespace=namespace,
             metadata=metadata,
@@ -356,7 +356,7 @@ def service_absent(name, namespace='default', **kwargs):
            'result': False,
            'comment': ''}
 
-    service = __salt__['kubernetes.show_service'](name, namespace, **kwargs)
+    service = __salt__['mdl_kubernetes.show_service'](name, namespace, **kwargs)
 
     if service is None:
         ret['result'] = True if not __opts__['test'] else None
@@ -368,7 +368,7 @@ def service_absent(name, namespace='default', **kwargs):
         ret['result'] = None
         return ret
 
-    res = __salt__['kubernetes.delete_service'](name, namespace, **kwargs)
+    res = __salt__['mdl_kubernetes.delete_service'](name, namespace, **kwargs)
     if res['code'] == 200:
         ret['result'] = True
         ret['changes'] = {
@@ -394,7 +394,7 @@ def namespace_absent(name, **kwargs):
            'result': False,
            'comment': ''}
 
-    namespace = __salt__['kubernetes.show_namespace'](name, **kwargs)
+    namespace = __salt__['mdl_kubernetes.show_namespace'](name, **kwargs)
 
     if namespace is None:
         ret['result'] = True if not __opts__['test'] else None
@@ -406,7 +406,7 @@ def namespace_absent(name, **kwargs):
         ret['result'] = None
         return ret
 
-    res = __salt__['kubernetes.delete_namespace'](name, **kwargs)
+    res = __salt__['mdl_kubernetes.delete_namespace'](name, **kwargs)
     if (
             res['code'] == 200 or
             (
@@ -444,7 +444,7 @@ def namespace_present(name, **kwargs):
            'result': False,
            'comment': ''}
 
-    namespace = __salt__['kubernetes.show_namespace'](name, **kwargs)
+    namespace = __salt__['mdl_kubernetes.show_namespace'](name, **kwargs)
 
     if namespace is None:
         if __opts__['test']:
@@ -452,7 +452,7 @@ def namespace_present(name, **kwargs):
             ret['comment'] = 'The namespace is going to be created'
             return ret
 
-        res = __salt__['kubernetes.create_namespace'](name, **kwargs)
+        res = __salt__['mdl_kubernetes.create_namespace'](name, **kwargs)
         ret['result'] = True
         ret['changes']['namespace'] = {
             'old': {},
@@ -480,7 +480,7 @@ def secret_absent(name, namespace='default', **kwargs):
            'result': False,
            'comment': ''}
 
-    secret = __salt__['kubernetes.show_secret'](name, namespace, **kwargs)
+    secret = __salt__['mdl_kubernetes.show_secret'](name, namespace, **kwargs)
 
     if secret is None:
         ret['result'] = True if not __opts__['test'] else None
@@ -492,7 +492,7 @@ def secret_absent(name, namespace='default', **kwargs):
         ret['result'] = None
         return ret
 
-    __salt__['kubernetes.delete_secret'](name, namespace, **kwargs)
+    __salt__['mdl_kubernetes.delete_secret'](name, namespace, **kwargs)
 
     # As for kubernetes 1.6.4 doesn't set a code when deleting a secret
     # The kubernetes module will raise an exception if the kubernetes
@@ -544,7 +544,7 @@ def secret_present(
             '\'source\' cannot be used in combination with \'data\''
         )
 
-    secret = __salt__['kubernetes.show_secret'](name, namespace, **kwargs)
+    secret = __salt__['mdl_kubernetes.show_secret'](name, namespace, **kwargs)
 
     if secret is None:
         if data is None:
@@ -554,7 +554,7 @@ def secret_present(
             ret['result'] = None
             ret['comment'] = 'The secret is going to be created'
             return ret
-        res = __salt__['kubernetes.create_secret'](name=name,
+        res = __salt__['mdl_kubernetes.create_secret'](name=name,
                                                    namespace=namespace,
                                                    data=data,
                                                    source=source,
@@ -573,7 +573,7 @@ def secret_present(
         # TODO: improve checks  # pylint: disable=fixme
         log.info('Forcing the recreation of the service')
         ret['comment'] = 'The secret is already present. Forcing recreation'
-        res = __salt__['kubernetes.replace_secret'](
+        res = __salt__['mdl_kubernetes.replace_secret'](
             name=name,
             namespace=namespace,
             data=data,
@@ -609,7 +609,7 @@ def configmap_absent(name, namespace='default', **kwargs):
            'result': False,
            'comment': ''}
 
-    configmap = __salt__['kubernetes.show_configmap'](name, namespace, **kwargs)
+    configmap = __salt__['mdl_kubernetes.show_configmap'](name, namespace, **kwargs)
 
     if configmap is None:
         ret['result'] = True if not __opts__['test'] else None
@@ -621,7 +621,7 @@ def configmap_absent(name, namespace='default', **kwargs):
         ret['result'] = None
         return ret
 
-    __salt__['kubernetes.delete_configmap'](name, namespace, **kwargs)
+    __salt__['mdl_kubernetes.delete_configmap'](name, namespace, **kwargs)
     # As for kubernetes 1.6.4 doesn't set a code when deleting a configmap
     # The kubernetes module will raise an exception if the kubernetes
     # server will return an error
@@ -675,14 +675,14 @@ def configmap_present(
     elif data is None:
         data = {}
 
-    configmap = __salt__['kubernetes.show_configmap'](name, namespace, **kwargs)
+    configmap = __salt__['mdl_kubernetes.show_configmap'](name, namespace, **kwargs)
 
     if configmap is None:
         if __opts__['test']:
             ret['result'] = None
             ret['comment'] = 'The configmap is going to be created'
             return ret
-        res = __salt__['kubernetes.create_configmap'](name=name,
+        res = __salt__['mdl_kubernetes.create_configmap'](name=name,
                                                       namespace=namespace,
                                                       data=data,
                                                       source=source,
@@ -701,7 +701,7 @@ def configmap_present(
         # TODO: improve checks  # pylint: disable=fixme
         log.info('Forcing the recreation of the service')
         ret['comment'] = 'The configmap is already present. Forcing recreation'
-        res = __salt__['kubernetes.replace_configmap'](
+        res = __salt__['mdl_kubernetes.replace_configmap'](
             name=name,
             namespace=namespace,
             data=data,
@@ -733,7 +733,7 @@ def pod_absent(name, namespace='default', **kwargs):
            'result': False,
            'comment': ''}
 
-    pod = __salt__['kubernetes.show_pod'](name, namespace, **kwargs)
+    pod = __salt__['mdl_kubernetes.show_pod'](name, namespace, **kwargs)
 
     if pod is None:
         ret['result'] = True if not __opts__['test'] else None
@@ -745,7 +745,7 @@ def pod_absent(name, namespace='default', **kwargs):
         ret['result'] = None
         return ret
 
-    res = __salt__['kubernetes.delete_pod'](name, namespace, **kwargs)
+    res = __salt__['mdl_kubernetes.delete_pod'](name, namespace, **kwargs)
     if res['code'] == 200 or res['code'] is None:
         ret['result'] = True
         ret['changes'] = {
@@ -812,14 +812,14 @@ def pod_present(
     if spec is None:
         spec = {}
 
-    pod = __salt__['kubernetes.show_pod'](name, namespace, **kwargs)
+    pod = __salt__['mdl_kubernetes.show_pod'](name, namespace, **kwargs)
 
     if pod is None:
         if __opts__['test']:
             ret['result'] = None
             ret['comment'] = 'The pod is going to be created'
             return ret
-        res = __salt__['kubernetes.create_pod'](name=name,
+        res = __salt__['mdl_kubernetes.create_pod'](name=name,
                                                 namespace=namespace,
                                                 metadata=metadata,
                                                 spec=spec,
@@ -866,7 +866,7 @@ def node_label_absent(name, node, **kwargs):
            'result': False,
            'comment': ''}
 
-    labels = __salt__['kubernetes.node_labels'](node, **kwargs)
+    labels = __salt__['mdl_kubernetes.node_labels'](node, **kwargs)
 
     if name not in labels:
         ret['result'] = True if not __opts__['test'] else None
@@ -878,7 +878,7 @@ def node_label_absent(name, node, **kwargs):
         ret['result'] = None
         return ret
 
-    __salt__['kubernetes.node_remove_label'](
+    __salt__['mdl_kubernetes.node_remove_label'](
         node_name=node,
         label_name=name,
         **kwargs)
@@ -907,7 +907,7 @@ def node_label_folder_absent(name, node, **kwargs):
            'changes': {},
            'result': False,
            'comment': ''}
-    labels = __salt__['kubernetes.node_labels'](node, **kwargs)
+    labels = __salt__['mdl_kubernetes.node_labels'](node, **kwargs)
 
     folder = name.strip("/") + "/"
     labels_to_drop = []
@@ -929,7 +929,7 @@ def node_label_folder_absent(name, node, **kwargs):
         return ret
 
     for label in labels_to_drop:
-        __salt__['kubernetes.node_remove_label'](
+        __salt__['mdl_kubernetes.node_remove_label'](
             node_name=node,
             label_name=label,
             **kwargs)
@@ -970,14 +970,14 @@ def node_label_present(
            'result': False,
            'comment': ''}
 
-    labels = __salt__['kubernetes.node_labels'](node, **kwargs)
+    labels = __salt__['mdl_kubernetes.node_labels'](node, **kwargs)
 
     if name not in labels:
         if __opts__['test']:
             ret['result'] = None
             ret['comment'] = 'The label is going to be set'
             return ret
-        __salt__['kubernetes.node_add_label'](label_name=name,
+        __salt__['mdl_kubernetes.node_add_label'](label_name=name,
                                               label_value=value,
                                               node_name=node,
                                               **kwargs)
@@ -992,7 +992,7 @@ def node_label_present(
             return ret
 
         ret['comment'] = 'The label is already set, changing the value'
-        __salt__['kubernetes.node_add_label'](
+        __salt__['mdl_kubernetes.node_add_label'](
             node_name=node,
             label_name=name,
             label_value=value,
