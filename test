@@ -10,5 +10,6 @@ for venv in 'venv' 'venv3'; do
         salt/dotfiles/test_dotfiles.py \
         extensions/pillar/test_* \
         salt/_modules/test_* \
+        salt/_states/test_* \
         "$@"
 done
