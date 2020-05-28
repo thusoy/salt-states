@@ -45,6 +45,25 @@ class KubernetesTestCase(TestCase):
     Test cases for mdl_kubernetes
     """
 
+    def test_create_secret(self):
+        with mock_kubernetes_library() as mock_kubernetes_lib:
+            with patch.dict(
+                kubernetes.__salt__, {"config.option": Mock(side_effect=self.settings)}
+            ):
+                mock_kubernetes_lib.client.CoreV1Api.return_value = Mock(
+                    **{
+                        "create_namespaced_secret.return_value.to_dict.return_value":
+                            {'code': 200},
+                    }
+                )
+                self.assertEqual(
+                    kubernetes.create_secret("test", "default", {'key': 'secret'}),
+                    {'code': 200},
+                )
+                mock_kubernetes_lib.client.CoreV1Api()\
+                    .create_namespaced_secret()\
+                    .to_dict.assert_called()
+
     def test_nodes(self):
         """
         Test node listing.
