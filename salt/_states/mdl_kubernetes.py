@@ -509,6 +509,7 @@ def secret_present(
         name,
         namespace='default',
         data=None,
+        data_pillar=None,
         source=None,
         template=None,
         **kwargs):
@@ -527,6 +528,9 @@ def secret_present(
     data
         The dictionary holding the secrets.
 
+    data_pillar
+        The pillar key under which to find the dictionary with the secrets.
+
     source
         A file containing the data of the secret in plain format.
 
@@ -538,10 +542,10 @@ def secret_present(
            'result': False,
            'comment': ''}
 
-    if data and source:
+    if len(list(prop for prop in [data, data_pillar, source] if prop)) > 1:
         return _error(
             ret,
-            '\'source\' cannot be used in combination with \'data\''
+            '\'data\', \'data_pillar\', and \'source\' are mutually exclusive'
         )
 
     secret = __salt__['mdl_kubernetes.show_secret'](name, namespace, **kwargs)
@@ -557,6 +561,7 @@ def secret_present(
         res = __salt__['mdl_kubernetes.create_secret'](name=name,
                                                    namespace=namespace,
                                                    data=data,
+                                                   data_pillar=data_pillar,
                                                    source=source,
                                                    template=template,
                                                    saltenv=__env__,
@@ -577,6 +582,7 @@ def secret_present(
             name=name,
             namespace=namespace,
             data=data,
+            data_pillar=data_pillar,
             source=source,
             template=template,
             saltenv=__env__,
