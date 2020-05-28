@@ -1096,6 +1096,7 @@ def create_secret(
         name,
         namespace='default',
         data=None,
+        data_pillar=None,
         source=None,
         template=None,
         saltenv='base',
@@ -1113,6 +1114,8 @@ def create_secret(
     '''
     if source:
         data = __read_and_render_yaml_file(source, template, saltenv)
+    elif data_pillar:
+        data = __salt__['pillar.get'](data_pillar)
     elif data is None:
         data = {}
 
