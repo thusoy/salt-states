@@ -21,7 +21,7 @@ from unittest import TestCase, skipIf
 sys.path.insert(0, os.path.dirname(__file__))
 
 
-import mdl_kubernetes as kubernetes
+import mdl_kubernetesmod as kubernetes
 kubernetes.__salt__ = {}
 
 
@@ -32,7 +32,7 @@ def mock_kubernetes_library():
     it caused kubernetes._cleanup() to get called for virtually every
     test, which blows up. This prevents that specific blow-up once
     """
-    with patch("mdl_kubernetes.kubernetes") as mock_kubernetes_lib:
+    with patch("mdl_kubernetesmod.kubernetes") as mock_kubernetes_lib:
         yield mock_kubernetes_lib
 
 
@@ -206,7 +206,7 @@ class KubernetesTestCase(TestCase):
         """
         with mock_kubernetes_library() as mock_kubernetes_lib:
             with patch(
-                "mdl_kubernetes.show_deployment", Mock(return_value=None)
+                "mdl_kubernetesmod.show_deployment", Mock(return_value=None)
             ):
                 with patch.dict(
                     kubernetes.__salt__,
@@ -320,7 +320,7 @@ class KubernetesTestCase(TestCase):
         Test kubernetes.node_labels
         :return:
         """
-        with patch("mdl_kubernetes.node") as mock_node:
+        with patch("mdl_kubernetesmod.node") as mock_node:
             mock_node.return_value = {
                 "metadata": {
                     "labels": {
@@ -341,7 +341,7 @@ class KubernetesTestCase(TestCase):
         :return:
         """
         with patch(
-            "mdl_kubernetes.sys.argv", ["/usr/bin/salt-call", "state.apply"]
+            "mdl_kubernetesmod.sys.argv", ["/usr/bin/salt-call", "state.apply"]
         ) as mock_sys:
             func = getattr(kubernetes, "__dict_to_object_meta")
             data = func(name="test-pod", namespace="test", metadata={})
