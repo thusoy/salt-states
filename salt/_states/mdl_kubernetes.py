@@ -319,7 +319,7 @@ def service_present(
             return ret
 
         # TODO: improve checks  # pylint: disable=fixme
-        log.info('Forcing the recreation of the service')
+        log.info('Forcing recreation of the service')
         ret['comment'] = 'The service is already present. Forcing recreation'
         res = __salt__['mdl_kubernetes.replace_service'](
             name=name,
@@ -571,7 +571,7 @@ def secret_present(
             return ret
 
         # TODO: improve checks  # pylint: disable=fixme
-        log.info('Forcing the recreation of the service')
+        log.info('Forcing recreation of the secret')
         ret['comment'] = 'The secret is already present. Forcing recreation'
         res = __salt__['mdl_kubernetes.replace_secret'](
             name=name,
@@ -699,7 +699,7 @@ def configmap_present(
             return ret
 
         # TODO: improve checks  # pylint: disable=fixme
-        log.info('Forcing the recreation of the service')
+        log.info('Forcing recreation of the configmap')
         ret['comment'] = 'The configmap is already present. Forcing recreation'
         res = __salt__['mdl_kubernetes.replace_configmap'](
             name=name,
