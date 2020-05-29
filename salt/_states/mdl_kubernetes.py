@@ -548,7 +548,7 @@ def secret_present(
             '\'data\', \'data_pillar\', and \'source\' are mutually exclusive'
         )
 
-    secret = __salt__['mdl_kubernetes.show_secret'](name, namespace, **kwargs)
+    secret = __salt__['mdl_kubernetes.show_secret'](name, namespace, decode=True, **kwargs)
 
     if secret is None:
         if __opts__['test']:
@@ -563,16 +563,13 @@ def secret_present(
                                                    template=template,
                                                    saltenv=__env__,
                                                    **kwargs)
-        ret['changes']['{0}.{1}'.format(namespace, name)] = {
-            'old': {},
-            'new': res}
-    else:
+        ret['changes']['new'] = list(res['data'])
+    elif data != secret['data']:
         if __opts__['test']:
             ret['result'] = None
             ret['comment'] = 'The secret is going to be replaced'
             return ret
 
-        # TODO: improve checks  # pylint: disable=fixme
         log.info('Forcing recreation of the secret')
         ret['comment'] = 'The secret is already present. Forcing recreation'
         res = __salt__['mdl_kubernetes.replace_secret'](
@@ -584,12 +581,11 @@ def secret_present(
             template=template,
             saltenv=__env__,
             **kwargs)
+        ret['changes'] = {
+            'old': list(secret['data']),
+            'new': list(res['data']),
+        }
 
-    ret['changes'] = {
-        # Omit values from the return. They are unencrypted
-        # and can contain sensitive data.
-        'data': list(res['data'])
-    }
     ret['result'] = True
 
     return ret
