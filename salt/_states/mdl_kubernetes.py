@@ -529,7 +529,7 @@ def secret_present(
         The dictionary holding the secrets.
 
     data_pillar
-        The pillar key under which to find the dictionary with the secrets.
+        A dictionary where each value is a path to a secret in pillar.
 
     source
         A file containing the data of the secret in plain format.
@@ -548,6 +548,11 @@ def secret_present(
             '\'data\', \'data_pillar\', and \'source\' are mutually exclusive'
         )
 
+    if data_pillar:
+        data = {}
+        for key, pillar_key in data_pillar.items():
+            data[key] = __salt__['pillar.get'](pillar_key)
+
     secret = __salt__['mdl_kubernetes.show_secret'](name, namespace, decode=True, **kwargs)
 
     if secret is None:
@@ -558,7 +563,6 @@ def secret_present(
         res = __salt__['mdl_kubernetes.create_secret'](name=name,
                                                    namespace=namespace,
                                                    data=data,
-                                                   data_pillar=data_pillar,
                                                    source=source,
                                                    template=template,
                                                    saltenv=__env__,
@@ -576,7 +580,6 @@ def secret_present(
             name=name,
             namespace=namespace,
             data=data,
-            data_pillar=data_pillar,
             source=source,
             template=template,
             saltenv=__env__,

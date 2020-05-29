@@ -64,6 +64,18 @@ class KubernetesTestCase(TestCase):
         self.mock_create_secret.assert_not_called()
 
 
+    def test_secret_present_exists_pillar_data(self):
+        self.mock_show_secret.return_value = {'data': {'foo': 'pillar_value'}}
+
+        with patch.dict(kubernetes.__salt__, {'pillar.get': lambda k: 'pillar_value'}):
+            ret = kubernetes.secret_present('test', data_pillar={'foo': 'pillar_key'})
+
+        assert ret['result'] == True
+        assert ret['changes'] == {}
+        self.mock_replace_secret.assert_not_called()
+        self.mock_create_secret.assert_not_called()
+
+
     def test_secret_present_replaces_different(self):
         self.mock_show_secret.return_value = {'data': {'old_key': 'old_value'}}
         self.mock_replace_secret.return_value = {'data': {'foo': 'bar'}}
@@ -76,3 +88,20 @@ class KubernetesTestCase(TestCase):
             'new': ['foo'],
         }
         self.mock_create_secret.assert_not_called()
+
+
+    def test_secret_present_replaces_different_pillar_data(self):
+        self.mock_show_secret.return_value = {'data': {'old_key': 'old_value'}}
+        self.mock_replace_secret.return_value = {'data': {'foo': 'bar'}}
+
+        with patch.dict(kubernetes.__salt__, {'pillar.get': lambda k: 'bar'}):
+            ret = kubernetes.secret_present('test', data_pillar={'foo': 'pillar_key'})
+
+        assert ret['result'] == True
+        assert ret['changes'] == {
+            'old': ['old_key'],
+            'new': ['foo'],
+        }
+        self.mock_create_secret.assert_not_called()
+        replace_call_kwargs = self.mock_replace_secret.call_args[1]
+        assert replace_call_kwargs['data'] == {'foo': 'bar'}
