@@ -1379,6 +1379,8 @@ def replace_secret(name,
         return api_response.to_dict()
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
+            log.error('Could not find secret to replace in namespace %s: %s',
+                namespace, name)
             return None
         else:
             log.exception(
