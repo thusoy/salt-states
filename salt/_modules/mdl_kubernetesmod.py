@@ -1336,7 +1336,8 @@ def replace_service(name,
 
 
 def replace_secret(name,
-                   data,
+                   data=None,
+                   data_pillar=None,
                    source=None,
                    template=None,
                    saltenv='base',
@@ -1356,6 +1357,10 @@ def replace_secret(name,
     '''
     if source:
         data = __read_and_render_yaml_file(source, template, saltenv)
+    elif data_pillar:
+        data = {}
+        for key, pillar_key in data_pillar.items():
+            data[key] = __salt__['pillar.get'](pillar_key)
     elif data is None:
         data = {}
 
