@@ -551,9 +551,6 @@ def secret_present(
     secret = __salt__['mdl_kubernetes.show_secret'](name, namespace, **kwargs)
 
     if secret is None:
-        if data is None:
-            data = {}
-
         if __opts__['test']:
             ret['result'] = None
             ret['comment'] = 'The secret is going to be created'
