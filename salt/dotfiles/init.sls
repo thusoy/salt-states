@@ -3,9 +3,8 @@
 try:
     basestring = basestring
 except NameError:
-    # python 3
+    # Python 3
     basestring = str
-
 
 def run():
     states = {
