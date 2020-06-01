@@ -13,6 +13,20 @@ def run():
         ]
     }
     for username, user_values in __pillar__.get('users', {}).items():
+        requires = [
+            {'user': username},
+        ]
+        dotfiles_repo = user_values.get('dotfiles_repo')
+        if dotfiles_repo:
+            states['dotfiles-%s' % username] = {
+                'dotfiles.repo': [
+                    {'repo': dotfiles_repo},
+                    {'user': username},
+                    {'require': requires[:]}
+                ]
+            }
+            requires.append({'dotfiles': 'dotfiles-%s' % username})
+
         for filename, dotfile_spec in user_values.get('dotfiles', {}).items():
             file_managed = {
                 'name': '~%s/%s' % (username, filename),
@@ -20,9 +34,7 @@ def run():
                 'group': username,
                 'makedirs': True,
                 'mode': 644,
-                'require': [
-                    {'user': username},
-                ],
+                'require': requires,
             }
 
             if isinstance(dotfile_spec, basestring):
