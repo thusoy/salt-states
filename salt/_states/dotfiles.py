@@ -67,6 +67,7 @@ def _pull_repo(home_dir, git_dir, branch):
         'git',
         '--git-dir', git_dir,
         'reset',
+        '--quiet',
     ], cwd=home_dir)
     changes = subprocess.check_output([
         'git',
