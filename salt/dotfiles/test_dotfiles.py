@@ -64,3 +64,19 @@ def test_dotfile_dict():
     assert {'require':  [
         {'user': 'testuser'},
     ]} in file_managed
+
+
+def test_dotfile_repo():
+    dotfiles.__pillar__ = {
+        'users': {
+            'testuser': {
+                'dotfiles': 'https://example.com/repo',
+            },
+        },
+    }
+
+    ret = dotfiles.run()
+
+    dotfiles_repo = ret['dotfiles-testuser']['dotfiles.repo']
+    assert {'user': 'testuser'} in dotfiles_repo
+    assert {'repo': 'https://example.com/repo'} in dotfiles_repo
