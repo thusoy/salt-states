@@ -65,6 +65,7 @@ def _pull_repo(home_dir, git_dir, branch):
         '--git-dir', git_dir,
         'reset',
         '--hard',
+        '--quiet',
         'origin/%s' % branch,
     ], cwd=home_dir)
 
