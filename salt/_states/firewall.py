@@ -216,5 +216,5 @@ def _apply_rule_for_family(filename, context, restore_command, apply):
         result = restore_process.wait()
     else:
         result = 0
-        stderr = ''
+        stderr = b''
     return (result, stderr.decode('utf-8'), changes)
