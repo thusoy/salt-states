@@ -7,7 +7,7 @@ jump-host-outbound-firewall-{{ target.name }}:
         - table: filter
         - family: ipv4
         - chain: OUTPUT
-        - proto: tcp
+        - protocol: {{ target.get('protocol', 'tcp') }}
         {% if 'dport' in target %}
         - dport: {{ target.dport }}
         {% elif 'dports' in target %}
