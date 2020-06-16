@@ -1,3 +1,10 @@
+redis:
+    # password: foobar
+    password_pillar: other-pillar:password
+
+other-pillar:
+    password: otherpass
+
 boto:
     access_key_id: foobar
     secret_access_key: secretbar
