@@ -26,3 +26,9 @@ rabbitmq-server:
             - pkg: rabbitmq-server
         - watch:
             - file: rabbitmq-server
+
+    # Remove the guest user
+    rabbitmq_user.absent:
+        - name: guest
+        - require:
+            - pkg: rabbitmq-server
