@@ -1,5 +1,5 @@
 {% set acme_dns = pillar.get('acme-dns', {}) -%}
-{% set zones = {'zones': acme_dns.get('zones', [])} %}
+{% set zones = {'zones': acme_dns.get('zones', [])} -%}
 
 #######################################
 # File managed by salt state acme-dns #
