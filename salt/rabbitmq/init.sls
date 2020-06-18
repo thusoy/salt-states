@@ -13,10 +13,6 @@ rabbitmq-server:
         - name: deb https://dl.bintray.com/rabbitmq/debian buster main
         - key_url: salt://rabbitmq/release-key.asc
 
-    file.managed:
-        - name: /etc/rabbitmq/rabbitmq.conf
-        - source: salt://rabbitmq/rabbitmq.conf
-
     pkg.installed:
         - require:
             - pkgrepo: rabbitmq-server
