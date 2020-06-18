@@ -24,11 +24,23 @@ rabbitmq-server:
     service.running:
         - require:
             - pkg: rabbitmq-server
-        - watch:
-            - file: rabbitmq-server
 
     # Remove the guest user
     rabbitmq_user.absent:
         - name: guest
         - require:
             - pkg: rabbitmq-server
+
+
+{% for family in ('ipv4', 'ipv6') %}
+rabbitmq-firewall-inbound-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - protocol: tcp
+        - match:
+            - comment
+        - dports: 5672
+        - comment: 'rabbitmq: Allow plaintext AMQP'
+        - jump: ACCEPT
+{% endfor %}
