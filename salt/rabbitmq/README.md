@@ -4,6 +4,9 @@ Install RabbitMQ 3.8 with Erland 23. There's a substate `rabbitmq.management` th
 enable the management plugin over https and enable the users `admin` and `monitoring` with
 the respective tags.
 
+Note that this state only works with salt 3001 and newer due to an incompatibility with older
+versions of salt and rabbitmq >= 3.8.
+
 Configuration:
 
 ```yaml
