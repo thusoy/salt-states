@@ -30,7 +30,11 @@ users-{{ name }}:
         {% if 'fullname' in user %}
         - fullname: {{ user['fullname'] }}
         {% endif -%}
+        {% if grains.saltversioninfo > [3001] %}
         - usergroup: False
+        {% else %}
+        - gid_from_name: True
+        {% endif %}
         - optional_groups:
             {% for group in user.get('optional-groups', []) %}
             - {{ group }}
