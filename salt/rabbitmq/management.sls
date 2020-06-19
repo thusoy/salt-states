@@ -39,6 +39,7 @@ rabbitmq-management-user-monitoring:
             - rabbitmq_plugin: rabbitmq-management-plugin
 
 
+{% if not rabbitmq.management_plaintext %}
 rabbitmq_management-tls-cert:
     file.managed:
         - name: /etc/rabbitmq/cert.pem
@@ -73,3 +74,20 @@ rabbitmq-management-firewall-inbound-{{ family }}:
         - comment: 'rabbitmq.management: Allow https'
         - jump: ACCEPT
 {% endfor %}
+
+{% else %}
+
+{% for family in ('ipv4', 'ipv6') %}
+rabbitmq-management-firewall-inbound-{{ family }}:
+    firewall.append:
+        - family: {{ family }}
+        - chain: INPUT
+        - protocol: tcp
+        - match:
+            - comment
+        - dport: {{ rabbitmq.management_port }}
+        - comment: 'rabbitmq.management: Allow http'
+        - jump: ACCEPT
+{% endfor %}
+
+{% endif %}

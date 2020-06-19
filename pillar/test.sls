@@ -1,6 +1,8 @@
 rabbitmq:
     admin_password: admin
     monitoring_password: monitoring
+    # Uncomment this to run the management panel without tls
+    # management_plaintext: True
     management_tls_cert: |
         -----BEGIN CERTIFICATE-----
         MIIDejCCAmKgAwIBAgIUHvwsbS+OKUGyVEkE4nMvoURo+3IwDQYJKoZIhvcNAQEL
