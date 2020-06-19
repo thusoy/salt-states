@@ -30,7 +30,7 @@ users-{{ name }}:
         {% if 'fullname' in user %}
         - fullname: {{ user['fullname'] }}
         {% endif -%}
-        {% if grains.saltversioninfo > [3001] %}
+        {% if grains.saltversioninfo > [3000] %}
         - usergroup: False
         {% else %}
         - gid_from_name: True
