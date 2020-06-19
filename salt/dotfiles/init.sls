@@ -16,7 +16,7 @@ def run():
         requires = [
             {'user': username},
         ]
-        dotfiles_repo = user_values.get('dotfiles_repo')
+        dotfiles_repo = user_values.get('dotfiles-repo')
         if dotfiles_repo:
             states['dotfiles-%s' % username] = {
                 'dotfiles.repo': [
