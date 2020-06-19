@@ -70,7 +70,7 @@ def test_dotfile_repo():
     dotfiles.__pillar__ = {
         'users': {
             'testuser': {
-                'dotfiles': 'https://example.com/repo',
+                'dotfiles-repo': 'https://example.com/repo',
             },
         },
     }
