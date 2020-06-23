@@ -80,7 +80,7 @@ iptables-output-allow-to-local-{{ family }}:
         - jump: ACCEPT
 
 
-# Needed for many things, salt to fetch files, apt to find repos, etc
+# Needed for many things, salt to fetch files, etc
 {% for protocol in ('udp', 'tcp') %}
 iptables-allow-outgoing-dns-for-root-{{ family }}-{{ protocol }}:
     firewall.append:
@@ -97,6 +97,21 @@ iptables-allow-outgoing-dns-for-root-{{ family }}-{{ protocol }}:
         - uid-owner: root
         - jump: ACCEPT
 {% endfor %}
+
+
+iptables-allow-outgoing-https-for-root-{{ family }}:
+    firewall.append:
+        - table: filter
+        - chain: OUTPUT
+        - family: {{ family }}
+        - proto: tcp
+        - dport: 443
+        - match:
+            - comment
+            - owner
+        - comment: "iptables: Allow outgoing HTTPS for root"
+        - uid-owner: root
+        - jump: ACCEPT
 
 
 iptables-output-allow-established-{{ family }}:
