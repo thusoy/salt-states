@@ -1,0 +1,7 @@
+{% set rabbitmq = salt['grains.filter_by']({
+    'base': {
+        'management_ssl_port': 15671,
+        'management_port': 15672,
+        'management_plaintext': False,
+    },
+}, merge=salt['pillar.get']('rabbitmq'), base='base') %}

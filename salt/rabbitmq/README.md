@@ -1,5 +1,24 @@
 # rabbitmq
 
-Install RabbitMQ. This state is only compatible with Debian Buster, as it
-requires rabbit newer than 3.7.0 since it uses the new-style configuration file
-format.
+Install RabbitMQ 3.8 with Erland 23. There's a substate `rabbitmq.management` that will
+enable the management plugin over https and enable the users `admin` and `monitoring` with
+the respective tags.
+
+Note that this state only works with salt 3001 and newer due to an incompatibility with older
+versions of salt and rabbitmq >= 3.8.
+
+Configuration:
+
+```yaml
+rabbitmq:
+    admin_password: password
+    monitoring_password: password
+    management_tls_cert: |
+        -----BEGIN CERTIFICATE-----
+        MIIDejCCA..
+        -----END CERTIFICATE-----
+    management_tls_key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEpAIBAAKCA..
+        -----END RSA PRIVATE KEY-----
+```

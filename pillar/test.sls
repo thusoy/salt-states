@@ -1,3 +1,59 @@
+rabbitmq:
+    admin_password: admin
+    monitoring_password: monitoring
+    # Uncomment this to run the management panel without tls
+    # management_plaintext: True
+    management_tls_cert: |
+        -----BEGIN CERTIFICATE-----
+        MIIDejCCAmKgAwIBAgIUHvwsbS+OKUGyVEkE4nMvoURo+3IwDQYJKoZIhvcNAQEL
+        BQAwUDEZMBcGA1UEBwwQVGVzdCBFbnZpcm9ubWVudDEOMAwGA1UECgwFTWVkYWwx
+        ETAPBgNVBAsMCEludGVybmFsMRAwDgYDVQQDDAd2YWdyYW50MB4XDTIwMDYxODIy
+        MjEwOFoXDTMwMDYxNjIyMjEwOFowUDEZMBcGA1UEBwwQVGVzdCBFbnZpcm9ubWVu
+        dDEOMAwGA1UECgwFTWVkYWwxETAPBgNVBAsMCEludGVybmFsMRAwDgYDVQQDDAd2
+        YWdyYW50MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7DhPEoZXbCJf
+        vl+t1WAx21ZgkF6EOeM2sfFZrKmFrdSjO/2x0/YDFoC4OCg8X7kMELaKUbjCzzqE
+        2jkKPGOPMX4WNgfGFoE0lpr6o7vqFKBMNduwQqOyyvG0qTBLBQNm9WZqCfJKNE7B
+        ZHTvZ87pczO/r7ob0g1CoRnBfGv3FNNq2fSYv6MmeABH5X9uJfx2e9aQBXvQU9l9
+        YoQFY7wT0FCP6teItNGQrS0AnfVjVmvxtb6I6Mzb4q7OmOYUT3rYfhsHcgdjOrse
+        VRDXfS/7l2JohuHyaeCo3Nd6ECyNsIGVB0SYp3/J1Oj5zyvmewQ3sh/phUU2TDnm
+        cwl7j8VGkQIDAQABo0wwSjAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIC
+        pDATBgNVHSUEDDAKBggrBgEFBQcDATASBgNVHREECzAJggd2YWdyYW50MA0GCSqG
+        SIb3DQEBCwUAA4IBAQBO1weERyYDEBBS2knpDaku6ee3mH2wXX7A11oKPP7EDkcQ
+        Eb24o+qj0dsf1MwJtAzuzko9g9VI32VGvqZSz49um9wqwpq1AgwdcbIYOtVNAVdy
+        RXoQwwR+DW0d9i1Zu/TSDK6b4k540RT7HBRzjSxmGEA7oYOyo0cd3NRDDDyzls0N
+        28y5QZ0n+ruvoEkIu+werkIqYK0/RsT7ff31c5jSyQ3am5MT/M4ZsxGTa8Yf6sVI
+        PxFYzjbVjnUIMKCXudJxv2++1uQDyhu298a9Ng6UC2JllbK6byV7JrJMW/jv5Vte
+        HrH6laG3AKUF7+5pRKIbQlFV7GUM3jfZzX53BkgV
+        -----END CERTIFICATE-----
+    management_tls_key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEpAIBAAKCAQEA7DhPEoZXbCJfvl+t1WAx21ZgkF6EOeM2sfFZrKmFrdSjO/2x
+        0/YDFoC4OCg8X7kMELaKUbjCzzqE2jkKPGOPMX4WNgfGFoE0lpr6o7vqFKBMNduw
+        QqOyyvG0qTBLBQNm9WZqCfJKNE7BZHTvZ87pczO/r7ob0g1CoRnBfGv3FNNq2fSY
+        v6MmeABH5X9uJfx2e9aQBXvQU9l9YoQFY7wT0FCP6teItNGQrS0AnfVjVmvxtb6I
+        6Mzb4q7OmOYUT3rYfhsHcgdjOrseVRDXfS/7l2JohuHyaeCo3Nd6ECyNsIGVB0SY
+        p3/J1Oj5zyvmewQ3sh/phUU2TDnmcwl7j8VGkQIDAQABAoIBABwf/DItcp06XoHx
+        LGZaZLVDzI2D42RtDCcVoGKxcGwpBCJxa0ncYbO9MbHmAII5KxmWUlO2luNLiWPe
+        JLzZ8cOnyoc2V7x4N8WywCLcjdtU1p4XAR5+FRyauLLoQBZhuFGBlyCGC5W8xsPq
+        NFL8zMjdoXYPx54z2/oIcgQZarq80s3BJTQPQ6G/KbTrNJJk/4vX0PrQFxmH8ygT
+        2OpSMsRQ/Tl1DYcjbFlfwa13zzTxs7GgK2MUl0A/Fe7MOczHU/b0Ah+Q9Qi/5D1F
+        i2trpx8G5VUQ9AJQmkm8CKFCaU8WzLoMi77zyJogagOTtIErPk3eAYwQlge4NZ/V
+        ZylxogECgYEA94oIJaiBGs71EjkXpBAvrTaju1mzEjN9iWKzAbyWOBUfnzQeBc35
+        f/5plW9ztKmLXyDRG9D7FE9TAwYCaKF0lWVHt4hJNrozBbxd0eKD99dXeeATmnMV
+        EZLnqUHgpDIxwTIFoAI26eiesUpwSLWM5kUJH8BElQg1EKuvk/kOUaECgYEA9Es7
+        2JddHCEpBGSwtIsilK84xlidJNPZfIMUqhTzwf4xYcFQAGsghZV3Ckrm+JEXiaWy
+        XxvSnylgxrBxrSfvNOHGUVZ3MM89fcVK1YqxLjbOhWe1A3EudEWQEfxKtly+68mn
+        5cwtbdpX/gt77vmbKV0zJ0UMHA49J6pyUFlvrvECgYA8XJdh/3YEAIV4PR3LrvrB
+        RTql29izzoSFNOErwj3rTRNZ8g6EIdb+ZB6BBx1y54kJ2GnFW69uI229pgB+XSid
+        qYXUdlJMGxmIA4fpP1Ao5oT5Pi/pkLiJgYYmGt9ZirfhQX5np0KWxVe1Kc65nDPQ
+        jvMLoAnZQZgXCZaWAbyBIQKBgQC9/o0q5H3b1MZrzkvH/rYEYUqMqHp/G+x39BJs
+        PSNfauzJFGm+CZMfkaEldh+wjld6DE5vvdnPQ4UqwiuG+hoGTNnKhK7qXSN736dV
+        8SnfwWxZQND9PldcwoVMF6WbswIhq5JTHLrwRvJMeG4I7EQKpZuVHRRP9ZsGcH+7
+        kfNUYQKBgQDoLWULIYuwo3+RTzfT4XY/Si+oz15BboFOlCHZyy2966LAQMEM1pX1
+        qKDHSdpqD0PmhxWYdMnCBl3za7PgFfT6Zpm+nNX4QIHdKMTms7lIlBw9wvuKkiKw
+        vT9d+t4Vs6aSWCkxOTYdBOq10hgkmfVzP4gHWqk0zl9HmipkT2XMpA==
+        -----END RSA PRIVATE KEY-----
+
 redis:
     # password: foobar
     password_pillar: other-pillar:password
