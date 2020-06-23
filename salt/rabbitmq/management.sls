@@ -39,44 +39,7 @@ rabbitmq-management-user-monitoring:
             - rabbitmq_plugin: rabbitmq-management-plugin
 
 
-{% if not rabbitmq.management_plaintext %}
-rabbitmq_management-tls-cert:
-    file.managed:
-        - name: /etc/rabbitmq/cert.pem
-        - contents_pillar: rabbitmq:management_tls_cert
-        - watch_in:
-            - service: rabbitmq-server
-
-
-rabbitmq-management-tls-key:
-    file.managed:
-        - name: /etc/rabbitmq/key.pem
-        - contents_pillar: rabbitmq:management_tls_key
-        - user: root
-        - group: rabbitmq
-        - mode: 640
-        - show_changes: False
-        - require:
-            - pkg: rabbitmq-server
-        - watch_in:
-            - service: rabbitmq-server
-
-
-{% for family in ('ipv4', 'ipv6') %}
-rabbitmq-management-firewall-inbound-{{ family }}:
-    firewall.append:
-        - family: {{ family }}
-        - chain: INPUT
-        - protocol: tcp
-        - match:
-            - comment
-        - dport: {{ rabbitmq.management_ssl_port }}
-        - comment: 'rabbitmq.management: Allow https'
-        - jump: ACCEPT
-{% endfor %}
-
-{% else %}
-
+{% if rabbitmq.management_expose_plaintext %}
 {% for family in ('ipv4', 'ipv6') %}
 rabbitmq-management-firewall-inbound-{{ family }}:
     firewall.append:
@@ -89,5 +52,4 @@ rabbitmq-management-firewall-inbound-{{ family }}:
         - comment: 'rabbitmq.management: Allow http'
         - jump: ACCEPT
 {% endfor %}
-
 {% endif %}
