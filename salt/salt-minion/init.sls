@@ -6,11 +6,12 @@ include:
 
 
 # Saltstack has a number of deprecation warnings on python 3.7 which is used
-# on buster, thus need to silence warnings until these are fixed.
+# on buster. These were fixed in 3001, thus need to bump the log level if
+# running below that.
 # Ref. https://github.com/saltstack/salt/issues/50911
 # Ref. https://github.com/saltstack/salt/issues/52120
 {% set log_level = 'warning' %}
-{% if grains['os_family'] == 'Debian' and grains['osmajorrelease']|int >= 10 %}
+{% if grains['os_family'] == 'Debian' and grains.osmajorrelease|int >= 10 and grains.saltversioninfo < [3001] %}
 {% set log_level = 'error' %}
 
 # Ref. https://github.com/saltstack/salt/issues/54759
@@ -19,7 +20,7 @@ salt-minion-tornado:
         - name: python3-tornado
 
 
-# Ref. https://github.com/saltstack/salt/issues/55116
+# Ref. https://github.com/saltstack/salt/issues/55116, fixed in 3001
 # The package is only available in buster and newer
 salt-minion-pycryptodome:
     pkg.installed:
