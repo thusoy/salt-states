@@ -1,12 +1,12 @@
 {% for name, user in pillar.get('users', {}).items() %}
 
 {% for group in user.get('groups', []) %}
-{{ name }}_{{ group }}_group:
+users-{{ name }}-group-{{ group }}:
     group.present:
         - name: {{ group }}
 {% endfor %}
 
-{{ name }}_user:
+users-{{ name }}:
     group.present:
         - name: {{ name }}
         {% if 'gid' in user -%}
@@ -27,12 +27,16 @@
         {% if 'gid' in user -%}
         - gid: {{ user['gid'] }}
         {% endif %}
-        - gid_from_name: True
         {% if 'fullname' in user %}
         - fullname: {{ user['fullname'] }}
         {% endif -%}
+        {% if grains.saltversioninfo > [3000] %}
+        - usergroup: False
+        {% else %}
+        - gid_from_name: True
+        {% endif %}
         - optional_groups:
-            {% for group in user.get('optional_groups', []) %}
+            {% for group in user.get('optional-groups', []) %}
             - {{ group }}
             {% endfor %}
         - groups:
@@ -47,37 +51,36 @@
             {% endfor %}
         {% endif %}
 
-    {% if 'ssh_auth' in user %}
+    {% if 'ssh-auth' in user %}
     ssh_auth.present:
         - user: {{ name }}
         - names:
-            {% for auth in user['ssh_auth'] %}
+            {% for auth in user['ssh-auth'] %}
                 - {{ auth }}
             {% endfor %}
         # Specify fingerprint hash type to avoid logspam on 2016.11, even though it's unused
         - fingerprint_hash_type: sha256
         - require:
-            - user: {{ name }}_user
+            - user: users-{{ name }}
     {% endif %}
 
-{% if 'ssh_auth.absent' in user %}
-{% for auth in user['ssh_auth.absent'] %}
-ssh_auth_delete_{{ name }}_{{ loop.index0 }}:
+
+{% for auth in user.get('ssh-auth.absent', []) %}
+users-{{ name }}-ssh-auth-absent-{{ loop.index0 }}:
     ssh_auth.absent:
         - user: {{ name }}
         - name: {{ auth }}
         # Specify fingerprint hash type to avoid logspam on 2016.11, even though it's unused
         - fingerprint_hash_type: sha256
         - require:
-            - user: {{ name }}_user
-{% endfor %}
-{% endif %}
-
+            - user: users-{{ name }}
 {% endfor %}
 
+{% endfor %}
 
-{% for user in pillar.get('absent_users', []) %}
-absent-user-{{ user }}:
+
+{% for user in pillar.get('users.absent', []) %}
+users-absent-{{ user }}:
     user.absent:
         - name: {{ user }}
         - purge: True
@@ -85,8 +88,8 @@ absent-user-{{ user }}:
 {% endfor %}
 
 
-{% for group in pillar.get('absent_groups', []) %}
-absent-group-{{ group }}:
+{% for group in pillar.get('users.absent-groups', []) %}
+users-absent-group-{{ group }}:
     group.absent:
         - name: {{ group }}
 {% endfor %}

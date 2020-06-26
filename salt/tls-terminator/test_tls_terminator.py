@@ -331,10 +331,10 @@ def test_upstream_set_trust_root():
         }
     })
     context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
-    upstream_identifier = context['upstreams'].keys()[0]
-    expected_trust_root_path = '/etc/nginx/ssl/%s-root.pem' % upstream_identifier
-    assert context['backends']['/']['upstream_trust_root'] == expected_trust_root_path
-    assert 'tls-terminator-upstream-%s-trust-root' % upstream_identifier in state
+    trust_root_identifier = context['backends']['/']['upstream_identifier']
+    expected_trust_root_path_app1 = '/etc/nginx/ssl/%s-root.pem' % trust_root_identifier
+    assert context['backends']['/']['upstream_trust_root'] == expected_trust_root_path_app1
+    assert 'tls-terminator-upstream-%s-trust-root' % trust_root_identifier in state
 
 
 def test_invalid_config():
