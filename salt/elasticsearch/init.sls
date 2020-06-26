@@ -62,12 +62,30 @@ elasticsearch-elasticsearch-yml:
 
 
 {% for family in ('ipv4', 'ipv6') %}
-elasticsearch-outbound-firewall-{{ family }}:
+{% for protocol in ('udp', 'tcp') %}
+elasticsearch-outbound-firewall-{{ family }}-dns-{{ protocol }}:
     firewall.append:
-        - table: filter
         - chain: OUTPUT
         - family: {{ family }}
-        - proto: tcp
+        - protocol: {{ protocol }}
+        - dport: 53
+        - destination: system_dns
+        - match:
+            - comment
+            - owner
+        - comment: 'elasticsearch: Allow outgoing DNS'
+        - uid-owner: elasticsearch
+        - jump: ACCEPT
+        - require:
+            - pkg: elasticsearch
+{% endfor %}
+
+
+elasticsearch-outbound-firewall-{{ family }}:
+    firewall.append:
+        - chain: OUTPUT
+        - family: {{ family }}
+        - protocol: tcp
         - dport: 9300
         - match:
             - comment
@@ -81,7 +99,6 @@ elasticsearch-outbound-firewall-{{ family }}:
 
 elasticsearch-inbound-firewall-{{ family }}:
     firewall.append:
-        - table: filter
         - family: {{ family }}
         - chain: INPUT
         - protocol: tcp
