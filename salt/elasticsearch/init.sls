@@ -19,7 +19,7 @@ elasticsearch:
         - name: elasticsearch
         - require:
             - pkgrepo: elasticsearch
-        - version: 7.6.2
+        - version: 7.7.1
 
     # start service and watch the config files for restarting the service
     service.running:
