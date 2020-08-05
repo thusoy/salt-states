@@ -1,3 +1,4 @@
+import json
 import os
 import random
 
@@ -7,6 +8,7 @@ from requests.exceptions import RequestException
 
 app = Flask(__name__)
 app.config['SAMPLING_RATE'] = int(os.environ.get('SENTRY_SAMPLING_RATE', '1'))
+app.config['USER_AGENT_SAMPLING_RATES'] = json.loads(os.environ.get('USER_AGENT_SAMPLING_RATES', '{}'))
 session = Session()
 
 
@@ -18,7 +20,9 @@ def root():
 
 @app.route('/<path:path>', methods=['POST'])
 def main(path):
-    if random.randint(1, app.config['SAMPLING_RATE']) != 1:
+    user_agent = request.headers.get('user-agent')
+    sampling_rate = app.config['USER_AGENT_SAMPLING_RATES'].get(user_agent, app.config['SAMPLING_RATE'])
+    if random.randint(1, sampling_rate) != 1:
         return '', 202
 
     uri = 'https://sentry.io%s/' % request.path
