@@ -19,6 +19,7 @@ SyslogIdentifier=sentry-forwarder
 User=sentry-forwarder
 Group=sentry-forwarder
 Environment=SENTRY_SAMPLING_RATE={{ sampling_rate }}
+Environment=USER_AGENT_SAMPLING_RATES='{{ user_agent_sampling_rates | json }}'
 
 [Install]
 WantedBy=multi-user.target sockets.target

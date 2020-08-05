@@ -18,6 +18,7 @@ sentry-forwarder:
         - template: jinja
         - context:
             sampling_rate: {{ sentry_forwarder.get('sampling_rate', 1) }}
+            user_agent_sampling_rates: {{ sentry_forwarder.get('user_agent_sampling_rates', {}) | json }}
             port: {{ sentry_forwarder.get('port', 5000) }}
 
 

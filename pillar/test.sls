@@ -89,6 +89,8 @@ terraform:
 sentry_forwarder:
     port: 5010
     sampling_rate: 10
+    user_agent_sampling_rates:
+        my-ua/1.0: 2
 
 
 elasticsearch:
