@@ -22,7 +22,7 @@ mysql:
             - pkgrepo: mysql
 
     file.managed:
-        - name: /etc/mysql/mysql.conf.d/mysqld.cnf
+        - name: /etc/mysql/conf.d/mysqld.cnf
         - source: salt://mysql/mysqld.cnf
         - template: jinja
         - require:

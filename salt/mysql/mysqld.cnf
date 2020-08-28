@@ -44,3 +44,6 @@ symbolic-links  = 0
 
 # Disable access to the filesystem from within the database
 local-infile    = 0
+
+# Set utf8mb4 by default since that's probably what you want
+character_set_server = utf8mb4
