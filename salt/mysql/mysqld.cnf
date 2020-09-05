@@ -47,3 +47,8 @@ local-infile    = 0
 
 # Set utf8mb4 by default since that's probably what you want
 character_set_server = utf8mb4
+
+# Turn on binlog, important since some errors will only manifest themselves
+# while binary logging is on
+server-id       = 1
+log-bin         = /var/log/mysql/log.bin
