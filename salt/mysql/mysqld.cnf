@@ -52,3 +52,6 @@ character_set_server = utf8mb4
 # while binary logging is on
 server-id       = 1
 log-bin         = /var/log/mysql/log.bin
+
+# This needs to be set to allow creatio of non-deterministic functions
+log_bin_trust_function_creators = 1
