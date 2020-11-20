@@ -32,6 +32,7 @@ elasticsearch:
             - file: elasticsearch-environment-variables
             - file: elasticsearch-jvm-options
             - file: elasticsearch-elasticsearch-yml
+            - file: elasticsearch-logging-config
 
     # Created a dedicated temp directory to not conflict with hardening of /tmp
     file.directory:
@@ -61,6 +62,13 @@ elasticsearch-elasticsearch-yml:
     file.managed:
         - name: /etc/elasticsearch/elasticsearch.yml
         - source: salt://elasticsearch/elasticsearch.yml
+        - template: jinja
+
+
+elasticsearch-logging-config:
+    file.managed:
+        - name: /etc/elasticsearch/log4j2.properties
+        - source: salt://elasticsearch/log4j2.properties
         - template: jinja
 
 
