@@ -1,3 +1,5 @@
+{% from 'elasticsearch/map.jinja' import elasticsearch with context -%}
+
 include:
     - .pillar_check
 
@@ -14,12 +16,13 @@ elasticsearch:
         - key_url: salt://elasticsearch/release-key
         - require:
             - pkg: elasticsearch-deps
+
     # install elastic search package
     pkg.installed:
         - name: elasticsearch
         - require:
             - pkgrepo: elasticsearch
-        - version: 7.7.1
+        - version: {{ elasticsearch.version }}
 
     # start service and watch the config files for restarting the service
     service.running:
