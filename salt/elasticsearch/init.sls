@@ -1,3 +1,5 @@
+{% from 'elasticsearch/map.jinja' import elasticsearch with context -%}
+
 include:
     - .pillar_check
 
@@ -14,12 +16,13 @@ elasticsearch:
         - key_url: salt://elasticsearch/release-key
         - require:
             - pkg: elasticsearch-deps
+
     # install elastic search package
     pkg.installed:
         - name: elasticsearch
         - require:
             - pkgrepo: elasticsearch
-        - version: 7.7.1
+        - version: {{ elasticsearch.version }}
 
     # start service and watch the config files for restarting the service
     service.running:
@@ -29,6 +32,7 @@ elasticsearch:
             - file: elasticsearch-environment-variables
             - file: elasticsearch-jvm-options
             - file: elasticsearch-elasticsearch-yml
+            - file: elasticsearch-logging-config
 
     # Created a dedicated temp directory to not conflict with hardening of /tmp
     file.directory:
@@ -58,6 +62,13 @@ elasticsearch-elasticsearch-yml:
     file.managed:
         - name: /etc/elasticsearch/elasticsearch.yml
         - source: salt://elasticsearch/elasticsearch.yml
+        - template: jinja
+
+
+elasticsearch-logging-config:
+    file.managed:
+        - name: /etc/elasticsearch/log4j2.properties
+        - source: salt://elasticsearch/log4j2.properties
         - template: jinja
 
 
