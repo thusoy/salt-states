@@ -29,9 +29,13 @@ class SlackHoneycombHandler(Laim):
         subject = message.get('Subject', '')
         is_plaintext = message.get_content_type() == 'text/plain'
         if subject.startswith('apt-listchanges: changelogs for ') and is_plaintext:
-            self.post_to_honeycomb(recipients, message)
-        else:
-            self.post_to_slack(recipients, message)
+            try:
+                self.post_to_honeycomb(recipients, message)
+                return
+            except ValueError:
+                pass
+
+        self.post_to_slack(recipients, message)
 
 
     def post_to_honeycomb(self, recipients, message):

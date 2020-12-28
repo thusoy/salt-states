@@ -81,6 +81,17 @@ def test_handle_changelog(handler):
     }]
 
 
+def test_slack_fallback(handler):
+    message = EmailMessage()
+    message['Subject'] = 'apt-listchanges: changelogs for test'
+    with mock.patch.object(handler, 'post_to_honeycomb') as hc_mock:
+        with mock.patch.object(handler, 'post_to_slack') as slack_mock:
+            hc_mock.side_effect = ValueError('foo')
+            handler.handle_message(None, None, message)
+            hc_mock.assert_called_once_with(None, message)
+            slack_mock.assert_called_once_with(None, message)
+
+
 @pytest.fixture
 def handler(temp_config):
     with mock.patch('laim.util.os') as os_mock:
