@@ -82,6 +82,23 @@ def test_handle_changelog(handler):
     }]
 
 
+def test_parse_upgrade_single(handler):
+    message = EmailMessage()
+    message.set_content(textwrap.dedent('''\
+        brotli (1.0.7-2+deb10u1) buster-security; urgency=medium
+         * CVE-2020-8927
+        -- Moritz Mühlenhoff <jmm@debian.org>  Wed, 25 Nov 2020 22:33:28 +0100
+    '''))
+    parsed = handler.parse_package_upgrades([], message)
+    assert len(parsed) == 1
+    assert parsed[0]['package'] == 'brotli'
+    assert parsed[0]['version'] == '1.0.7-2+deb10u1'
+    assert parsed[0]['distributions'] == 'buster-security'
+    assert parsed[0]['meta.urgency'] == 'medium'
+    assert parsed[0]['maintainer'] == 'Moritz Mühlenhoff <jmm@debian.org>'
+    assert parsed[0]['release.spec'] == 'Wed, 25 Nov 2020 22:33:28 +0100'
+
+
 def test_slack_fallback(handler):
     message = EmailMessage()
     message['Subject'] = 'apt-listchanges: changelogs for test'

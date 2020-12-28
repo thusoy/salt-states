@@ -38,8 +38,17 @@ class SlackHoneycombHandler(Laim):
 
     def post_to_honeycomb(self, recipients, message):
         upgrades = self.parse_package_upgrades(recipients, message)
+        context = {
+            'service': 'laim',
+            'host': self.hostname,
+            'action': 'package-upgrade',
+            'to': recipients,
+            'from': message.get('From'),
+            'subject': message.get('Subject'),
+        }
+        body = [{'data': dict(context, **upgrade)} for upgrade in upgrades]
         response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset,
-            json=upgrades,
+            json=body,
             headers={
                 'X-Honeycomb-Team': self.config['honeycomb-key'],
             })
@@ -74,14 +83,6 @@ class SlackHoneycombHandler(Laim):
 
     def parse_package_upgrades(self, recipients, message):
         message_body = message.get_payload()
-        context = {
-            'service': 'laim',
-            'host': self.hostname,
-            'action': 'package-upgrade',
-            'to': recipients,
-            'from': message.get('From'),
-            'subject': message.get('Subject'),
-        }
         message_lines = message_body.split('\n')
         message_iterator = iter(message_lines)
         upgrades = []
@@ -100,7 +101,6 @@ class SlackHoneycombHandler(Laim):
                         key, val = meta.strip().split('=', 1)
                         upgrade['meta.%s' % key] = val
 
-                    upgrade.update(context)
                     line = next(message_iterator)
                     while True:
                         maintainer_match = MAINTAINER_SPEC_RE.match(line)
@@ -113,9 +113,7 @@ class SlackHoneycombHandler(Laim):
                             break
                         line = next(message_iterator)
 
-                    upgrades.append({
-                        'data': upgrade,
-                    })
+                    upgrades.append(upgrade)
 
                 line = next(message_iterator)
             except StopIteration:
