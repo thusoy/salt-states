@@ -1,6 +1,6 @@
 # Ref. NSA RHEL guide section 2.2.4.2
 
-hardning-disable-suid-core-dumpable:
+hardening-disable-suid-core-dumpable:
     sysctl.present:
         - name: fs.suid_dumpable
         - value: 0
