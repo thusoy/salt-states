@@ -15,8 +15,6 @@ class SlackHoneycombHandler(Laim):
         super().__init__(**kwargs)
         self.session = requests.Session()
         self.session.headers.update({
-            'Authorization': 'Bearer %s' % self.config['slack-token'],
-            'X-Honeycomb-Team': self.config['honeycomb-key'],
             # Explicitly set charset to avoid warnings from slack
             'Content-Type': 'application/json; charset=utf-8',
         })
@@ -87,7 +85,11 @@ class SlackHoneycombHandler(Laim):
             except StopIteration:
                 break
 
-        response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset, json=updates)
+        response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset,
+            json=updates,
+            headers={
+                'X-Honeycomb-Team': self.config['honeycomb-key'],
+            })
         response.raise_for_status()
 
 
@@ -109,6 +111,8 @@ class SlackHoneycombHandler(Laim):
                 message.get('Subject'),
                 message.get_payload(),
             ),
+        }, headers={
+            'Authorization': 'Bearer %s' % self.config['slack-token'],
         })
         body = response.json()
         if not body['ok']:
