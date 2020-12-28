@@ -88,6 +88,7 @@ class SlackHoneycombHandler(Laim):
                 break
 
         response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset, json=updates)
+        response.raise_for_status()
 
 
     def post_to_slack(self, recipients, message):
