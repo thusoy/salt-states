@@ -21,7 +21,6 @@ class SlackHoneycombHandler(Laim):
         })
         self.channel_id = self.config['slack-channel-id']
         self.dataset = self.config['honeycomb-dataset']
-        self.hostname = '{{ grains.id }}' # TODO: Move this to the `laim` state and always include in config
 
 
     def handle_message(self, sender, recipients, message):
@@ -41,7 +40,7 @@ class SlackHoneycombHandler(Laim):
         upgrades = parse_package_upgrades(message)
         context = {
             'service': 'laim',
-            'host': self.hostname,
+            'host': self.config['hostname'],
             'action': 'package-upgrade',
             'to': recipients,
             'from': message.get('From'),
@@ -67,7 +66,7 @@ class SlackHoneycombHandler(Laim):
 
                 %s
             ''') % (
-                self.hostname,
+                self.config['hostname'],
                 ', '.join(recipients),
                 message.get('From'),
                 message.get('To'),

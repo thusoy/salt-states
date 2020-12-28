@@ -49,7 +49,7 @@ def test_handle_changelog(handler):
         'data': {
             'service': 'laim',
             'action': 'package-upgrade',
-            'host': '{{ grains.id }}',
+            'host': 'testhost',
             'subject': 'apt-listchanges: changelogs for test',
             'to': ['root'],
             'from': 'root',
@@ -170,6 +170,7 @@ def handler(temp_config):
 def temp_config():
     with tempfile.NamedTemporaryFile() as config:
         config.write(textwrap.dedent('''
+            hostname: testhost
             slack-token: foo secret
             slack-channel-id: testid
 
