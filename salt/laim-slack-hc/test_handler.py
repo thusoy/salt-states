@@ -79,7 +79,7 @@ def test_parse_upgrade(handler):
 
     datetime_mock = lambda: datetime.datetime(2020, 7, 31, 12, 0, 0, tzinfo=datetime.timezone.utc)
     with mock.patch.object(module, 'utcnow', datetime_mock):
-        parsed = handler.parse_package_upgrades([], message)
+        parsed = module.parse_package_upgrades(message)
     assert len(parsed) == 2
 
     assert parsed[0]['package'] == 'grub-efi-amd64-signed'
