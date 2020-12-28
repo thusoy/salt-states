@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import textwrap
@@ -109,6 +110,7 @@ class SlackHoneycombHandler(Laim):
                             upgrade.update({
                                 'maintainer': maintainer_dict['maintainer'],
                                 'release.spec': maintainer_dict['date'],
+                                'release.age_seconds': parse_release_spec_age(maintainer_dict['date']),
                             })
                             break
                         line = next(message_iterator)
@@ -119,6 +121,16 @@ class SlackHoneycombHandler(Laim):
             except StopIteration:
                 break
         return upgrades
+
+
+def parse_release_spec_age(release_spec):
+    parsed = datetime.datetime.strptime(release_spec, '%a, %d %b %Y %H:%M:%S %z')
+    return int((utcnow() - parsed).total_seconds())
+
+
+def utcnow():
+    # Separate method to simplify mocking
+    return datetime.datetime.now(datetime.timezone.utc)
 
 
 if __name__ == '__main__':

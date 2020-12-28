@@ -1,3 +1,4 @@
+import datetime
 import os
 import tempfile
 import textwrap
@@ -58,11 +59,12 @@ def test_handle_changelog(handler):
             'meta.urgency': 'medium',
             'maintainer': 'Moritz Mühlenhoff <jmm@debian.org>',
             'release.spec':  'Wed, 25 Nov 2020 22:33:28 +0100',
+            'release.age_seconds': mock.ANY,
         },
     }]
 
 
-def test_parse_upgrade_single(handler):
+def test_parse_upgrade(handler):
     message = EmailMessage()
     message.set_content(textwrap.dedent('''\
         grub-efi-amd64-signed (1+2.02+dfsg1+20+deb10u2) buster-security; urgency=high
@@ -74,7 +76,10 @@ def test_parse_upgrade_single(handler):
            #966554).
         -- Colin Watson <cjwatson@debian.org>  Thu, 30 Jul 2020 20:19:53 +0100
     '''))
-    parsed = handler.parse_package_upgrades([], message)
+
+    datetime_mock = lambda: datetime.datetime(2020, 7, 31, 12, 0, 0, tzinfo=datetime.timezone.utc)
+    with mock.patch.object(module, 'utcnow', datetime_mock):
+        parsed = handler.parse_package_upgrades([], message)
     assert len(parsed) == 2
 
     assert parsed[0]['package'] == 'grub-efi-amd64-signed'
@@ -83,6 +88,7 @@ def test_parse_upgrade_single(handler):
     assert parsed[0]['meta.urgency'] == 'high'
     assert parsed[0]['maintainer'] == 'Debian signing service <ftpmaster@debian.org>'
     assert parsed[0]['release.spec'] == 'Thu, 30 Jul 2020 20:19:53 +0100'
+    assert parsed[0]['release.age_seconds'] == 60007
 
     assert parsed[1]['package'] == 'grub2'
     assert parsed[1]['version'] == '2.02+dfsg1-20+deb10u2'
@@ -90,6 +96,7 @@ def test_parse_upgrade_single(handler):
     assert parsed[1]['meta.urgency'] == 'high'
     assert parsed[1]['maintainer'] == 'Colin Watson <cjwatson@debian.org>'
     assert parsed[1]['release.spec'] == 'Thu, 30 Jul 2020 20:19:53 +0100'
+    assert parsed[0]['release.age_seconds'] == 60007
 
 
 def test_slack_fallback(handler):
