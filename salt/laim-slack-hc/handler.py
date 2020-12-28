@@ -37,56 +37,9 @@ class SlackHoneycombHandler(Laim):
 
 
     def post_to_honeycomb(self, recipients, message):
-        message_body = message.get_payload()
-        context = {
-            'service': 'laim',
-            'host': self.hostname,
-            'action': 'package-upgrade',
-            'to': recipients,
-            'from': message.get('From'),
-            'subject': message.get('Subject'),
-        }
-        message_lines = message_body.split('\n')
-        message_iterator = iter(message_lines)
-        updates = []
-        line = next(message_iterator)
-        while True:
-            try:
-                spec_match = PACKAGE_SPEC_RE.match(line)
-                if spec_match:
-                    spec_dict = spec_match.groupdict()
-                    update = {
-                        'package': spec_dict['package'],
-                        'distributions': spec_dict['distributions'],
-                        'version': spec_dict['version'],
-                    }
-                    for meta in spec_dict['metadata'].split(','):
-                        key, val = meta.strip().split('=', 1)
-                        update['meta.%s' % key] = val
-
-                    update.update(context)
-                    line = next(message_iterator)
-                    while True:
-                        maintainer_match = MAINTAINER_SPEC_RE.match(line)
-                        if maintainer_match:
-                            maintainer_dict = maintainer_match.groupdict()
-                            update.update({
-                                'maintainer': maintainer_dict['maintainer'],
-                                'release.spec': maintainer_dict['date'],
-                            })
-                            break
-                        line = next(message_iterator)
-
-                    updates.append({
-                        'data': update,
-                    })
-
-                line = next(message_iterator)
-            except StopIteration:
-                break
-
+        upgrades = self.parse_package_upgrades(recipients, message)
         response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset,
-            json=updates,
+            json=upgrades,
             headers={
                 'X-Honeycomb-Team': self.config['honeycomb-key'],
             })
@@ -117,6 +70,57 @@ class SlackHoneycombHandler(Laim):
         body = response.json()
         if not body['ok']:
             raise ValueError('Failed to forward mail to slack, got %r', body)
+
+
+    def parse_package_upgrades(self, recipients, message):
+        message_body = message.get_payload()
+        context = {
+            'service': 'laim',
+            'host': self.hostname,
+            'action': 'package-upgrade',
+            'to': recipients,
+            'from': message.get('From'),
+            'subject': message.get('Subject'),
+        }
+        message_lines = message_body.split('\n')
+        message_iterator = iter(message_lines)
+        upgrades = []
+        line = next(message_iterator)
+        while True:
+            try:
+                spec_match = PACKAGE_SPEC_RE.match(line)
+                if spec_match:
+                    spec_dict = spec_match.groupdict()
+                    upgrade = {
+                        'package': spec_dict['package'],
+                        'distributions': spec_dict['distributions'],
+                        'version': spec_dict['version'],
+                    }
+                    for meta in spec_dict['metadata'].split(','):
+                        key, val = meta.strip().split('=', 1)
+                        upgrade['meta.%s' % key] = val
+
+                    upgrade.update(context)
+                    line = next(message_iterator)
+                    while True:
+                        maintainer_match = MAINTAINER_SPEC_RE.match(line)
+                        if maintainer_match:
+                            maintainer_dict = maintainer_match.groupdict()
+                            upgrade.update({
+                                'maintainer': maintainer_dict['maintainer'],
+                                'release.spec': maintainer_dict['date'],
+                            })
+                            break
+                        line = next(message_iterator)
+
+                    upgrades.append({
+                        'data': upgrade,
+                    })
+
+                line = next(message_iterator)
+            except StopIteration:
+                break
+        return upgrades
 
 
 if __name__ == '__main__':
