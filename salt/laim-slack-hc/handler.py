@@ -114,12 +114,19 @@ def parse_package_upgrades(message):
                             'release.age_seconds': parse_release_spec_age(maintainer_dict['date']),
                         })
                         break
-                    line = next(message_iterator)
+                    try:
+                        line = next(message_iterator)
+                    except StopIteration:
+                        raise ValueError('Invalid changelog format: Missing maintainer line')
 
                 upgrades.append(upgrade)
+            elif line:
+                # Invalid message format, raise so that this can be logged
+                raise ValueError('Invalid changelog format: Trailing data')
             line = next(message_iterator)
         except StopIteration:
             break
+
     return upgrades
 
 

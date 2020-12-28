@@ -99,6 +99,53 @@ def test_parse_upgrade(handler):
     assert parsed[0]['release.age_seconds'] == 60007
 
 
+def test_parse_upgrade_trailer_empty(handler):
+    message = EmailMessage()
+    message.set_content(textwrap.dedent('''\
+        grub-efi-amd64-signed (1+2.02+dfsg1+20+deb10u2) buster-security; urgency=high
+         * Update to grub2 2.02+dfsg1-20+deb10u2
+        -- Debian signing service <ftpmaster@debian.org>  Thu, 30 Jul 2020 20:19:53 +0100
+
+    '''))
+
+    parsed = module.parse_package_upgrades(message)
+
+    assert len(parsed) == 1
+
+
+def test_parse_upgrade_trailer(handler):
+    message = EmailMessage()
+    message.set_content(textwrap.dedent('''\
+        grub-efi-amd64-signed (1+2.02+dfsg1+20+deb10u2) buster-security; urgency=high
+         * Update to grub2 2.02+dfsg1-20+deb10u2
+        -- Debian signing service <ftpmaster@debian.org>  Thu, 30 Jul 2020 20:19:53 +0100
+        invalid changelog entry here
+    '''))
+
+    with pytest.raises(ValueError):
+        parsed = module.parse_package_upgrades(message)
+
+
+def test_parse_upgrade_incomplete(handler):
+    message = EmailMessage()
+    message.set_content(textwrap.dedent('''\
+        grub-efi-amd64-signed (1+2.02+dfsg1+20+deb10u2) buster-security; urgency=high
+         * Update to grub2 2.02+dfsg1-20+deb10u2
+    '''))
+
+    with pytest.raises(ValueError):
+        parsed = module.parse_package_upgrades(message)
+
+
+def test_parse_upgrade_empty(handler):
+    message = EmailMessage()
+    message.set_content(textwrap.dedent('''\
+        grub-efi-amd64-signed (1+2.02+dfsg1+20+deb10u2) buster-security; urgency=high'''))
+
+    with pytest.raises(ValueError):
+        parsed = module.parse_package_upgrades(message)
+
+
 def test_slack_fallback(handler):
     message = EmailMessage()
     message['Subject'] = 'apt-listchanges: changelogs for test'
