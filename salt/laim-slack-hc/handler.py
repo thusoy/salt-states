@@ -82,12 +82,10 @@ class SlackHoneycombHandler(Laim):
 
 
 def parse_package_upgrades(message):
-    message_body = message.get_payload()
-    message_lines = message_body.split('\n')
+    message_lines = message.get_payload().split('\n')
     message_iterator = iter(message_lines)
     upgrades = []
     line = next(message_iterator)
-    unparsed_content = False
     while True:
         try:
             spec_match = PACKAGE_SPEC_RE.match(line)
