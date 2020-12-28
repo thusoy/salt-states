@@ -8,7 +8,7 @@ for venv in 'venv' 'venv3'; do
         salt/hardening/test_print_dependent_modules.py "$@" \
         salt/sentry-forwarder/test_forwarder.py \
         salt/dotfiles/test_dotfiles.py \
-        salt/laim-slack/test_handler.py \
+        salt/laim-slack-hc/test_handler.py \
         extensions/pillar/test_* \
         salt/_modules/test_* \
         salt/_states/test_* \
