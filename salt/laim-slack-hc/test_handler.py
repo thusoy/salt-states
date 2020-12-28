@@ -32,14 +32,9 @@ def test_handle_slack(handler):
 def test_handle_changelog(handler):
     message = EmailMessage()
     message.set_content(textwrap.dedent('''\
-        grub-efi-amd64-signed (1+2.02+dfsg1+20+deb10u2) buster-security; urgency=high
-         * Update to grub2 2.02+dfsg1-20+deb10u2
-        -- Debian signing service <ftpmaster@debian.org>  Thu, 30 Jul 2020 20:19:53 +0100
-        grub2 (2.02+dfsg1-20+deb10u2) buster-security; urgency=high
-         * Fix a regression caused by "efi: fix some malformed device path
-           arithmetic errors" (thanks, Chris Coulson and Steve McIntyre; closes:
-           #966554).
-        -- Colin Watson <cjwatson@debian.org>  Thu, 30 Jul 2020 20:19:53 +0100
+        brotli (1.0.7-2+deb10u1) buster-security; urgency=medium
+         * CVE-2020-8927
+        -- Moritz Mühlenhoff <jmm@debian.org>  Wed, 25 Nov 2020 22:33:28 +0100
         '''))
     message['Subject'] = 'apt-listchanges: changelogs for test'
     message['From'] = 'root'
@@ -53,31 +48,16 @@ def test_handle_changelog(handler):
         'data': {
             'service': 'laim',
             'action': 'package-upgrade',
-            'package': 'grub-efi-amd64-signed',
-            'version': '1+2.02+dfsg1+20+deb10u2',
-            'distributions': 'buster-security',
-            'meta.urgency': 'high',
-            'maintainer': 'Debian signing service <ftpmaster@debian.org>',
-            'release.spec': 'Thu, 30 Jul 2020 20:19:53 +0100',
             'host': '{{ grains.id }}',
             'subject': 'apt-listchanges: changelogs for test',
             'to': ['root'],
             'from': 'root',
-        },
-    }, {
-        'data': {
-            'service': 'laim',
-            'action': 'package-upgrade',
-            'package': 'grub2',
-            'version': '2.02+dfsg1-20+deb10u2',
+            'package': 'brotli',
+            'version': '1.0.7-2+deb10u1',
             'distributions': 'buster-security',
-            'meta.urgency': 'high',
-            'maintainer': 'Colin Watson <cjwatson@debian.org>',
-            'release.spec': 'Thu, 30 Jul 2020 20:19:53 +0100',
-            'host': '{{ grains.id }}',
-            'subject': 'apt-listchanges: changelogs for test',
-            'to': ['root'],
-            'from': 'root',
+            'meta.urgency': 'medium',
+            'maintainer': 'Moritz Mühlenhoff <jmm@debian.org>',
+            'release.spec':  'Wed, 25 Nov 2020 22:33:28 +0100',
         },
     }]
 
@@ -85,18 +65,31 @@ def test_handle_changelog(handler):
 def test_parse_upgrade_single(handler):
     message = EmailMessage()
     message.set_content(textwrap.dedent('''\
-        brotli (1.0.7-2+deb10u1) buster-security; urgency=medium
-         * CVE-2020-8927
-        -- Moritz Mühlenhoff <jmm@debian.org>  Wed, 25 Nov 2020 22:33:28 +0100
+        grub-efi-amd64-signed (1+2.02+dfsg1+20+deb10u2) buster-security; urgency=high
+         * Update to grub2 2.02+dfsg1-20+deb10u2
+        -- Debian signing service <ftpmaster@debian.org>  Thu, 30 Jul 2020 20:19:53 +0100
+        grub2 (2.02+dfsg1-20+deb10u2) buster-security; urgency=high
+         * Fix a regression caused by "efi: fix some malformed device path
+           arithmetic errors" (thanks, Chris Coulson and Steve McIntyre; closes:
+           #966554).
+        -- Colin Watson <cjwatson@debian.org>  Thu, 30 Jul 2020 20:19:53 +0100
     '''))
     parsed = handler.parse_package_upgrades([], message)
-    assert len(parsed) == 1
-    assert parsed[0]['package'] == 'brotli'
-    assert parsed[0]['version'] == '1.0.7-2+deb10u1'
+    assert len(parsed) == 2
+
+    assert parsed[0]['package'] == 'grub-efi-amd64-signed'
+    assert parsed[0]['version'] == '1+2.02+dfsg1+20+deb10u2'
     assert parsed[0]['distributions'] == 'buster-security'
-    assert parsed[0]['meta.urgency'] == 'medium'
-    assert parsed[0]['maintainer'] == 'Moritz Mühlenhoff <jmm@debian.org>'
-    assert parsed[0]['release.spec'] == 'Wed, 25 Nov 2020 22:33:28 +0100'
+    assert parsed[0]['meta.urgency'] == 'high'
+    assert parsed[0]['maintainer'] == 'Debian signing service <ftpmaster@debian.org>'
+    assert parsed[0]['release.spec'] == 'Thu, 30 Jul 2020 20:19:53 +0100'
+
+    assert parsed[1]['package'] == 'grub2'
+    assert parsed[1]['version'] == '2.02+dfsg1-20+deb10u2'
+    assert parsed[1]['distributions'] == 'buster-security'
+    assert parsed[1]['meta.urgency'] == 'high'
+    assert parsed[1]['maintainer'] == 'Colin Watson <cjwatson@debian.org>'
+    assert parsed[1]['release.spec'] == 'Thu, 30 Jul 2020 20:19:53 +0100'
 
 
 def test_slack_fallback(handler):
