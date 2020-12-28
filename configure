@@ -13,7 +13,7 @@ main () {
     # Ref https://github.com/saltstack/salt/issues/55029
     ./venv3/bin/pip install -U distro
     # Install this only here since we're not aiming for py2 compatibility
-    ./venv3/bin/pip install kubernetes
+    ./venv3/bin/pip install kubernetes laim
     ./venv3/bin/pip install $deps
 }
 

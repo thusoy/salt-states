@@ -7,8 +7,8 @@ from laim import Laim
 
 class SlackHandler(Laim):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.session = requests.Session()
         self.session.headers.update({
             'Authorization': 'Bearer %s' % self.config['slack-token'],
