@@ -49,6 +49,7 @@ def test_handle_changelog(handler):
         'data': {
             'service': 'laim',
             'action': 'package-upgrade',
+            'duration_ms': mock.ANY,
             'host': 'testhost',
             'subject': 'apt-listchanges: changelogs for test',
             'to': ['root'],
@@ -60,6 +61,9 @@ def test_handle_changelog(handler):
             'maintainer': 'Moritz Mühlenhoff <jmm@debian.org>',
             'release.spec':  'Wed, 25 Nov 2020 22:33:28 +0100',
             'release.age_seconds': mock.ANY,
+            'trace.parent_id': mock.ANY,
+            'trace.span_id': mock.ANY,
+            'trace.trace_id': mock.ANY,
         },
     }]
 
@@ -153,7 +157,7 @@ def test_slack_fallback(handler):
         with mock.patch.object(handler, 'post_to_slack') as slack_mock:
             hc_mock.side_effect = ValueError('foo')
             handler.handle_message(None, None, message)
-            hc_mock.assert_called_once_with(None, message)
+            hc_mock.assert_called_once_with(None, message, mock.ANY, mock.ANY)
             slack_mock.assert_called_once_with(None, message)
 
 
