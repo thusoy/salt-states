@@ -37,10 +37,12 @@ class SlackHoneycombHandler(Laim):
         if subject.startswith('apt-listchanges: changelogs for ') and is_plaintext:
             try:
                 self.post_to_honeycomb(recipients, message, trace_id, root_span_id)
+                log_context['handler'] = 'honeycomb'
                 return
-            except ValueError:
-                pass
+            except ValueError as e:
+                log_context['listchanges_error'] = str(e)
 
+        log_context['handler'] = 'slack'
         self.post_to_slack(recipients, message)
         return log_context
 
