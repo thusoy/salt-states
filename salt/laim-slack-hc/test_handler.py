@@ -165,7 +165,7 @@ def test_slack_fallback(handler):
 def handler(temp_config):
     with mock.patch('laim.util.os') as os_mock:
         with mock.patch('pwd.getpwnam') as getpwnam_mock:
-            with mock.patch('laim.LaimController'):
+            with mock.patch('laim.laim.LaimController'):
                 ret = module.SlackHoneycombHandler(config_file=temp_config)
     return ret
 
