@@ -100,7 +100,7 @@ def parse_package_upgrades(message):
     message_lines = message.get_payload().split('\n')
     message_iterator = iter(message_lines)
     upgrades = []
-    line = next(message_iterator)
+    line = next(message_iterator).strip()
     while True:
         try:
             spec_match = PACKAGE_SPEC_RE.match(line)
@@ -116,7 +116,7 @@ def parse_package_upgrades(message):
                     key, val = meta.strip().split('=', 1)
                     upgrade['meta.%s' % key] = val
 
-                line = next(message_iterator)
+                line = next(message_iterator).strip()
                 while True:
                     maintainer_match = MAINTAINER_SPEC_RE.match(line)
                     if maintainer_match:
@@ -128,7 +128,7 @@ def parse_package_upgrades(message):
                         })
                         break
                     try:
-                        line = next(message_iterator)
+                        line = next(message_iterator).strip()
                     except StopIteration:
                         raise ValueError('Invalid changelog format: Missing maintainer line')
                 upgrade['duration_ms'] = (time.time() - start_time)*1000
@@ -136,7 +136,7 @@ def parse_package_upgrades(message):
             elif line:
                 # Invalid message format, raise so that this can be logged
                 raise ValueError('Invalid changelog format: Trailing data')
-            line = next(message_iterator)
+            line = next(message_iterator).strip()
         except StopIteration:
             break
 
