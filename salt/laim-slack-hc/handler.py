@@ -74,6 +74,10 @@ class SlackHoneycombHandler(Laim):
             'trace.trace_id': trace_id,
         }
         context.update(self.honeycomb_base_context)
+        for upgrade in upgrades:
+            log(dict(context, **upgrade, **{
+                'skip_honeycomb': True,
+            }), sender=self)
 
         body = [{'data': dict(context, **up, **{'trace.span_id': create_id(8)})} for up in upgrades]
         self._post_data_to_honeycomb(body)
