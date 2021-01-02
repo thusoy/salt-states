@@ -40,7 +40,7 @@ class SlackHoneycombHandler(Laim):
             try:
                 self.post_to_honeycomb(recipients, message, trace_id, root_span_id)
                 log_context['handler'] = 'honeycomb'
-                return
+                return log_context
             except ValueError as e:
                 log_context['listchanges_error'] = str(e)
 
