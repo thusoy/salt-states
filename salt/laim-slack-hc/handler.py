@@ -25,12 +25,16 @@ class SlackHoneycombHandler(Laim):
         self.dataset = self.config['honeycomb-dataset']
         self.honeycomb_key = self.config['honeycomb-key']
         self.slack_token = self.config['slack-token']
+        self.honeycomb_base_context = {
+            'service_name': 'laim',
+            'host': self.config['hostname'],
+        }
 
         @before_log.connect
         def logs_to_honeycomb(sender, log_data):
             if not log_data.pop('skip_honeycomb', False):
                 self._post_data_to_honeycomb([{
-                    'data': log_data,
+                    'data': dict(log_data, **self.honeycomb_base_context),
                 }])
 
         # Preseve a strong reference to the handler to prevent it from being garbage collected
@@ -62,8 +66,6 @@ class SlackHoneycombHandler(Laim):
     def post_to_honeycomb(self, recipients, message, trace_id, parent_id):
         upgrades = parse_package_upgrades(message)
         context = {
-            'service': 'laim',
-            'host': self.config['hostname'],
             'action': 'package-upgrade',
             'to': recipients,
             'from': message.get('From'),
@@ -71,6 +73,8 @@ class SlackHoneycombHandler(Laim):
             'trace.parent_id': parent_id,
             'trace.trace_id': trace_id,
         }
+        context.update(self.honeycomb_base_context)
+
         body = [{'data': dict(context, **up, **{'trace.span_id': create_id(8)})} for up in upgrades]
         self._post_data_to_honeycomb(body)
 

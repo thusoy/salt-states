@@ -49,7 +49,7 @@ def test_handle_changelog(handler):
     body = handler.session.post.call_args[1]['json']
     assert body == [{
         'data': {
-            'service': 'laim',
+            'service_name': 'laim',
             'action': 'package-upgrade',
             'duration_ms': mock.ANY,
             'host': 'testhost',
