@@ -23,6 +23,8 @@ class SlackHoneycombHandler(Laim):
         })
         self.channel_id = self.config['slack-channel-id']
         self.dataset = self.config['honeycomb-dataset']
+        self.honeycomb_key = self.config['honeycomb-key']
+        self.slack_token = self.config['slack-token']
 
 
     def handle_message(self, sender, recipients, message):
@@ -63,7 +65,7 @@ class SlackHoneycombHandler(Laim):
         response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset,
             json=body,
             headers={
-                'X-Honeycomb-Team': self.config['honeycomb-key'],
+                'X-Honeycomb-Team': self.honeycomb_key,
             })
         response.raise_for_status()
 
@@ -87,7 +89,7 @@ class SlackHoneycombHandler(Laim):
                 message.get_payload(),
             ),
         }, headers={
-            'Authorization': 'Bearer %s' % self.config['slack-token'],
+            'Authorization': 'Bearer %s' % self.slack_token,
         })
         body = response.json()
         if not body['ok']:
