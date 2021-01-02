@@ -165,6 +165,9 @@ def test_slack_fallback(handler):
 
 @pytest.fixture
 def handler(temp_config):
+    # Clear out signal receivers to prevent them from persisting between runs
+    module.before_log.receivers.clear()
+
     with mock.patch('laim.util.os') as os_mock:
         with mock.patch('pwd.getpwnam') as getpwnam_mock:
             with mock.patch('laim.laim.LaimController'):

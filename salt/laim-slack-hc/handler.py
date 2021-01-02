@@ -6,7 +6,7 @@ import time
 import binascii
 
 import requests
-from laim import Laim
+from laim import Laim, before_log, log
 
 PACKAGE_SPEC_RE = re.compile(r'^(?P<package>.+) \((?P<version>.+)\) (?P<distributions>.+);(?P<metadata>.*)$')
 MAINTAINER_SPEC_RE = re.compile(r'^-- (?P<maintainer>.+)  (?P<date>.+)$')
@@ -25,6 +25,16 @@ class SlackHoneycombHandler(Laim):
         self.dataset = self.config['honeycomb-dataset']
         self.honeycomb_key = self.config['honeycomb-key']
         self.slack_token = self.config['slack-token']
+
+        @before_log.connect
+        def logs_to_honeycomb(sender, log_data):
+            if not log_data.pop('skip_honeycomb', False):
+                self._post_data_to_honeycomb([{
+                    'data': log_data,
+                }])
+
+        # Preseve a strong reference to the handler to prevent it from being garbage collected
+        self.logs_to_honeycomb = logs_to_honeycomb
 
 
     def handle_message(self, sender, recipients, message):
@@ -62,12 +72,29 @@ class SlackHoneycombHandler(Laim):
             'trace.trace_id': trace_id,
         }
         body = [{'data': dict(context, **up, **{'trace.span_id': create_id(8)})} for up in upgrades]
-        response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset,
-            json=body,
-            headers={
-                'X-Honeycomb-Team': self.honeycomb_key,
-            })
-        response.raise_for_status()
+        self._post_data_to_honeycomb(body)
+
+
+    def _post_data_to_honeycomb(self, data):
+        # The data is logged in addition to being sent to honeycomb, so we can
+        # ignore failures here as long as we also include details about the failure
+        start_time = time.time()
+        log_data = {
+            'action': 'post-honeycomb',
+            'skip_honeycomb': True,
+        }
+        try:
+            response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset,
+                json=data,
+                headers={
+                    'X-Honeycomb-Team': self.honeycomb_key,
+                })
+            log_data['response.status_code'] = response.status_code
+        except requests.RequestException as e:
+            log_data['error_msg'] = str(e)
+            log_data['error'] = e.__class__.__name__
+
+        log(log_data, start_time, sender=self)
 
 
     def post_to_slack(self, recipients, message):
