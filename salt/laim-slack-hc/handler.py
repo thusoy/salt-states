@@ -193,5 +193,5 @@ def create_id(num_bytes):
 
 
 if __name__ == '__main__':
-    handler = SlackHandler()
+    handler = SlackHoneycombHandler()
     handler.run()
