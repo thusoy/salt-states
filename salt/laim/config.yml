@@ -4,4 +4,7 @@
 # File managed by salt state laim #
 ###################################
 
+# Include some useful properties by default
+hostname: "{{ grains.id }}"
+
 {{ laim.get('config', {}) | yaml(False) }}
