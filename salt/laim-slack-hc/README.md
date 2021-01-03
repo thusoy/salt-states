@@ -11,6 +11,8 @@ Configure through pillar:
 ```yaml
 laim:
     config:
+        honeycomb-dataset: mydataset
+        honeycomb-key: my-honeycomb-key
         slack-channel-id: '#servers'
         slack-token: my-slack-api-token
 ```
