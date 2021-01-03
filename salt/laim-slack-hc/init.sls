@@ -2,7 +2,7 @@ include:
     - laim
 
 
-laim-slack:
+laim-slack-hc:
     cmd.run:
         - name: /opt/venvs/laim/bin/pip install requests==2.22.0
         - unless: /opt/venvs/laim/bin/pip freeze | grep requests==2.22.0
@@ -13,14 +13,14 @@ laim-slack:
 
     file.managed:
         - name: /etc/laim/handler.py
-        - source: salt://laim-slack/handler.py
+        - source: salt://laim-slack-hc/handler.py
         - template: jinja
         - watch_in:
             - service: laim
 
 
 {% for family in ('ipv4', 'ipv6') %}
-laim-slack-outgoing-firewall-https-{{ family }}:
+laim-slack-hc-outgoing-firewall-https-{{ family }}:
     firewall.append:
         - family: {{ family }}
         - chain: OUTPUT
@@ -29,7 +29,7 @@ laim-slack-outgoing-firewall-https-{{ family }}:
         - match:
             - comment
             - owner
-        - comment: "laim-slack: Allow outgoing HTTPS"
+        - comment: "laim-slack-hc: Allow outgoing HTTPS"
         - uid-owner: laim
         - jump: ACCEPT
         - require:
@@ -37,7 +37,7 @@ laim-slack-outgoing-firewall-https-{{ family }}:
 
 
 {% for protocol in ('tcp', 'udp') %}
-laim-slack-outgoing-firewall-dns-{{ family }}-{{ protocol }}:
+laim-slack-hc-outgoing-firewall-dns-{{ family }}-{{ protocol }}:
     firewall.append:
         - family: {{ family }}
         - chain: OUTPUT
@@ -47,7 +47,7 @@ laim-slack-outgoing-firewall-dns-{{ family }}-{{ protocol }}:
         - match:
             - comment
             - owner
-        - comment: 'laim-slack: Allow outgoing DNS'
+        - comment: 'laim-slack-hc: Allow outgoing DNS'
         - uid-owner: laim
         - jump: ACCEPT
         - require:
