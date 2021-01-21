@@ -96,6 +96,7 @@ sentry_forwarder:
 elasticsearch:
     cluster_name: medal-test-cluster
     memory: 1g
+    http_publish_host: 10.10.10.23
     seed_hosts:
         - 127.0.0.1
         - 10.10.10.24

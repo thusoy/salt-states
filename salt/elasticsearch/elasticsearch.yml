@@ -62,6 +62,9 @@ network.host: 0.0.0.0
 # Set a custom port for HTTP:
 #
 #http.port: 9200
+{% if 'http_publish_host' in elasticsearch -%}
+http.publish_host: {{ elasticsearch.http_publish_host }}
+{% endif -%}
 #
 # For more information, consult the network module documentation.
 #
