@@ -19,6 +19,13 @@ redis:
             - file: redis
 
 
+# Ref. https://redis.io/topics/faq#background-saving-fails-with-a-fork-error-under-linux-even-if-i-have-a-lot-of-free-ram
+redis-enable-vm-overcommit:
+    sysctl.present:
+        - name: vm.overcommit_memory
+        - value: 1
+
+
 {% for family in ('ipv4', 'ipv6') %}
 redis-inbound-firewall-{{ family }}:
     firewall.append:
