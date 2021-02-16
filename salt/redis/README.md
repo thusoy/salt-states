@@ -18,3 +18,11 @@ redis:
 other:
     value: redispass
 ```
+
+To set a memory policy:
+
+```yaml
+redis:
+    maxmemory: 70%
+    maxmemory-policy: volatile-lru
+```

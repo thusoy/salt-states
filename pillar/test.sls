@@ -5,6 +5,7 @@ rabbitmq:
     # management_expose_plaintext: True
 
 redis:
+    maxmemory: '50%'
     # password: foobar
     password_pillar: other-pillar:password
 
