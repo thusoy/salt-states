@@ -1,31 +1,36 @@
+{% for chain, action in [
+    ('logndrop', 'DROP'),
+    ('lognreject', 'REJECT'),
+] %}
 {% for family in ('ipv4', 'ipv6') %}
-iptables-logndrop-chain-{{ family }}:
+iptables-{{ chain }}-{{ family }}:
     firewall.chain_present:
-        - name: logndrop
+        - name: {{ chain }}
         - family: {{ family }}
 
 
-iptables-logndrop-log-{{ family }}:
+iptables-{{ chain }}-log-{{ family }}:
     firewall.append:
-        - chain: logndrop
+        - chain: {{ chain }}
         - family: {{ family }}
         - match:
             - comment
             - limit
         - comment: "iptables.logndrop: Log non-conformant traffic..."
         - limit: 10/min
-        - log-prefix: 'iptables.logndrop: '
+        - log-prefix: 'iptables.{{ chain }}: '
         - jump: LOG
 
 
-iptables-logndrop-drop-{{ family }}:
+iptables-{{ chain }}-drop-{{ family }}:
     firewall.append:
-        - chain: logndrop
+        - chain: {{ chain }}
         - family: {{ family }}
         - match:
             - comment
-        - comment: "iptables.logndrop: ...And drop it"
-        - jump: DROP
+        - comment: "iptables.logndrop: ...And {{ action|lower }} it"
+        - jump: {{ action }}
         - require:
-            - firewall: iptables-logndrop-log-{{ family }}
+            - firewall: iptables-{{ chain }}-log-{{ family }}
+{% endfor %}
 {% endfor %}
