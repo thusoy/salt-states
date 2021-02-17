@@ -18,7 +18,7 @@ iptables-incoming-icmp-chain-last-rule-{{ family }}:
         - match:
             - comment
         - comment: 'iptables.icmp: Reject the rest'
-        - jump: REJECT
+        - jump: lognreject
         - order: last
         - require_in:
             - firewall: iptables-rules
@@ -31,7 +31,7 @@ iptables-outgoing-icmp-chain-last-rule-{{ family }}:
         - match:
             - comment
         - comment: 'iptables.icmp: Reject the rest'
-        - jump: REJECT
+        - jump: lognreject
         - order: last
         - require_in:
             - firewall: iptables-rules
