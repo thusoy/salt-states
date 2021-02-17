@@ -152,7 +152,6 @@ iptables-allow-incoming-icmpv6-{{ icmp_msg_text }}:
         - table: filter
         - chain: incoming-icmp
         - family: ipv6
-        - source: fe80::/10
         - match:
             - icmpv6
             - comment
