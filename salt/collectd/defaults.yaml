@@ -1,5 +1,5 @@
 interval: 10
-plugins:
+core_plugins:
     # Load syslog first to ensure we can log if other config fails
     - syslog: |
         LogLevel info
@@ -28,3 +28,4 @@ plugins:
     - processes
     - swap
     - users
+plugins: []
