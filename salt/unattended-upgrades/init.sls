@@ -24,6 +24,16 @@ unattended-upgrades-apt-listchanges:
         - template: jinja
 
 
+# Schedule a weekly cleanup of apt archives
+unattended-upgrades-apt-clean:
+    cron.present:
+        - name: apt-get clean
+        - identifier: apt-clean
+        - dayweek: random
+        - hour: random
+        - minute: random
+
+
 # In Stretch apt runs network requests as it's own user _apt
 # Convert osmajorrelease to int since it used to be string in older versions of salt
 {% set user = '_apt' if grains['os_family'] == 'Debian' and grains['osmajorrelease']|int >= 9 else 'root' %}
