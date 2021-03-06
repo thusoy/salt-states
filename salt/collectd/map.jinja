@@ -1,0 +1,6 @@
+{% import_yaml "collectd/defaults.yaml" as defaults %}
+{% set pillar_get = salt['pillar.get'] %}
+
+{% set collectd = salt['grains.filter_by']({
+    'default': defaults,
+}, merge=pillar_get('collectd')) %}
