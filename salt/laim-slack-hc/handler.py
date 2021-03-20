@@ -7,6 +7,9 @@ import binascii
 
 import requests
 from laim import Laim, before_log, log
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
 
 PACKAGE_SPEC_RE = re.compile(r'^(?P<package>.+) \((?P<version>.+)\) (?P<distributions>.+);(?P<metadata>.*)$')
 MAINTAINER_SPEC_RE = re.compile(r'^-- (?P<maintainer>.+)  (?P<date>.+)$')
@@ -21,6 +24,13 @@ class SlackHoneycombHandler(Laim):
             # Explicitly set charset to avoid warnings from slack
             'Content-Type': 'application/json; charset=utf-8',
         })
+        self.session.mount('https://', HTTPAdapter(max_retries=Retry(
+            total=6,
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=('GET', 'HEAD', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'TRACE'),
+            backoff_factor=2,
+        )))
+
         self.channel_id = self.config['slack-channel-id']
         self.dataset = self.config['honeycomb-dataset']
         self.honeycomb_key = self.config['honeycomb-key']
