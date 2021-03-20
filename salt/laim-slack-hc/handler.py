@@ -103,6 +103,7 @@ class SlackHoneycombHandler(Laim):
         }
         try:
             response = self.session.post('https://api.honeycomb.io/1/batch/%s' % self.dataset,
+                timeout=60,
                 json=data,
                 headers={
                     'X-Honeycomb-Team': self.honeycomb_key,
@@ -116,26 +117,30 @@ class SlackHoneycombHandler(Laim):
 
 
     def post_to_slack(self, recipients, message):
-        response = self.session.post('https://slack.com/api/chat.postMessage', json={
-            'channel': self.channel_id,
-            'text': textwrap.dedent('''\
-                `%s` received mail for %s
-                *From*: %s
-                *To*: %s
-                *Subject*: %s
+        response = self.session.post('https://slack.com/api/chat.postMessage',
+            timeout=60,
+            json={
+                'channel': self.channel_id,
+                'text': textwrap.dedent('''\
+                    `%s` received mail for %s
+                    *From*: %s
+                    *To*: %s
+                    *Subject*: %s
 
-                %s
-            ''') % (
-                self.config['hostname'],
-                ', '.join(recipients),
-                message.get('From'),
-                message.get('To'),
-                message.get('Subject'),
-                message.get_payload(),
-            ),
-        }, headers={
-            'Authorization': 'Bearer %s' % self.slack_token,
-        })
+                    %s
+                ''') % (
+                    self.config['hostname'],
+                    ', '.join(recipients),
+                    message.get('From'),
+                    message.get('To'),
+                    message.get('Subject'),
+                    message.get_payload(),
+                ),
+            },
+            headers={
+                'Authorization': 'Bearer %s' % self.slack_token,
+            },
+        )
         body = response.json()
         if not body['ok']:
             raise ValueError('Failed to forward mail to slack, got %r', body)
