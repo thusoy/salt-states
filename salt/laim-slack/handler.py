@@ -29,24 +29,27 @@ class SlackHandler(Laim):
 
 
     def handle_message(self, sender, recipients, message):
-        response = self.session.post('https://slack.com/api/chat.postMessage', json={
-            'channel': self.channel_id,
-            'text': textwrap.dedent('''\
-                `%s` received mail for %s
-                *From*: %s
-                *To*: %s
-                *Subject*: %s
+        response = self.session.post('https://slack.com/api/chat.postMessage',
+            timeout=60,
+            json={
+                'channel': self.channel_id,
+                'text': textwrap.dedent('''\
+                    `%s` received mail for %s
+                    *From*: %s
+                    *To*: %s
+                    *Subject*: %s
 
-                %s
-            ''') % (
-                self.hostname,
-                ', '.join(recipients),
-                message.get('From'),
-                message.get('To'),
-                message.get('Subject'),
-                message.get_payload(),
-            ),
-        })
+                    %s
+                ''') % (
+                    self.hostname,
+                    ', '.join(recipients),
+                    message.get('From'),
+                    message.get('To'),
+                    message.get('Subject'),
+                    message.get_payload(),
+                ),
+            },
+        )
         body = response.json()
         if not body['ok']:
             raise ValueError('Failed to forward mail to slack, got %r', body)
