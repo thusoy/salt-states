@@ -3,6 +3,8 @@ import textwrap
 
 import requests
 from laim import Laim
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 
 class SlackHandler(Laim):
@@ -10,11 +12,18 @@ class SlackHandler(Laim):
     def __init__(self):
         super().__init__()
         self.session = requests.Session()
+        self.session.mount('https://', HTTPAdapter(max_retries=Retry(
+            total=6,
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=('GET', 'HEAD', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'TRACE'),
+            backoff_factor=2,
+        )))
         self.session.headers.update({
             'Authorization': 'Bearer %s' % self.config['slack-token'],
             # Explicitly set charset to avoid warnings from slack
             'Content-Type': 'application/json; charset=utf-8',
         })
+
         self.channel_id = self.config['slack-channel-id']
         self.hostname = '{{ grains.id }}'
 
