@@ -4,8 +4,8 @@ include:
 
 laim-slack:
     cmd.run:
-        - name: /opt/venvs/laim/bin/pip install requests==2.22.0
-        - unless: /opt/venvs/laim/bin/pip freeze | grep requests==2.22.0
+        - name: /opt/venvs/laim/bin/pip install requests==2.25.1 urllib3==1.26.4
+        - unless: /opt/venvs/laim/bin/pip freeze | tr -d '\n' | awk '/requests==2.25.1/ && /urllib3==1.26.4/' | grep .
         - require:
             - pkg: laim
         - watch_in:
