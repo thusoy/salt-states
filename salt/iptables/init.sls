@@ -129,7 +129,6 @@ iptables-output-allow-kernel-finack-{{ family }}:
         - protocol: tcp
         - uid-owner: '!0-65535'
         - syn: '!'
-        - socket-exists: ''
         - jump: ACCEPT
         # Ensure this happens late to avoid processing overhead, but before logging
         - order: last
