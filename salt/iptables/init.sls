@@ -114,6 +114,29 @@ iptables-output-allow-established-{{ family }}:
         - jump: ACCEPT
 
 
+# The kernel will send a number of packets related to tcp state management that
+# won't be matched by more specific output rules for a given port since they
+# will not have an associated owner. Most commonly this will be FIN,ACK and RST
+# packets, but some SYN,ACK and ACKs have also been observed.
+iptables-output-allow-kernel-finack-{{ family }}:
+    firewall.append:
+        - chain: OUTPUT
+        - family: {{ family }}
+        - match:
+            - comment
+            - owner
+        - comment: "iptables: Allow kernel tcp packets"
+        - protocol: tcp
+        - uid-owner: '!0-65535'
+        - syn: '!'
+        - socket-exists: ''
+        - jump: ACCEPT
+        # Ensure this happens late to avoid processing overhead, but before logging
+        - order: last
+        - require_in:
+            - firewall: iptables-output-log-unmatched-{{ family }}
+
+
 iptables-output-log-unmatched-{{ family }}:
     firewall.append:
         - table: filter
