@@ -12,3 +12,5 @@ Customizations available through the `iptables` pillar:
 See `iptables/map.jinja` for defaults.
 
 Rejected traffic (in or out) will be logged (with rate-limiting), and logrotate configured to prune old logs.
+
+There's also the `iptables.dhcp` state you can include, which is not applied by default. This will allow root outbound access to DHCP ports (67 and 547).
