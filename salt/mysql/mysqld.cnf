@@ -55,3 +55,9 @@ log-bin         = /var/log/mysql/log.bin
 
 # This needs to be set to allow creation of non-deterministic functions
 log_bin_trust_function_creators = 1
+
+{%- if 'config' in mysql %}
+{% for key, val in mysql.config.items() %}
+{{ key }} = {{ val }}
+{%- endfor %}
+{%- endif %}
