@@ -29,6 +29,14 @@ rabbitmq-server:
             - pkg: rabbitmq-server
 
 
+rabbitmq-old-repos:
+    pkgrepo.absent:
+        - names:
+            - deb https://dl.bintray.com/rabbitmq-erlang/debian buster erlang
+            - deb https://dl.bintray.com/rabbitmq/debian buster main
+        - keyid: 6B73A36E6026DFCA
+
+
 {% for family in ('ipv4', 'ipv6') %}
 rabbitmq-firewall-inbound-{{ family }}:
     firewall.append:
