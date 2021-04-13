@@ -4,17 +4,18 @@ include:
 
 rabbitmq-erlang-repo:
     pkgrepo.managed:
-        - name: deb https://dl.bintray.com/rabbitmq-erlang/debian buster erlang
-        - key_url: salt://rabbitmq/release-key.asc
+        - name: deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ grains.oscodename }} main
+        - key_url: salt://rabbitmq/release-key-erlang.asc
 
 
 rabbitmq-server:
     pkgrepo.managed:
-        - name: deb https://dl.bintray.com/rabbitmq/debian buster main
-        - key_url: salt://rabbitmq/release-key.asc
+        - name: deb https://packagecloud.io/rabbitmq/rabbitmq-server/debian/ {{ grains.oscodename }} main
+        - key_url: salt://rabbitmq/release-key-rabbitmq.asc
 
     pkg.installed:
         - require:
+            - pkgrepo: rabbitmq-erlang-repo
             - pkgrepo: rabbitmq-server
 
     service.running:
