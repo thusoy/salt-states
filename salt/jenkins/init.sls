@@ -12,7 +12,7 @@ jenkins:
         - require:
             - pkg: jenkins-deps
 
-    pkg.installed:
+    pkg.latest:
         - require:
             - pkgrepo: jenkins
 
