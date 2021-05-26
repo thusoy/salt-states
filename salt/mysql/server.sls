@@ -18,6 +18,7 @@ mysql:
 
     pkg.installed:
         - name: mysql-community-server
+        - version: '>={{ mysql.server.version }}'
         - require:
             - pkgrepo: mysql
 
