@@ -1,8 +1,8 @@
 {% set jumphost = pillar.get('jump-host', {}) %}
 
-{% for target in jumphost.get('allow', []) %}
+{% for target_name, target in jumphost.get('allow', {}).items() %}
 
-jump-host-outbound-firewall-{{ target.name }}:
+jump-host-outbound-firewall-{{ target_name }}:
     firewall.append:
         - table: filter
         - family: ipv4
@@ -18,6 +18,6 @@ jump-host-outbound-firewall-{{ target.name }}:
         {% endif %}
         - match:
             - comment
-        - comment: 'jump-host: Allow outgoing traffic to {{ target.name }}'
+        - comment: 'jump-host: Allow outgoing traffic to {{ target_name }}'
         - jump: ACCEPT
 {% endfor %}

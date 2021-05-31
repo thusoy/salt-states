@@ -7,11 +7,11 @@ Example pillar configuration:
 ```yaml
 jump-host:
     allow:
-        - name: mysql
+        mysql:
           destination: 10.0.0.0/8
           dport: 3306
 
-        - name: elasticsearch
+        elasticsearch:
           destination: 10.1.1.2
           dport: 9200
 ```
