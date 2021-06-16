@@ -7,6 +7,6 @@ address to bind to and the major version of mysql to install:
 ```yaml
 mysql:
     server:
-        version: 8.0 # default: 5.7
+        version: 5.7 # default: 8.0
         bind: 127.0.0.1 # default: 0.0.0.0
 ```
