@@ -1,0 +1,5 @@
+{% set opentelemetry_collector = salt['grains.filter_by']({
+    'base': {
+        'exporter_ports': '443',
+    },
+}, merge=salt['pillar.get']('opentelemetry-collector'), base='base') %}
