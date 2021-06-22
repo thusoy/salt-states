@@ -1,6 +1,10 @@
 {% set hart = salt['pillar.get']('hart', {}) -%}
 {% set providers = hart.get('providers', {}) -%}
 
+###################################
+# File managed by salt state hart #
+###################################
+
 {% if 'do' in providers -%}
 [providers.do]
 token = "{{ providers.do.token }}"
