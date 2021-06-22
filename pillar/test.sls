@@ -1,3 +1,25 @@
+hart:
+    providers:
+        do:
+            token: foo
+
+        vultr:
+            token: bar
+
+        ec2:
+            aws_access_key_id: foo
+            aws_secret_access_key: bar
+
+        gce:
+            project: project
+            user_id: user_id
+            key: fookey
+
+    config: |
+        [hart]
+        role_naming_scheme = "{unique_id}.{zone}.{provider}.{role}.example.com"
+
+
 rabbitmq:
     admin_password: admin
     monitoring_password: monitoring

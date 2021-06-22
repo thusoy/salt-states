@@ -1,0 +1,29 @@
+{% set hart = salt['pillar.get']('hart', {}) -%}
+{% set providers = hart.get('providers', {}) -%}
+
+{% if 'do' in providers -%}
+[providers.do]
+token = "{{ providers.do.token }}"
+{% endif -%}
+
+{% if 'ec2' in providers %}
+[providers.ec2]
+aws_access_key_id = "{{ providers.ec2.aws_access_key_id }}"
+aws_secret_access_key = "{{ providers.ec2.aws_secret_access_key }}"
+{% endif -%}
+
+{% if 'vultr' in providers %}
+[providers.vultr]
+token = "{{ providers.vultr.token }}"
+{% endif -%}
+
+{% if 'gce' in providers %}
+[providers.gce]
+project = "{{ providers.gce.project }}"
+user_id = "{{ providers.gce.user_id }}"
+key = """{{ providers.gce.key }}"""
+{% endif -%}
+
+{% if 'config' in hart %}
+{{ hart.config }}
+{%- endif %}
