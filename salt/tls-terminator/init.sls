@@ -262,22 +262,22 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
 
     client_cert = backend_config.get('client_cert')
     client_key = backend_config.get('client_key')
-    client_cert_path = None
-    client_key_path = None
+    proxy_client_cert_path = None
+    proxy_client_key_path = None
     if client_cert and client_key:
-        client_cert_path = '/etc/nginx/ssl/%s-client.pem' % upstream_identifier
-        client_key_path = '/etc/nginx/private/%s-client.key' % upstream_identifier
-        states['tls-terminator-upstream-%s-client-cert' % upstream_identifier] = {
+        proxy_client_cert_path = '/etc/nginx/ssl/%s-proxy-client.pem' % upstream_identifier
+        proxy_client_key_path = '/etc/nginx/private/%s-proxy-client.key' % upstream_identifier
+        states['tls-terminator-%s-proxy-client-cert' % upstream_identifier] = {
             'file.managed': [
-                {'name': client_cert_path},
+                {'name': proxy_client_cert_path},
                 {'contents': client_cert},
                 {'require_in': [{'file': 'tls-terminator-%s-nginx-site' % site}]},
                 {'watch_in': [{'service': 'nginx'}]},
             ]
         }
-        states['tls-terminator-upstream-%s-client-key' % upstream_identifier] = {
+        states['tls-terminator-%s-proxy-client-key' % upstream_identifier] = {
             'file.managed': [
-                {'name': client_key_path},
+                {'name': proxy_client_key_path},
                 {'contents': client_key},
                 {'show_changes': False},
                 {'user': 'root'},
@@ -332,8 +332,8 @@ def build_backend_context(site, site_config, backend_config, nginx_version):
         'extra_location_config': extra_location_config,
         'rate_limit': backend_config.get('rate_limit'),
         'redirect': build_redirect(backend_config.get('redirect')),
-        'client_cert_path': client_cert_path,
-        'client_key_path': client_key_path,
+        'proxy_client_cert_path': proxy_client_cert_path,
+        'proxy_client_key_path': proxy_client_key_path,
         'use_upstream_block': upstream['use_upstream_block'] if upstream else False,
     }
 

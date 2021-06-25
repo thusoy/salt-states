@@ -588,10 +588,10 @@ def test_proxy_client_certs():
     })
     context = merged(state['tls-terminator-example.com-nginx-site']['file.managed'])['context']
     location_spec = context['backends']['/']
-    assert location_spec['client_cert_path'] == '/etc/nginx/ssl/example.com-127.0.0.1_2d957d-client.pem'
-    assert location_spec['client_key_path'] == '/etc/nginx/private/example.com-127.0.0.1_2d957d-client.key'
-    assert 'tls-terminator-upstream-example.com-127.0.0.1_2d957d-client-cert' in state
-    assert 'tls-terminator-upstream-example.com-127.0.0.1_2d957d-client-key' in state
+    assert location_spec['proxy_client_cert_path'] == '/etc/nginx/ssl/example.com-127.0.0.1_2d957d-proxy-client.pem'
+    assert location_spec['proxy_client_key_path'] == '/etc/nginx/private/example.com-127.0.0.1_2d957d-proxy-client.key'
+    assert 'tls-terminator-example.com-127.0.0.1_2d957d-proxy-client-cert' in state
+    assert 'tls-terminator-example.com-127.0.0.1_2d957d-proxy-client-key' in state
 
 
 def test_nested_proxy():

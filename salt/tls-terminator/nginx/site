@@ -83,9 +83,9 @@ server {
     proxy_ssl_server_name on;
     proxy_ssl_name {{ backend.upstream_hostname }};
 
-    {% if backend.client_cert_path -%}
-    proxy_ssl_certificate '{{ backend.client_cert_path }}';
-    proxy_ssl_certificate_key '{{ backend.client_key_path }}';
+    {% if backend.proxy_client_cert_path -%}
+    proxy_ssl_certificate '{{ backend.proxy_client_cert_path }}';
+    proxy_ssl_certificate_key '{{ backend.proxy_client_key_path }}';
 
     {% endif -%}
 
