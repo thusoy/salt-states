@@ -609,6 +609,24 @@ def test_nested_proxy():
     assert context['nested'] == True
 
 
+def test_client_cert():
+    state = module.build_state({
+        'example.com': {
+            'backend': 'http://127.0.0.1:5000',
+            'cert': 'FOOCERT',
+            'key': 'FOOKEY',
+            'client_cert': 'CLIENTCERT',
+        }
+    })
+    cert = state['tls-terminator-example.com-certs-1-cert']
+    key = state['tls-terminator-example.com-certs-1-key']
+    client_cert = state['tls-terminator-example.com-client-cert']
+    assert merged(cert['file.managed'])['contents'] == 'FOOCERT'
+    assert merged(key['file.managed'])['contents'] == 'FOOKEY'
+    assert merged(client_cert['file.managed'])['contents'] == 'CLIENTCERT'
+    assert 'certbot' not in state['include']
+
+
 def get_backends(state_nginx_site):
     return merged(state_nginx_site['file.managed'])['context']['backends']
 

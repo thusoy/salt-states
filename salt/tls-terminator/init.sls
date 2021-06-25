@@ -99,6 +99,12 @@ def build_state(sites, nginx_version='0.0.0'):
         if isinstance(extra_server_config, dict):
             extra_server_config = [extra_server_config]
 
+        client_cert = site_config.get('client_cert')
+        client_cert_path = None
+        if client_cert:
+            client_cert_path, client_cert_state = build_client_cert(site, client_cert)
+            ret.update(client_cert_state)
+
         ret['tls-terminator-%s-nginx-site' % site] = {
             'file.managed': [
                 {'name': '/etc/nginx/sites-enabled/%s' % site},
@@ -119,6 +125,7 @@ def build_state(sites, nginx_version='0.0.0'):
                     'extra_locations': site_config.get('extra_locations', {}),
                     'error_pages': site_error_pages,
                     'upstreams': upstreams,
+                    'client_cert_path': client_cert_path,
                 }}
             ]
         }
@@ -495,6 +502,20 @@ def build_tls_certs_for_site(site, site_config):
         })
 
     return ret_certs, is_acme, states
+
+
+def build_client_cert(site, client_cert):
+    path = '/etc/nginx/ssl/%s-client.crt' % site
+    return path, {
+        'tls-terminator-%s-client-cert' % site: {
+            'file.managed': [
+                {'name': path},
+                {'contents': client_cert},
+                {'require': [{'file': 'nginx-certificates-dir'}]},
+                {'watch_in': [{'service': 'nginx'}]}
+            ]
+        }
+    }
 
 
 def build_site_error_pages(site, site_config, default_error_pages):

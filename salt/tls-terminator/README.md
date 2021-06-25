@@ -201,3 +201,16 @@ tls-terminator:
         backend: http://127.0.0.1:5000
         nested: True
 ```
+
+To require clients to authenticate themselves with a valid TLS cert, set the certificate they
+should be validated against:
+
+```yaml
+tls-terminator:
+    example.com:
+        backend: http://127.0.0.1:5000
+        client_cert: |
+            -----BEGIN CERTIFICATE-----
+            foo
+            -----END CERTIFICATE-----
+```

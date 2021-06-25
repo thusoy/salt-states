@@ -40,6 +40,13 @@ server {
   {% endfor -%}
   {% endfor -%}
 
+  {% if client_cert_path -%}
+  ssl_verify_client on;
+  ssl_client_certificate {{ client_cert_path }};
+  ssl_verify_depth 3;
+
+  {% endif %}
+
   {% for url, backend in backends.items() -%}
   location {{ url }} {
     {% if backend.redirect -%}
