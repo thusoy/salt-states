@@ -45,7 +45,7 @@ server {
   ssl_client_certificate {{ client_cert_path }};
   ssl_verify_depth 3;
 
-  {% endif %}
+  {% endif -%}
 
   {% for url, backend in backends.items() -%}
   location {{ url }} {
