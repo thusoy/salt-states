@@ -1,3 +1,5 @@
+{% from 'rabbitmq/map.jinja' import rabbitmq with context %}
+
 include:
     - apt-transport-https
 
@@ -14,6 +16,9 @@ rabbitmq-server:
         - key_url: salt://rabbitmq/release-key-rabbitmq.asc
 
     pkg.installed:
+        {% if 'version' in rabbitmq %}
+        - version: {{ rabbitmq.version }}
+        {% endif %}
         - require:
             - pkgrepo: rabbitmq-erlang-repo
             - pkgrepo: rabbitmq-server

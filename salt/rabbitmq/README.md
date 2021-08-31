@@ -24,3 +24,12 @@ rabbitmq:
         MIIEpAIBAAKCA..
         -----END RSA PRIVATE KEY-----
 ```
+
+To specify a specific version:
+
+```yaml
+rabbitmq:
+    # Can be 'latest' if you want it to always upgrade to the newest
+    # version available
+    version: 3.8.22-1
+```
