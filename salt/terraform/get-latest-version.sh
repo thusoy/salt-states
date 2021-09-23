@@ -45,7 +45,7 @@ import_trusted_key () {
     gpg --homedir "$homedir" --import --quiet < "$(dirname "$0")/release-key.asc"
     # Seemed easier to hardcode the key fingerprint than try to parse the
     # output of gpg. Need to update this if the key is ever rotated.
-    echo '91A6E7F85D05C65630BEF18951852D87348FFC4C:6:' \
+    echo 'C874011F0AB405110D02105534365D9472D7468F:6:' \
         | gpg --homedir "$homedir" --import-ownertrust --quiet
 }
 
