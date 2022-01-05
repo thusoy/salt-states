@@ -1,17 +1,15 @@
 {% set docker = pillar.get('docker-ce', {}) %}
 
 
-docker-ce-deps:
-    pkg.installed:
-        - name: apt-transport-https
-
+include:
+    - apt-transport-https
 
 docker-ce:
     pkgrepo.managed:
         - name: deb https://download.docker.com/linux/debian {{ grains['oscodename'] }} stable
         - key_url: salt://docker-ce/release-key.asc
         - require:
-            - pkg: docker-ce-deps
+            - sls: apt-transport-https
 
     pkg.installed:
         - pkgs:
