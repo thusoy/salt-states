@@ -36,7 +36,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
   config.vm.provision "shell", inline: "sudo APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add /vagrant/salt-release-key.asc"
   config.vm.provision "shell", inline: "echo 'deb https://repo.saltstack.com/py3/debian/10/amd64/3001 buster main' | tee /etc/apt/sources.list.d/saltstack.list"
-  config.vm.provision "shell", inline: "sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y vim salt-minion"
+  config.vm.provision "shell", inline: "sudo apt-get update --allow-releaseinfo-change && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y vim salt-minion"
   config.vm.provision "shell", inline: "sudo cp /vagrant/vagrant-minion /etc/salt/minion && sudo service salt-minion restart"
   config.vm.provision "shell", inline: "sudo salt-call saltutil.sync_all"
 
