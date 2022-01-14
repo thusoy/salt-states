@@ -1,0 +1,4 @@
+mycli
+========
+
+Installs mycli.

@@ -1,0 +1,2 @@
+mycli:
+    pkg.installed
