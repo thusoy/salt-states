@@ -6,7 +6,7 @@ ca-certificates:
 ca-certificates-lets-encrypt-root-fix:
     file.replace:
         - name: /etc/ca-certificates.conf
-        - pattern: 'mozilla/DST_Root_CA_X3.crt'
+        - pattern: '^mozilla/DST_Root_CA_X3.crt'
         - repl: '!mozilla/DST_Root_CA_X3.crt'
 
     cmd.watch:
