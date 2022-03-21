@@ -3,12 +3,12 @@
 
 include:
     - .pillar_check
+    - ca-certificates
 
 
 postgres-server-deps:
     pkg.installed:
         - name: apt-transport-https
-
 
 postgres-server:
     pkgrepo.managed:

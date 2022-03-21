@@ -6,3 +6,4 @@ venv3
 .cache
 *.pyc
 .DS_Store
+.idea/*
