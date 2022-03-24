@@ -31,7 +31,7 @@ postgres-server:
         - context:
             internal: {{ postgres.internal }}
             cert_auth: {{ postgres.cert_auth }}
-            internal_nossl: {{ postgres.internal_nossl }}
+            external_nossl: {{ postgres.external_nossl }}
         - user: postgres
         - group: postgres
         - mode: 640

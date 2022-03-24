@@ -3,7 +3,7 @@
 def run():
     postgres = __pillar__.get('postgres', {})
 
-    if not postgres.get('internal', True):
+    if not postgres.get('internal', True) and not postgres.get('external_nossl', False):
         assert 'key' in postgres, 'postgres pillar must specify "key" when "internal"  is False'
         assert 'cert' in postgres, 'postgres pillar must specify "cert" when "internal"  is False'
 
