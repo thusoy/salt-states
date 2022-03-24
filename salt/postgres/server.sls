@@ -73,7 +73,7 @@ postgres-server-iptables-allow-incoming-{{ family }}:
         - save: True
 {% endfor %}
 
-
+{% if not postgres.external_nossl %}
 postgres-server-cert:
     file.managed:
         - name: /etc/postgresql/{{ version }}/main/cert.crt
@@ -93,4 +93,5 @@ postgres-server-key:
         - watch_in:
             - service: postgres-server
 
+{% endif %}
 {% endif %}
