@@ -20,7 +20,7 @@ postgres-server:
     pkg.installed:
         - pkgs:
             - postgresql-{{ version }}
-            - postgresql-contrib-{{ version }}
+            {% if version < 10 %}- postgresql-contrib-{{ version }}{% endif %}
         - require:
             - pkgrepo: postgres-server
 
