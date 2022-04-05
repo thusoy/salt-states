@@ -5,7 +5,6 @@
 {% else %}
     {% from 'vault/map.jinja' import vault with context %}
 {% endif %}
-{% set version, version_hash = vault.version_spec.split(' ') %}
 {% set flags = vault.get('flags', []) %}
 
 
@@ -33,25 +32,14 @@ vault-server-config-directory:
 
 
 vault:
+    pkgrepo.managed:
+        - name: deb [arch=amd64] https://apt.releases.hashicorp.com {{ grains.oscodename }} main
+        - key_url: salt://vault/release-key.asc
+
     pkg.installed:
-        - name: libcap2-bin
-
-    archive.extracted:
-        - name: /usr/local/bin/
-        - source: https://releases.hashicorp.com/vault/{{ version }}/vault_{{ version }}_linux_amd64.zip
-        - source_hash: {{ version_hash }}
-        - archive_format: zip
-        - enforce_toplevel: False
-        - overwrite: True
-        - unless:
-            - '/usr/local/bin/vault version | grep -E "^Vault v{{ version }}$"'
-
-    cmd.watch:
-        - name: 'setcap cap_ipc_lock=+ep /usr/local/bin/vault'
+        - name: vault
         - require:
-            - pkg: vault
-        - watch:
-            - archive: vault
+            - pkgrepo: vault
 
     init_script.managed:
         - systemd: salt://vault/job-systemd
@@ -85,7 +73,7 @@ vault:
         # Don't watch on the archive since an upgrade requires a restart and manual unsealing
         # If the init file changes we probably need a restart too for anything to take effect
         - require:
-            - cmd: vault
+            - pkg: vault
             - init_script: vault
         - watch:
             - file: vault
@@ -213,7 +201,7 @@ vault-restart:
     cmd.watch:
         - name: service vault restart
         - watch:
-            - cmd: vault
+            - pkg: vault
             - init_script: vault
 
 

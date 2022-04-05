@@ -1,17 +1,15 @@
 {% from 'vault/map.jinja' import vault with context %}
-{% set version, version_hash = vault.version_spec.split(' ') %}
 
 
 vault-client:
-    archive.extracted:
-        - name: /usr/local/bin/
-        - source: https://releases.hashicorp.com/vault/{{ version }}/vault_{{ version }}_linux_amd64.zip
-        - source_hash: {{ version_hash }}
-        - archive_format: zip
-        - enforce_toplevel: False
-        - overwrite: True
-        - unless:
-            - '/usr/local/bin/vault version | grep -E "^Vault v{{ version }}$"'
+    pkgrepo.managed:
+        - name: deb [arch=amd64] https://apt.releases.hashicorp.com {{ grains.oscodename }} main
+        - key_url: salt://vault/release-key.asc
+
+    pkg.installed:
+        - name: vault
+        - require:
+            - pkgrepo: vault-client
 
     file.managed:
         - name: /etc/vault-ca.pem
