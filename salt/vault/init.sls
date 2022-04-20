@@ -13,15 +13,6 @@ include:
     - .pillar_check
 
 
-vault-user:
-    user.present:
-        - name: vault
-        - fullname: vault worker
-        - system: True
-        - createhome: False
-        - shell: /usr/sbin/nologin
-
-
 vault-server-config-directory:
     file.directory:
         - name: /etc/vault
@@ -29,7 +20,7 @@ vault-server-config-directory:
         - group: vault
         - mode: 750
         - require:
-            - user: vault-user
+            - pkg: vault
 
 
 vault:
@@ -62,7 +53,7 @@ vault:
         - group: vault
         - mode: 640
         - require:
-            - user: vault-user
+            - pkg: vault
 
     service.running:
         - enable: True
@@ -88,6 +79,8 @@ vault-tls-cert:
         - group: vault
         - mode: 644
         - contents_pillar: vault:tls_cert
+        - require:
+            - pkg: vault
 
 
 vault-tls-key:
@@ -98,6 +91,8 @@ vault-tls-key:
         - mode: 640
         - show_changes: False
         - contents_pillar: vault:tls_key
+        - require:
+            - pkg: vault
 {% endif %}
 
 
@@ -119,7 +114,7 @@ vault-firewall-outbound-dns-{{ family }}-{{ protocol }}:
         - uid-owner: vault
         - jump: ACCEPT
         - require:
-            - user: vault-user
+            - pkg: vault
 {% endfor %}
 
 
@@ -136,7 +131,7 @@ vault-firewall-outbound-server-to-server-{{ family }}:
         - uid-owner: vault
         - jump: ACCEPT
         - require:
-            - user: vault-user
+            - pkg: vault
 
 
 vault-firewall-outbound-minion-to-server-{{ family }}:
@@ -190,7 +185,7 @@ vault-firewall-outbound-https-{{ family }}:
         - uid-owner: vault
         - jump: ACCEPT
         - require:
-            - user: vault-user
+            - pkg: vault
 {% endfor %}
 
 
@@ -216,7 +211,7 @@ vault-auth-{{ auth_name }}:
         {% endif %}
         - show_changes: False
         - require:
-            - user: vault-user
+            - pkg: vault
             - file: vault-server-config-directory
         - watch_in:
             - cmd: vault-restart
