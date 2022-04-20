@@ -106,7 +106,9 @@ vault:
 
 ## Operations
 
-The version of vault to use is coded into the state and/or pillar. The state
-will install newer versions and restart the service if this changes. Make sure
-this rolls out to secondary nodes first (and make sure they are unsealed),
-before applying to the primary.
+Vault is installed from the Hashicorp apt repo. To apply updates, run
+`sudo salt <minion> pkg.install vault`, followed by `sudo salt <minion> service.restart vault`.
+Remember to only run the latter for one minion in the cluster at a time to avoid making
+the entire cluster unavailable simultaneously. If you don't use automatic unsealing make
+sure secondary nodes are restarted first and unsealed before restarting (and unsealing)
+the current primary.

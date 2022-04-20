@@ -5,21 +5,12 @@
 {% else %}
     {% from 'vault/map.jinja' import vault with context %}
 {% endif %}
-{% set version, version_hash = vault.version_spec.split(' ') %}
 {% set flags = vault.get('flags', []) %}
 
 
 include:
+    - .repo
     - .pillar_check
-
-
-vault-user:
-    user.present:
-        - name: vault
-        - fullname: vault worker
-        - system: True
-        - createhome: False
-        - shell: /usr/sbin/nologin
 
 
 vault-server-config-directory:
@@ -29,29 +20,14 @@ vault-server-config-directory:
         - group: vault
         - mode: 750
         - require:
-            - user: vault-user
+            - pkg: vault
 
 
 vault:
     pkg.installed:
-        - name: libcap2-bin
-
-    archive.extracted:
-        - name: /usr/local/bin/
-        - source: https://releases.hashicorp.com/vault/{{ version }}/vault_{{ version }}_linux_amd64.zip
-        - source_hash: {{ version_hash }}
-        - archive_format: zip
-        - enforce_toplevel: False
-        - overwrite: True
-        - unless:
-            - '/usr/local/bin/vault version | grep -E "^Vault v{{ version }}$"'
-
-    cmd.watch:
-        - name: 'setcap cap_ipc_lock=+ep /usr/local/bin/vault'
+        - name: vault
         - require:
-            - pkg: vault
-        - watch:
-            - archive: vault
+            - cmd: vault-repo-preferences
 
     init_script.managed:
         - systemd: salt://vault/job-systemd
@@ -77,7 +53,7 @@ vault:
         - group: vault
         - mode: 640
         - require:
-            - user: vault-user
+            - pkg: vault
 
     service.running:
         - enable: True
@@ -85,7 +61,7 @@ vault:
         # Don't watch on the archive since an upgrade requires a restart and manual unsealing
         # If the init file changes we probably need a restart too for anything to take effect
         - require:
-            - cmd: vault
+            - pkg: vault
             - init_script: vault
         - watch:
             - file: vault
@@ -103,6 +79,8 @@ vault-tls-cert:
         - group: vault
         - mode: 644
         - contents_pillar: vault:tls_cert
+        - require:
+            - pkg: vault
 
 
 vault-tls-key:
@@ -113,6 +91,8 @@ vault-tls-key:
         - mode: 640
         - show_changes: False
         - contents_pillar: vault:tls_key
+        - require:
+            - pkg: vault
 {% endif %}
 
 
@@ -134,7 +114,7 @@ vault-firewall-outbound-dns-{{ family }}-{{ protocol }}:
         - uid-owner: vault
         - jump: ACCEPT
         - require:
-            - user: vault-user
+            - pkg: vault
 {% endfor %}
 
 
@@ -151,7 +131,7 @@ vault-firewall-outbound-server-to-server-{{ family }}:
         - uid-owner: vault
         - jump: ACCEPT
         - require:
-            - user: vault-user
+            - pkg: vault
 
 
 vault-firewall-outbound-minion-to-server-{{ family }}:
@@ -205,7 +185,7 @@ vault-firewall-outbound-https-{{ family }}:
         - uid-owner: vault
         - jump: ACCEPT
         - require:
-            - user: vault-user
+            - pkg: vault
 {% endfor %}
 
 
@@ -213,7 +193,7 @@ vault-restart:
     cmd.watch:
         - name: service vault restart
         - watch:
-            - cmd: vault
+            - pkg: vault
             - init_script: vault
 
 
@@ -231,7 +211,7 @@ vault-auth-{{ auth_name }}:
         {% endif %}
         - show_changes: False
         - require:
-            - user: vault-user
+            - pkg: vault
             - file: vault-server-config-directory
         - watch_in:
             - cmd: vault-restart

@@ -11,7 +11,7 @@ Type=simple
 User=vault
 Group=vault
 ExecReload=/bin/kill -HUP $MAINPID
-ExecStop=/usr/local/bin/vault step-down
+ExecStop=/usr/bin/vault step-down
 TimeoutStartSec=1
 {% for key, val in environment_variables.items() -%}
 Environment={{ key }}={{ val }}
@@ -21,7 +21,7 @@ LimitMEMLOCK=infinity
 LimitNOFILE=65536
 KillMode=process
 KillSignal=SIGINT
-ExecStart=/usr/local/bin/vault server -config /etc/vault/config.json {{ ' '.join(flags) }}
+ExecStart=/usr/bin/vault server -config /etc/vault/config.json {{ ' '.join(flags) }}
 Restart=on-failure
 TimeoutStopSec=30
 ProtectSystem=full
