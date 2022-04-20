@@ -45,6 +45,7 @@ vault-repo:
         - require:
             - file: vault-repo-key
 
+
 # Prevent the repo from upgrading any other packages (ref https://linux.die.net/man/5/apt_preferences)
 vault-repo-preferences:
     file.managed:
