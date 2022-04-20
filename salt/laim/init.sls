@@ -26,7 +26,8 @@ laim-repo-preferences:
             Pin-Priority: 500
 
     cmd.watch:
-        - name: apt-get update -y
+        # Update only the relevant repo to keep this fast
+        - name: apt-get update -y -o Dir::Etc::sourcelist="sources.list.d/thusoy-laim.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
         - watch:
             - file: laim-repo
             - file: laim-repo-key
