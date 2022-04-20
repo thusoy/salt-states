@@ -1,3 +1,10 @@
+laim:
+    config:
+        slack-channel-id: '#servers'
+        slack-token: my-slack-api-token
+        honeycomb-dataset: my-dataset
+        honeycomb-key: my-honeycomb-key
+
 hart:
     providers:
         do:

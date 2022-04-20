@@ -3,18 +3,15 @@ include:
 
 
 laim-slack:
-    cmd.run:
-        - name: /opt/venvs/laim/bin/pip install requests==2.25.1 urllib3==1.26.4
-        - unless: /opt/venvs/laim/bin/pip freeze | tr -d '\n' | awk '/requests==2.25.1/ && /urllib3==1.26.4/' | grep .
-        - require:
-            - pkg: laim
-        - watch_in:
-            - service: laim
+    pkg.installed:
+        - name: python3-requests
 
     file.managed:
         - name: /etc/laim/handler.py
         - source: salt://laim-slack/handler.py
         - template: jinja
+        - require:
+            - pkg: laim-slack
         - watch_in:
             - service: laim
 
