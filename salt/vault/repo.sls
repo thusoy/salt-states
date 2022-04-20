@@ -27,7 +27,8 @@ vault-repo-preferences:
             Pin-Priority: 500
 
     cmd.watch:
-        - name: apt-get update -y
+        # Update only the hashicorp repo to keep the update as fast as possible
+        - name: apt-get update -y -o Dir::Etc::sourcelist="sources.list.d/hashicorp.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
         - watch:
             - file: vault-repo
             - file: vault-repo-key
