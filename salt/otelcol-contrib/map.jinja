@@ -1,0 +1,7 @@
+{% set otelcol_contrib = salt['grains.filter_by']({
+    'default': {
+        'version_info': '0.49.0 sha256=ab0c3782fc5be72fb0750e0a8606412e71f383a6e78a7a243a92b1d54b7037b6',
+        'config': {},
+        'extra_capabilities': [],
+    },
+}, merge=salt['pillar.get']('otelcol-contrib')) %}

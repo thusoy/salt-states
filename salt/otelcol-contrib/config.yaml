@@ -1,0 +1,2 @@
+{% from 'otelcol-contrib/map.jinja' import otelcol_contrib with context -%}
+{{ otelcol_contrib.config | yaml(False) }}
