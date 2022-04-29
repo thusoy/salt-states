@@ -67,6 +67,23 @@ def test_pillar_resolver_list():
         }
 
 
+def test_pillar_resolver_collapse_list():
+    uut = mdl_saltdata.resolve_leaf_values
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x: None,
+            'pillar.get': lambda x: ['pillar value 1', 'pillar value 2'],
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut({
+            'key_pillar': 'pillar key',
+        }, collapse_lists=True)
+        assert ret == {
+            'key': 'pillar value 1,pillar value 2',
+        }
+
+
 def test_pillar_resolver_recursive():
     uut = mdl_saltdata.resolve_leaf_values
     mocked_salt_dunder = {
