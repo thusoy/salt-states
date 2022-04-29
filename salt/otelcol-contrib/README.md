@@ -46,3 +46,16 @@ otelcol-contrib:
               processors: [resourcedetection/systems]
               exporters: [otlp]
 ```
+
+The state also supports resolving data from other pillar keys or grains:
+
+```yaml
+otelcol-contrib:
+    config:
+        processors:
+            attributes/salt:
+                actions:
+                    - key: some_pillar_value
+                      action: upsert
+                      value_pillar: some:pillar:key
+```
