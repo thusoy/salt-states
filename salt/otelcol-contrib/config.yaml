@@ -1,3 +1,3 @@
 {% from 'otelcol-contrib/map.jinja' import otelcol_contrib with context -%}
-{% set config = salt['mdl_saltdata.resolve_leaf_values'](otelcol_contrib.config) -%}
+{% set config = salt['mdl_saltdata.resolve_leaf_values'](otelcol_contrib.config, collapse_lists=True) -%}
 {{ config | yaml(False) }}
