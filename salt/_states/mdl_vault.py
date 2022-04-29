@@ -176,7 +176,7 @@ def auth_backend_role_present(name, mount_point, config):
     }
     existing_config = __salt__['mdl_vault.get_auth_backend_role'](mount_point, name)
     needs_update = True
-    config = __salt__['mdl_pillar.resolve_leaf_values'](config)
+    config = __salt__['mdl_saltdata.resolve_leaf_values'](config)
 
     if existing_config:
         existing_config = existing_config['data']

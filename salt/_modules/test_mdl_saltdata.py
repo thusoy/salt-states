@@ -7,13 +7,14 @@ except:
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-import mdl_pillar
+import mdl_saltdata
 
 
 def test_pillar_resolver():
-    uut = mdl_pillar.resolve_leaf_values
+    uut = mdl_saltdata.resolve_leaf_values
     mocked_salt_dunder = {
         '__salt__': {
+            'grains.get': lambda x: None,
             'pillar.get': lambda x: 'pillar value',
         },
     }
@@ -28,10 +29,30 @@ def test_pillar_resolver():
         }
 
 
-def test_pillar_resolver_list():
-    uut = mdl_pillar.resolve_leaf_values
+def test_grain_resolver():
+    uut = mdl_saltdata.resolve_leaf_values
     mocked_salt_dunder = {
         '__salt__': {
+            'grains.get': lambda x: 'grain value',
+            'pillar.get': lambda x: 'grain value',
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut({
+            'regular_key': 'regular value',
+            'key_grain': 'grain key',
+        })
+        assert ret == {
+            'regular_key': 'regular value',
+            'key': 'grain value',
+        }
+
+
+def test_pillar_resolver_list():
+    uut = mdl_saltdata.resolve_leaf_values
+    mocked_salt_dunder = {
+        '__salt__': {
+            'grains.get': lambda x: None,
             'pillar.get': lambda x: 'pillar value',
         },
     }
@@ -47,9 +68,10 @@ def test_pillar_resolver_list():
 
 
 def test_pillar_resolver_recursive():
-    uut = mdl_pillar.resolve_leaf_values
+    uut = mdl_saltdata.resolve_leaf_values
     mocked_salt_dunder = {
         '__salt__': {
+            'grains.get': lambda x: None,
             'pillar.get': lambda x: 'pillar value',
         },
     }
@@ -71,9 +93,10 @@ def test_pillar_resolver_recursive():
 
 
 def test_pillar_resolver_recursive_list():
-    uut = mdl_pillar.resolve_leaf_values
+    uut = mdl_saltdata.resolve_leaf_values
     mocked_salt_dunder = {
         '__salt__': {
+            'grains.get': lambda x: None,
             'pillar.get': lambda x: 'pillar value',
         },
     }
