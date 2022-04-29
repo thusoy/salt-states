@@ -68,3 +68,29 @@ def test_pillar_resolver_recursive():
                 }
             }
         }
+
+
+def test_pillar_resolver_recursive_list():
+    uut = mdl_pillar.resolve_leaf_values
+    mocked_salt_dunder = {
+        '__salt__': {
+            'pillar.get': lambda x: 'pillar value',
+        },
+    }
+    with mock.patch.dict(uut.__globals__, mocked_salt_dunder):
+        ret = uut({
+            'outer': [
+                {
+                    'value_pillar': 'pillar key'
+                }
+            ],
+            'non-dict-list': ['foo'],
+        })
+        assert ret == {
+            'outer': [
+                {
+                    'value': 'pillar value',
+                }
+            ],
+            'non-dict-list': ['foo'],
+        }

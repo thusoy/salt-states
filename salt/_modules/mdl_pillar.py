@@ -42,4 +42,12 @@ def resolve_leaf_values(dictionary):
                 ret[pure_key] = pillar_get(value)
         elif isinstance(value, dict):
             ret[key] = resolve_leaf_values(value)
+        elif isinstance(value, (tuple, list)):
+            pillar_values = []
+            for list_value in value:
+                if isinstance(list_value, dict):
+                    pillar_values.append(resolve_leaf_values(list_value))
+                else:
+                    pillar_values.append(list_value)
+            ret[key] = pillar_values
     return ret
