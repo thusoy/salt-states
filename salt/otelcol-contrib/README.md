@@ -5,8 +5,8 @@ Installs the opentelemetric collector contrib service. This state also enables y
 To configure it to send host metrics to honeycomb:
 ```yaml
 otelcol-contrib:
-    # Required for the `process` scraper to be able to read other processes
-    extra_capabilities: [CAP_SYS_PTRACE]
+    # Required for the `process` scraper to be able to read cpu, memory and disk info for other processes
+    extra_capabilities: [CAP_SYS_PTRACE, CAP_DAC_READ_SEARCH]
     config:
         receivers:
           hostmetrics:
