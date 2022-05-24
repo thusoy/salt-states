@@ -24,12 +24,19 @@ class SlackHoneycombHandler(Laim):
             # Explicitly set charset to avoid warnings from slack
             'Content-Type': 'application/json; charset=utf-8',
         })
-        self.session.mount('https://', HTTPAdapter(max_retries=Retry(
-            total=6,
-            status_forcelist=(429, 500, 502, 503, 504),
-            allowed_methods=('GET', 'HEAD', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'TRACE'),
-            backoff_factor=2,
-        )))
+
+        retry_kwargs = {
+            'total': 6,
+            'status_forcelist': (429, 500, 502, 503, 504),
+            'backoff_factor': 2,
+        }
+        allowed_methods_name = 'allowed_methods'
+        if hasattr(Retry.DEFAULT, 'method_whitelist'):
+            # urllib3 renamed this property, thus depending on version we need to set the correct name
+            allowed_methods_name = 'method_whitelist'
+        retry_kwargs[allowed_methods_name] = ('GET', 'HEAD', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'TRACE')
+
+        self.session.mount('https://', HTTPAdapter(max_retries=Retry(**retry_kwargs)))
 
         self.channel_id = self.config['slack-channel-id']
         self.dataset = self.config['honeycomb-dataset']

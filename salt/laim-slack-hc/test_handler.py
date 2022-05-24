@@ -29,7 +29,7 @@ def test_handle_slack(handler):
     handler.session.post.return_value.json.return_value = {'ok': True}
     handler.handle_message('root', ['root'], message)
     handler.session.post.assert_called_once_with('https://slack.com/api/chat.postMessage',
-        json=mock.ANY, headers=mock.ANY)
+        json=mock.ANY, headers=mock.ANY, timeout=mock.ANY)
 
 
 def test_handle_changelog(handler):
@@ -45,7 +45,7 @@ def test_handle_changelog(handler):
     handler.session.post.return_value.json.return_value = {'ok': True}
     handler.handle_message('root', ['root'], message)
     handler.session.post.assert_called_once_with('https://api.honeycomb.io/1/batch/test-dataset',
-        json=mock.ANY, headers=mock.ANY)
+        json=mock.ANY, headers=mock.ANY, timeout=mock.ANY)
     body = handler.session.post.call_args[1]['json']
     assert body == [{
         'data': {
