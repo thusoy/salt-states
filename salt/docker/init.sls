@@ -37,3 +37,19 @@ docker-service-override:
         - name: systemctl daemon-reload
         - watch:
             - file: docker-service-override
+
+
+{% for host in docker.get('hosts', []) %}
+{% if host.split(':')[0] == 'tcp' %}
+docker-firewall-inbound-tcp-{{ host }}:
+    firewall.append:
+        - chain: INPUT
+        - protocol: tcp
+        - destination: {{ host.split(':')[1].strip('/') }}
+        - dport: {{ host.split(':')[2] }}
+        - match:
+            - comment
+        - comment: 'docker: Allow {{ host }}'
+        - jump: ACCEPT
+{% endif %}
+{% endfor %}
