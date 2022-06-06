@@ -45,7 +45,8 @@ docker-firewall-inbound-tcp-{{ host }}:
     firewall.append:
         - chain: INPUT
         - protocol: tcp
-        - destination: {{ host.split(':')[1].strip('/') }}
+        {% set bind_host = host.split(':')[1].strip('/') %}
+        - destination: {{ bind_host + '/0' if bind_host == '0.0.0.0' else bind_host }}
         - dport: {{ host.split(':')[2] }}
         - match:
             - comment
