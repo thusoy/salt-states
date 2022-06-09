@@ -9,6 +9,22 @@ rabbitmq-erlang-repo:
         - name: deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ grains.oscodename }} main
         - key_url: salt://rabbitmq/release-key-erlang.asc
 
+    {% if 'erlang_version' in rabbitmq %}
+    file.managed:
+        - name: /etc/apt/preferences.d/erlang
+        - contents: |
+            Package: erlang*
+            Pin: version {{ rabbitmq.erlang_version }}
+            Pin-Priority: 1000
+
+    cmd.watch:
+        - name: apt-get update -y
+        - watch:
+            - file: rabbitmq-erlang-repo
+        - require_in:
+            - pkg: rabbitmq-server
+    {% endif %}
+
 
 rabbitmq-server:
     pkgrepo.managed:
