@@ -1,11 +1,42 @@
-cachish:
-    pkgrepo.managed:
-        - name: deb https://repo.thusoy.com/apt/debian {{ grains.oscodename }} main
-        - key_url: salt://cachish/release-key.asc
+cachish-repo-key:
+    file.managed:
+        - name: /usr/share/keyrings/thusoy-archive-keyring.gpg
+        - source: salt://cachish/release-key.gpg
 
+
+cachish-repo:
+    file.managed:
+        - name: /etc/apt/sources.list.d/thusoy-cachish.list
+        # Restrict repo key to only be usable with the cachish repo
+        - contents: deb [signed-by=/usr/share/keyrings/thusoy-archive-keyring.gpg] https://repo.thusoy.com/apt/debian {{ grains.oscodename }} main
+        - require:
+            - file: cachish-repo-key
+
+# Prevent the repo from upgrading any other packages (ref https://linux.die.net/man/5/apt_preferences)
+cachish-repo-preferences:
+    file.managed:
+        - name: /etc/apt/preferences.d/thusoy-cachish.pref
+        - contents: |
+            Package: *
+            Pin: origin repo.thusoy.com
+            Pin-Priority: 1
+
+            Package: cachish
+            Pin: origin repo.thusoy.com
+            Pin-Priority: 500
+
+    cmd.watch:
+        # Update only the relevant repo to keep this fast
+        - name: apt-get update -y -o Dir::Etc::sourcelist="sources.list.d/thusoy-cachish.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+        - watch:
+            - file: cachish-repo
+            - file: cachish-repo-key
+            - file: cachish-repo-preferences
+
+cachish:
     pkg.installed:
         - require:
-            - pkgrepo: cachish
+            - cmd: cachish-repo-preferences
 
     file.managed:
         - name: /etc/cachish.yml
