@@ -12,14 +12,16 @@ postgres-server-deps:
 
 postgres-server:
     pkgrepo.managed:
-        - name: deb https://apt.postgresql.org/pub/repos/apt/ {{ grains.oscodename }}-pgdg main
+        # Install from the archive by default since they have both new and older packages,
+        # to enable pinning a specific version
+        - name: deb https://apt-archive.postgresql.org/pub/repos/apt/ {{ grains.oscodename }}-pgdg-archive main
         - key_url: salt://postgres/release-key.asc
         - require:
             - pkg: postgres-server-deps
 
     pkg.installed:
         - pkgs:
-            - postgresql-{{ version }}
+            - postgresql-{{ version }}{{ '=' + postgres.patch_version if 'patch_version' in postgres else '' }}
             {% if version < 10 %}- postgresql-contrib-{{ version }}{% endif %}
         - require:
             - pkgrepo: postgres-server
