@@ -8,7 +8,7 @@ include:
 
 duplicity-s3-deps:
     pkg.installed:
-        - name: python-boto
+        - name: python{{ '3' if grains['osmajorrelease']|int > 10 else '' }}-boto
 
 
 duplicity-job-directory:
