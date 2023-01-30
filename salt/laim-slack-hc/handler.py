@@ -54,7 +54,7 @@ class SlackHoneycombHandler(Laim):
         self.honeycomb_key = self.config["honeycomb-key"]
         self.slack_token = self.config["slack-token"]
         self.honeycomb_base_context = {
-            "service_name": "laim",
+            "service.name": "laim",
             "host": self.config["hostname"],
         }
 
@@ -96,7 +96,7 @@ class SlackHoneycombHandler(Laim):
     def post_to_honeycomb(self, recipients, message, trace_id, parent_id):
         upgrades = parse_package_upgrades(message)
         context = {
-            "action": "package-upgrade",
+            "name": "package-upgrade",
             "to": recipients,
             "from": message.get("From"),
             "subject": message.get("Subject"),
@@ -127,7 +127,7 @@ class SlackHoneycombHandler(Laim):
         # ignore failures here as long as we also include details about the failure
         start_time = time.time()
         log_data = {
-            "action": "post-honeycomb",
+            "name": "post-honeycomb",
             "skip_honeycomb": True,
         }
         try:
