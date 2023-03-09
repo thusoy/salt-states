@@ -114,3 +114,12 @@ Subsystem sftp internal-sftp
 UsePAM no
 
 MaxAuthTries 5
+
+# If a user has the group sftponly they will only have access to the directory
+# sftp under their home directory
+Match group sftponly
+     ChrootDirectory /home/%u/sftp
+     X11Forwarding no
+     AllowTcpForwarding no
+     AllowAgentForwarding no
+     ForceCommand internal-sftp
