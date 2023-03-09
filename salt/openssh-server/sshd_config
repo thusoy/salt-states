@@ -118,7 +118,7 @@ MaxAuthTries 5
 # If a user has the group sftponly they will only have access to the directory
 # sftp under their home directory
 Match group sftponly
-     ChrootDirectory %h/sftp
+     ChrootDirectory /mnt/sftp/%u
      X11Forwarding no
      AllowTcpForwarding no
      AllowAgentForwarding no
