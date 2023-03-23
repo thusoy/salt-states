@@ -1,5 +1,0 @@
-{% set terraform = salt['grains.filter_by']({
-    'default': {
-        'version_spec': '1.0.7 sha256=bc79e47649e2529049a356f9e60e06b47462bf6743534a10a4c16594f443be7b',
-    },
-}, merge=pillar.get('terraform', {})) %}
