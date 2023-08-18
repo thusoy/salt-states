@@ -1,7 +1,7 @@
 {% from 'duplicity/map.jinja' import duplicity with context %}
 
 include:
-    - .
+    - duplicity
     - cronic
 
 
