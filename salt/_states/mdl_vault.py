@@ -20,8 +20,6 @@ except ImportError:
     log.debug('Unable to import the requests library.')
     DEPS_INSTALLED = False
 
-__all__ = ['initialize']
-
 
 def __virtual__():
     return DEPS_INSTALLED
