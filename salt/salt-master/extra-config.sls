@@ -6,7 +6,7 @@ salt-master-extra-config-{{ name }}:
     file.managed:
         - name: /etc/salt/master.d/{{ name }}.conf
         - user: root
-        - group: saltmaster
+        - group: salt
         - mode: 640
         - show_changes: False
         - template: jinja
