@@ -6,7 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "bento/debian-11.2"
+  config.vm.box = "bento/debian-12.0"
 
   # Increase available ram a notch
   config.vm.provider :virtualbox do |vb|
@@ -34,8 +34,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Prevent TTY Errors (copied from laravel/homestead: "homestead.rb" file)... By default this is "bash -l".
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-  config.vm.provision "shell", inline: "sudo APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add /vagrant/salt-release-key.asc"
-  config.vm.provision "shell", inline: "echo 'deb https://repo.saltstack.com/py3/debian/11/amd64/3004 bullseye main' | tee /etc/apt/sources.list.d/saltstack.list"
+  config.vm.provision "shell", inline: "cat /vagrant/salt-release-key.asc | gpg --dearmor | sudo tee /usr/share/keyrings/salt-archive-keyring-2023.gpg >/dev/null"
+  # Salt hasn't released binaries for bookworm yet, but the bullseye ones should be compatible
+  config.vm.provision "shell", inline: "echo 'deb [signed-by=/usr/share/keyrings/salt-archive-keyring-2023.gpg] https://repo.saltproject.io/salt/py3/debian/11/amd64/3006 bullseye main' | tee /etc/apt/sources.list.d/saltstack.list"
   config.vm.provision "shell", inline: "sudo apt-get update --allow-releaseinfo-change && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y vim salt-minion"
   config.vm.provision "shell", inline: "sudo cp /vagrant/vagrant-minion /etc/salt/minion && sudo service salt-minion restart"
   config.vm.provision "shell", inline: "sudo salt-call saltutil.sync_all"
