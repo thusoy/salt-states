@@ -1,6 +1,6 @@
 pcrypt-deps:
     pkg.installed:
-        - name: python-virtualenv
+        - name: python3-virtualenv
 
 
 pcrypt:
