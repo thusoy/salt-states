@@ -1,7 +1,7 @@
 {% from 'rabbitmq/map.jinja' import rabbitmq with context %}
 
 include:
-    - .
+    - rabbitmq
     - .management_pillar_check
 
 
