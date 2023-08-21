@@ -161,8 +161,9 @@ iptables-output-log-unmatched-{{ family }}:
 
 {% endfor %} # end ipv4/ipv6
 
-
-# Split iptables related logs to /var/log/iptables.log
+{% if grains['osmajorrelease']|int < 12 %}
+# Split iptables related logs to /var/log/iptables.log if using rsyslog (not
+# installed by default on bookworm)
 iptables-rsyslog-config:
     file.managed:
         - name: /etc/rsyslog.d/11-iptables.conf
@@ -172,6 +173,7 @@ iptables-rsyslog-config:
         - name: rsyslog
         - watch:
             - file: iptables-rsyslog-config
+{% endif %}
 
 
 # Rotate the logs
