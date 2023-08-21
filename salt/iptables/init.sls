@@ -13,6 +13,11 @@ iptables-deps:
     pkg.installed:
         - pkgs:
             - iptables-persistent
+            {% if grains['osmajorrelease']|int >= 12 %}
+            # Needed until we port to nftables
+            - iptables
+            {% endif %}
+        - order: 0
 
 
 iptables-rules:
