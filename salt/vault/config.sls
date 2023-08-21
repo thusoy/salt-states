@@ -1,7 +1,7 @@
 {% from 'vault/map.jinja' import vault with context %}
 
 include:
-    - .
+    - vault
 
 
 {% for name, policy in vault.get('policies', {}).items() %}
