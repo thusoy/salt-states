@@ -19,8 +19,6 @@ except ImportError:
     log.debug('Unable to import the requests library.')
     DEPS_INSTALLED = False
 
-__all__ = ['initialize', 'is_initialized']
-
 SEVEN_DAYS = (7 * 24 * 60 * 60)
 
 
