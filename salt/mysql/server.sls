@@ -41,14 +41,13 @@ mysql-client:
     pkg.installed:
         - pkgs:
             - libmysqlclient-dev
-            - pkg-config
             - python3-pip
         - require:
             - pkg: mysql-builtin-client
             - pkgrepo: mysql
 
     pip.installed:
-        - name: mysqlclient
+        - name: mysqlclient==2.1.1
         - require:
             - pkg: mysql-client
             - pkg: mysql
