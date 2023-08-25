@@ -51,6 +51,7 @@ mysql-client:
         - name: mysqlclient
         - require:
             - pkg: mysql-client
+            - pkg: mysql
 
 
 {% for family in ('ipv4', 'ipv6') %}
