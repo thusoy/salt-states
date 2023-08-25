@@ -48,7 +48,7 @@ mysql-client:
             - pkgrepo: mysql
 
     pip.installed:
-        - name: mysqlclient
+        - name: mysqlclient==2.1.1
         - require:
             - pkg: mysql-client
 
