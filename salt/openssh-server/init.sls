@@ -50,6 +50,12 @@ openssh-server-host-key-{{ key }}:
         - watch_in:
             - service: openssh-server
 
+# Remove potentially old unused pubkeys that might be left over from default
+# boot keys to prevent logged warnings about key mismatch
+openssh-server-host-key-{{ key }}-public:
+    file.absent:
+        - name: /etc/ssh/ssh_host_{{ key }}_key.pub
+
 
 {% if 'host_%s_certificate' % key in openssh_server %}
 openssh-server-host-{{ key }}-certificate:
