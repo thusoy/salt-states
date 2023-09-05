@@ -45,7 +45,7 @@ nginx:
           format: main
 ```
 
-To enable only whitelisted IPs access to the instance:
+To enable only allowed IPs access to the instance:
 
 ```yaml
 nginx:

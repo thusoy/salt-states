@@ -45,12 +45,12 @@ MACs {{ ','.join(openssh_server.macs) }}
 HostKeyAlgorithms {{ ','.join(openssh_server.host_key_algorithms) }}
 
 {% if openssh_server.allow_groups %}
-# Only allow login for users in whitelisted groups
+# Only allow login for users in allowed groups
 AllowGroups {{ ' '.join(openssh_server.allow_groups) }}
 {% endif %}
 
 {% if openssh_server.allow_users %}
-# Only allow login for whitelisted users
+# Only allow login for allowed users
 AllowUsers {{ ' '.join(openssh_server.allow_users) }}
 {% endif %}
 

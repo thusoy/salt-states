@@ -3,7 +3,7 @@ openssh-server
 
 Installs and configures openssh-server.
 
-By default only allows users in the 'ssh' group access, you can disable this by setting `allow_groups: []`. You can also whitelist specific users by setting `allow_users`.
+By default only allows users in the 'ssh' group access, you can disable this by setting `allow_groups: []`. You can also allow specific users by setting `allow_users`.
 
 Denies root logins and only allows pubkey auth. Might enable allowing passwords if combined with 2FA/U2F in the future if desired.
 
