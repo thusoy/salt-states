@@ -1,9 +1,12 @@
+include:
+    - apt-transport-https
+
+
 jenkins-deps:
     pkg.installed:
         - pkgs:
-            - apt-transport-https
-            - openjdk-8-jre
-            - openjdk-8-jdk
+            - openjdk-11-jre
+            - openjdk-11-jdk
 
 jenkins:
     pkgrepo.managed:
