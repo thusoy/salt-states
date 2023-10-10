@@ -8,9 +8,9 @@ include:
 jenkins-agent-deps:
     pkg.installed:
         - pkgs:
-            - openjdk-8-jre
-            - openjdk-8-jdk
-        - unless: java -version 2>&1 | head -1 | grep 1.8
+            - openjdk-11-jre
+            - openjdk-11-jdk
+        - unless: java -version 2>&1 | head -1 | grep 1.11
 
 
 jenkins-agent-ssh-group:
