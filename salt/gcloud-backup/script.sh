@@ -1,4 +1,4 @@
-{% set gcloud_backup = pillar.get('gcloud-backup', {}) -%}
+{% set gcloud_backup = salt['mdl_saltdata.resolve_leaf_values'](pillar.get('gcloud-backup', {})) -%}
 
 #!/bin/sh
 
