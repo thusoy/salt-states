@@ -11,7 +11,7 @@ set -eu
 gsutil \
     --quiet \
     -m \
-    rsync -r -d "{{ directory }}" "{{ gcloud_backup.get('destination') + directory[1:] }}"
+    rsync -r -d -P "{{ directory }}" "{{ gcloud_backup.get('destination') + directory[1:] }}"
 {% endfor -%}
 
 {% for file in gcloud_backup.get('files') %}
@@ -33,6 +33,6 @@ if [ "$current_hash" != "$cloud_hash" ]; then
     gsutil \
         --quiet \
         -m \
-        cp "{{ file }}" "{{ gcloud_backup.get('destination') + file[1:] }}"
+        cp -P "{{ file }}" "{{ gcloud_backup.get('destination') + file[1:] }}"
 fi
 {% endfor -%}
