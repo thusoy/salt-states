@@ -42,10 +42,10 @@ other-pillar:
     password: otherpass
 
 boto:
-    access_key_id: foobar
-    secret_access_key: secretbar
-    # secret_access_key_pillar: test_pillar:value
-
+    Credentials:
+        access_key_id: foobar
+        secret_access_key: secretbar
+        # secret_access_key_pillar: test_pillar:value
 
 test_pillar:
     value: other pillar value

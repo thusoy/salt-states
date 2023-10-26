@@ -1,0 +1,10 @@
+###################################
+# File managed by salt state boto #
+###################################
+
+{% for section, values in salt['mdl_saltdata.resolve_leaf_values'](pillar.get('boto', {})).items() %}
+[{{ section }}]
+{% for key, val in values.items() -%}
+{{ key }} = {{ val }}
+{% endfor -%}
+{% endfor %}
