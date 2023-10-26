@@ -41,6 +41,13 @@ redis:
 other-pillar:
     password: otherpass
 
+gcloud-backup:
+    destination: gs://foobucket/
+    directories:
+        - /vagrant/tools
+    files:
+        - /vagrant/README.md
+
 boto:
     Credentials:
         access_key_id: foobar
