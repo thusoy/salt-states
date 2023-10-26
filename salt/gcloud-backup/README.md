@@ -12,4 +12,6 @@ gcloud-backup:
     directories:
         - /foo/bar
         - /bar/foo
+    files:
+        - /some/file
 ```
