@@ -10,12 +10,17 @@ set -eu
 # Force destination to end with a slash
 raw_destination="{{ gcloud_backup.get('destination') }}"
 destination="${raw_destination%/}/"
+{% if gcloud_backup.get('exclude') -%}
+exclude="-x {{ gcloud_backup.exclude }}"
+{% else -%}
+exclude=""
+{%- endif %}
 
 {% for directory in gcloud_backup.get('directories') %}
 gsutil \
     --quiet \
     -m \
-    rsync -r -d -P "{{ directory }}" "${destination}{{ directory[1:] }}"
+    rsync -r -d -P $exclude "{{ directory }}" "${destination}{{ directory[1:] }}"
 {% endfor -%}
 
 {% for file in gcloud_backup.get('files') %}

@@ -43,6 +43,7 @@ other-pillar:
 
 gcloud-backup:
     destination: gs://foobucket/
+    exclude: '.*\.sock$'
     directories:
         - /vagrant/tools
     files:

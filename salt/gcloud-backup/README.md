@@ -17,3 +17,13 @@ gcloud-backup:
 ```
 
 POSIX attributes on files are preserved, but not on directories, thus if any directories backed up need to be restored with the same owner and mode you need to handle that separately.
+
+You can define a regex of files to exclude (that will apply to all directories):
+
+```yaml
+gcloud-backup:
+    destination: gs://<bucket-name>
+    directories:
+        - /foo
+    exclude: '\.sock$' # To f. ex ignore sockets
+```
