@@ -2,7 +2,7 @@
 
 def run():
     '''Validate that the gcloud-backup pillar has the necessary config.'''
-    gcloud_backup = __pillar__.get('gcloud-backup', {})
+    gcloud_backup = __salt__['mdl_saltdata.resolve_leaf_values'](__pillar__.get('gcloud-backup', {}))
     destination = gcloud_backup.get('destination')
     assert destination, (
         'pillar gcloud-backup:destination required but missing')
