@@ -15,3 +15,5 @@ gcloud-backup:
     files:
         - /some/file
 ```
+
+POSIX attributes on files are preserved, but not on directories, thus if any directories backed up need to be restored with the same owner and mode you need to handle that separately.
