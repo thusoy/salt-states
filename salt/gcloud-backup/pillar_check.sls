@@ -6,7 +6,7 @@ def run():
     destination = gcloud_backup.get('destination')
     assert destination, (
         'pillar gcloud-backup:destination required but missing')
-    assert destination.endswith('/'), 'gcloud-backup:destination must end with a slashg'
+    assert destination.endswith('/'), 'gcloud-backup:destination must end with a slash'
     directories = gcloud_backup.get('directories')
     files = gcloud_backup.get('files')
     assert directories or files, (
