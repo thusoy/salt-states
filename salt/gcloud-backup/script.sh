@@ -7,11 +7,15 @@ set -eu
 # Using gcloud storage would be the "modern" approach, but since this doesn't
 # currently seem to work with --quiet we stay on gsutil for now.
 
+# Force destination to end with a slash
+raw_destination="{{ gcloud_backup.get('destination') }}"
+destination="${raw_destination%/}/"
+
 {% for directory in gcloud_backup.get('directories') %}
 gsutil \
     --quiet \
     -m \
-    rsync -r -d -P "{{ directory }}" "{{ gcloud_backup.get('destination') + directory[1:] }}"
+    rsync -r -d -P "{{ directory }}" "${destination}{{ directory[1:] }}"
 {% endfor -%}
 
 {% for file in gcloud_backup.get('files') %}
@@ -24,7 +28,7 @@ current_hash=$(md5sum "{{ file }}" \
     | cut -d ' ' -f1 \
     | python3 -c 'import base64, sys; print(base64.b64encode(bytes.fromhex(sys.stdin.read())).decode("utf-8"))'
 )
-cloud_hash=$(gsutil ls -L "{{ gcloud_backup.get('destination') + file[1:] }}" \
+cloud_hash=$(gsutil ls -L "${destination}{{ file[1:] }}" \
     | grep 'Hash (md5)' \
     | cut -d: -f2 \
     | tr -d ' '
@@ -33,6 +37,6 @@ if [ "$current_hash" != "$cloud_hash" ]; then
     gsutil \
         --quiet \
         -m \
-        cp -P "{{ file }}" "{{ gcloud_backup.get('destination') + file[1:] }}"
+        cp -P "{{ file }}" "${destination}{{ file[1:] }}"
 fi
 {% endfor -%}
