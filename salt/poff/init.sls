@@ -3,17 +3,14 @@
 include:
     - .pillar_check
     - postgres.client
-    - python-pip
-    - python-virtualenv
 
 
 poff-deps:
     pkg.installed:
         - pkgs:
             - python3-dev
-        - require:
-            - pkg: python3-pip
-            - pkg: python3-virtualenv
+            - python3-pip
+            - python3-virtualenv
 
 
 poff:
