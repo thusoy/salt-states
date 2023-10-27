@@ -10,10 +10,10 @@ include:
 poff-deps:
     pkg.installed:
         - pkgs:
-            - python-dev
+            - python3-dev
         - require:
-            - pkg: python-pip
-            - pkg: python-virtualenv
+            - pkg: python3-pip
+            - pkg: python3-virtualenv
 
 
 poff:
