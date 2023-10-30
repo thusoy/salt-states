@@ -2,7 +2,7 @@
 
 set -eu
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 1 ]; then
     echo >&2 "usage: ./restore.sh <source>"
     echo >&2
     echo >&2 "Example: ./restore.sh gs://foobucket. Add decryption keys if necessary to your .boto config first."
