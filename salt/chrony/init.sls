@@ -33,8 +33,8 @@ chrony-firewall-outgoing-dns-{{ family }}-{{ protocol }}:
             - pkg: chrony
 {% endfor %}
 
-{% set allow_sources = chrony.get('allow_sources_v4', ['0.0.0.0']) if family == 'ipv4' else chrony.get('allow_sources_v6', ['::']) %}
-{% for source in allow_sources %}
+{% set allow_firewall = chrony.get('allow_firewall_v4', ['0.0.0.0']) if family == 'ipv4' else chrony.get('allow_firewall_v6', ['::']) %}
+{% for source in allow_firewall %}
 chrony-firewall-outgoing-{{ family }}-{{ source.replace(':', '-') }}:
     firewall.append:
         - chain: OUTPUT
