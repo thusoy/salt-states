@@ -52,7 +52,7 @@ def get_accounts_to_remove():
 def remove_system_account_login_shells():
     whitelisted_system_account_shells = get_whitelisted_system_account_shells()
     nologin = '/usr/sbin/nologin'
-    valid_shells = ('/usr/bin/false', '/bin/false', nologin)
+    valid_shells = ('/usr/bin/false', '/bin/false', '/sbin/nologin', nologin)
     for user, shell in get_system_account_shells():
         valid_shells_for_user = list(valid_shells)
 
