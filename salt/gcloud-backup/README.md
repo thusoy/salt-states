@@ -27,3 +27,5 @@ gcloud-backup:
         - /foo
     exclude: '\.sock$' # To f. ex ignore sockets
 ```
+
+Restoration is a matter of running `gsutil -m rsync -r -P gs://<bucket> <destination-dir>`. You might want to restore to a non-root directory initially to review and fix directory permissions before copying over to root (ie with regular `rsync`).
