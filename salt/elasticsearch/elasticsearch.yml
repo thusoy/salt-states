@@ -35,7 +35,7 @@ node.name: {{ grains.id }}
 #
 # Path to directory where to store the data (separate multiple locations by comma):
 #
-path.data: /var/lib/elasticsearch
+path.data: {{ elasticsearch.data_dir }}
 #
 # Path to log files:
 #

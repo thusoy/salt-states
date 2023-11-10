@@ -33,6 +33,7 @@ elasticsearch:
             - file: elasticsearch-jvm-options
             - file: elasticsearch-elasticsearch-yml
             - file: elasticsearch-logging-config
+            - file: elasticsearch-data-dir
 
     # Created a dedicated temp directory to not conflict with hardening of /tmp
     file.directory:
@@ -70,6 +71,16 @@ elasticsearch-logging-config:
         - name: /etc/elasticsearch/log4j2.properties
         - source: salt://elasticsearch/log4j2.properties
         - template: jinja
+
+
+elasticsearch-data-dir:
+    file.directory:
+        - name: {{ elasticsearch.data_dir }}
+        - user: elasticsearch
+        - group: elasticsearch
+        - mode: 2750
+        - require:
+             - pkg: elasticsearch
 
 
 {% for family in ('ipv4', 'ipv6') %}

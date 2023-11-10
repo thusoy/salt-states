@@ -3,6 +3,7 @@
 {% set elasticsearch = salt['grains.filter_by']({
     'default': {
         'initial_master_nodes': [grains.id],
+        'data_dir': '/var/lib/elasticsearch',
         'version': '7.7.1'
     },
 }, merge=pillar_get('elasticsearch')) %}
