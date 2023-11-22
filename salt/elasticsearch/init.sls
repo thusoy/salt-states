@@ -34,6 +34,7 @@ elasticsearch:
             - file: elasticsearch-elasticsearch-yml
             - file: elasticsearch-logging-config
             - file: elasticsearch-data-dir
+            - pkg: elasticsearch
 
     # Created a dedicated temp directory to not conflict with hardening of /tmp
     file.directory:
