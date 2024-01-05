@@ -3,6 +3,11 @@
 {% set swap_location = swap.get('location', '/.swapfile') %}
 
 
+# The output from `file` on swapfiles varies between file versions, on buster it looks like this:
+# <path>: Linux/i386 swap file (new style), version 1 (4K pages), size 524287 pages, no label, UUID=<uuid>
+# On bullseye:
+# <path>: Linux swap file, 4k page size, little endian, version 1, size 524287 pages, 0 bad pages, no label, UUID=<uuid>
+
 swapfile:
     cmd.run:
         - name: (umask 077; dd if=/dev/zero of={{ swap_location }} bs=1M count={{ swap_size }}) &&
