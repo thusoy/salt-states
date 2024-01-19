@@ -2,10 +2,6 @@
 
 Installs vault.
 
-To get the version spec for the latest version to put into your own pillar or
-update the default in this state, run `./get-latest-version.sh`, which securely
-fetches the latest version and valiates the hash against the release key.
-
 References:
 [Vault Deployment Guide](https://learn.hashicorp.com/vault/operations/ops-deployment-guide)
 [Production Hardening](https://learn.hashicorp.com/vault/day-one/production-hardening)
@@ -31,43 +27,6 @@ vault:
         variable:
             ami:
                 description: 'the AMI to use'
-```
-
-
-The state allows settings both server configuration (the stuff that goes in the config
-file and the service), and the stuff you would normally set from the CLI or via the API
-like auth backends, audit logging, secret engines, etc.
-
-Some examples of the latter:
-
-```yaml
-vault:
-    audit:
-        - backend_type: syslog
-
-    policies:
-        read-only:
-            path:
-                '*':
-                    capabilities: ['read']
-
-    auth_backends:
-        - backend_type: gcp
-          description: Google Cloud
-          roles:
-            - name: my-read-only-role
-              config:
-                type: iam
-                policies: read-only
-                bound_service_accounts:
-                    - myserviceaccount@example.com
-
-    secrets_engines:
-        - type: kv
-          description: kv version 2 engine
-          mount_point: secrets
-          options:
-            version: 2
 ```
 
 

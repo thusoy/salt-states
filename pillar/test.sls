@@ -88,40 +88,6 @@ vault:
         imI28QVSS1+MoY1kxImgJkywZysJog9lWQ==
         -----END EC PRIVATE KEY-----
     # dev: True
-    policies:
-        read-only:
-            path:
-                '*':
-                    capabilities: ['read']
-
-    auth_backends:
-        - backend_type: github
-          description: 'github backend description'
-          config:
-            organization: some-github-org
-
-        - backend_type: gcp
-          description: Google Cloud
-          roles:
-            - name: my-read-only-role
-              config:
-                type: iam
-                policies: read-only
-                bound_service_accounts_pillar:
-                    - terraform:vault_service_account
-
-    secrets_engines:
-        - type: kv
-          description: kv version 2 engine
-          mount_point: secrets
-          options:
-            version: 2
-
-    audit:
-        - backend_type: syslog
-
-terraform:
-    vault_service_account: test-app@test-project.iam.gserviceaccount.com
 
 
 sentry_forwarder:
