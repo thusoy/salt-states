@@ -172,16 +172,16 @@ vault-firewall-inbound-client-{{ family }}:
         - jump: ACCEPT
 
 
-vault-firewall-outbound-https-{{ family }}:
+vault-firewall-outbound-backend-{{ family }}:
     firewall.append:
         - family: {{ family }}
         - chain: OUTPUT
         - protocol: tcp
-        - dport: 443
+        - dports: 443,3306,5432
         - match:
             - comment
             - owner
-        - comment: 'vault: Allow communicating with storage and auth backends over HTTPS'
+        - comment: 'vault: Allow communicating with storage and secret engines'
         - uid-owner: vault
         - jump: ACCEPT
         - require:
