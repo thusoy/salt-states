@@ -35,6 +35,7 @@ elasticsearch:
             - file: elasticsearch-logging-config
             - file: elasticsearch-data-dir
             - pkg: elasticsearch
+        - enable: True
 
     # Created a dedicated temp directory to not conflict with hardening of /tmp
     file.directory:
