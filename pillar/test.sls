@@ -346,7 +346,7 @@ nginx:
 
 postgres.host: '10.20.30.40'
 postgres:
-    version: 9.5
+    version: 16
     internal: False
     cert: |
         -----BEGIN CERTIFICATE-----
