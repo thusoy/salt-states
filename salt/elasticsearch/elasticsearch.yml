@@ -94,3 +94,6 @@ cluster.initial_master_nodes: {{ elasticsearch.initial_master_nodes | json }}
 # Require explicit names when deleting indices:
 #
 #action.destructive_requires_name: true
+{% if 'thread_pool_search_size' in elasticsearch -%}
+thread_pool.search.size: {{ elasticsearch.thread_pool_search_size }}
+{% endif -%}
