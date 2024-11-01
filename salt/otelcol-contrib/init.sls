@@ -25,6 +25,7 @@ otelcol-contrib-config:
         - template: jinja
         # Can be secrets embedded here
         - show_changes: False
+        - mode: 640
         - watch_in:
             - service: otelcol-contrib
 
