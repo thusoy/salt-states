@@ -1,6 +1,6 @@
 {% set acme_dns = pillar.get('acme-dns', {}) %}
 {% set extensions_directory = acme_dns.get('extensions-directory', '/usr/local/lib/acme-dns/extensions') %}
-{% set saltmaster_user = acme_dns.get('saltmaster-user', 'saltmaster') %}
+{% set saltmaster_user = acme_dns.get('saltmaster-user', 'salt') %}
 
 include:
     - .pillar_check
