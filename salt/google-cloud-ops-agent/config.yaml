@@ -1,0 +1,5 @@
+#####################################################
+# File managed by salt state google-cloud-ops-agent #
+#####################################################
+
+{{ salt['pillar.get']('google-cloud-ops-agent:config', {})|yaml(False) }}
