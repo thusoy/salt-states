@@ -1,17 +1,32 @@
-do-agent-deps:
-    pkg.installed:
-        - name: apt-transport-https
+include:
+    - apt-transport-https
+
+
+do-agent-key:
+    file.managed:
+        - name: /usr/share/keyrings/digitalocean-agent-keyring.gpg
+        - source: salt://do-agent/release-key.gpg
+
 
 do-agent:
-    pkgrepo.managed:
-        - name: deb https://repos.insights.digitalocean.com/apt/do-agent main main
-        - key_url: salt://do-agent/release-key.asc
+    file.managed:
+        - name: /etc/apt/sources.list.d/digitalocean-agent.list
+        - contents: |
+            # File managed by salt state do-agent #
+            deb [signed-by=/usr/share/keyrings/digitalocean-agent-keyring.gpg] https://repos.insights.digitalocean.com/apt/do-agent main main
         - require:
-            - pkg: do-agent-deps
+            - file: do-agent-key
+
+    cmd.watch:
+        # Update only the relevant repo to keep this fast
+        - name: apt-get update -y -o Dir::Etc::sourcelist="sources.list.d/digitalocean-agent.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+        - watch:
+            - file: do-agent
+            - file: do-agent-key
 
     pkg.installed:
         - require:
-            - pkgrepo: do-agent
+            - cmd: do-agent
 
 
 do-agent-firewall-metadata:
