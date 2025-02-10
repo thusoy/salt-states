@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 
+import dns.resolver
 import dns.tsigkeyring
 import yaml
 
@@ -98,7 +99,7 @@ def load_config(config_file_path):
 def get_acme_tiny_args(config, zone):
     args = {
         'contact': ['mailto:%s' % config['contact']],
-        'dns_zone_update_server': zone['update-server'],
+        'dns_zone_update_server': dns.resolver.resolve(zone['update-server']).rrset[0].address,
         'dns_zone_keyring': dns.tsigkeyring.from_text({
             zone['key-name']: zone['key-secret'],
         }),
