@@ -17,11 +17,11 @@ postgres-server-repo-preferences:
         - name: /etc/apt/preferences.d/postgresql
         - contents: |
             Package: *
-            Pin: origin apt.postgresql.org
+            Pin: origin apt-archive.postgresql.org
             Pin-Priority: 1
 
             Package: postgresql* libpq5
-            Pin: origin apt.postgresql.org
+            Pin: origin apt-archive.postgresql.org
             Pin-Priority: 500
 
 
@@ -30,7 +30,7 @@ postgres-server-repo:
         # Install from the archive by default since they have both new and older packages,
         # to enable pinning a specific version
         - name: /etc/apt/sources.list.d/postgresql.list
-        - contents: deb [signed-by=/usr/share/keyrings/postgresql.gpg] https://apt.postgresql.org/pub/repos/apt/ {{ grains.oscodename }}-pgdg main
+        - contents: deb [signed-by=/usr/share/keyrings/postgresql.gpg] https://apt-archive.postgresql.org/pub/repos/apt/ {{ grains.oscodename }}-pgdg-archive main
         - require:
             - file: postgres-server-repo-key
 
