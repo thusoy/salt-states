@@ -1,43 +1,69 @@
 {% from 'rabbitmq/map.jinja' import rabbitmq with context %}
 
-include:
-    - apt-transport-https
 
-
-rabbitmq-erlang-repo:
-    pkgrepo.managed:
-        - name: deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ grains.oscodename }} main
-        - key_url: salt://rabbitmq/release-key-erlang.asc
-
-    {% if 'erlang_version' in rabbitmq %}
+rabbitmq-repo-key-erlang:
     file.managed:
-        - name: /etc/apt/preferences.d/erlang
-        - contents: |
-            Package: erlang*
-            Pin: version {{ rabbitmq.erlang_version }}
-            Pin-Priority: 1000
+        - name: /usr/share/keyrings/rabbitmq-erlang.gpg
+        - source: salt://rabbitmq/release-key.E495BB49CC4BBE5B.gpg
 
-    cmd.watch:
-        - name: apt-get update -y
-        - watch:
-            - file: rabbitmq-erlang-repo
-        - require_in:
-            - pkg: rabbitmq-server
-    {% endif %}
+
+rabbitmq-repo-key-rabbitmq:
+    file.managed:
+        - name: /usr/share/keyrings/rabbitmq-server.gpg
+        - source: salt://rabbitmq/release-key.9F4587F226208342.gpg
+
+
+rabbitmq-repo:
+    file.managed:
+        - name: /etc/apt/sources.list.d/rabbitmq.list
+        - contents: |
+            deb [signed-by=/usr/share/keyrings/rabbitmq-erlang.gpg] https://ppa1.rabbitmq.com/rabbitmq/rabbitmq-erlang/deb/debian {{ grains.oscodename }} main
+            deb [signed-by=/usr/share/keyrings/rabbitmq-server.gpg] https://ppa1.rabbitmq.com/rabbitmq/rabbitmq-server/deb/debian {{ grains.oscodename }} main
+        - require:
+            - file: rabbitmq-repo-key-erlang
+            - file: rabbitmq-repo-key-rabbitmq
+
+
+rabbitmq-repo-preferences:
+    file.managed:
+        - name: /etc/apt/preferences.d/rabbitmq
+        - contents: |
+            Package: *
+            Pin: origin ppa1.rabbitmq.com
+            Pin-Priority: 1
+
+            Package: erlang*
+            {% if 'erlang_version' in rabbitmq -%}
+            {# Can't pin both origin and version -#}
+            Pin: version {{ rabbitmq.erlang_version }}
+            Pin-Priority: 1001
+            {% else -%}
+            Pin: origin ppa1.rabbitmq.com
+            Pin-Priority: 500
+            {% endif %}
+
+            Package: rabbitmq-server
+            Pin: origin ppa1.rabbitmq.com
+            Pin-Priority: 500
 
 
 rabbitmq-server:
-    pkgrepo.managed:
-        - name: deb https://packagecloud.io/rabbitmq/rabbitmq-server/debian/ {{ grains.oscodename }} main
-        - key_url: salt://rabbitmq/release-key-rabbitmq.asc
+    cmd.watch:
+        # Update only the relevant repos to keep this fast
+        - name: apt-get update -y -o Dir::Etc::sourcelist="sources.list.d/rabbitmq.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+        - watch:
+            - file: rabbitmq-repo-key-erlang
+            - file: rabbitmq-repo-key-rabbitmq
+            - file: rabbitmq-repo
+            - file: rabbitmq-repo-preferences
+
 
     pkg.installed:
-        {% if 'version' in rabbitmq %}
-        - version: {{ rabbitmq.version }}
-        {% endif %}
+        - pkgs:
+            - rabbitmq-server: {{ rabbitmq.get('version', '~') }}
+            - erlang-base: {{ rabbitmq.get('erlang_version', '~') }}
         - require:
-            - pkgrepo: rabbitmq-erlang-repo
-            - pkgrepo: rabbitmq-server
+            - cmd: rabbitmq-server
 
     service.running:
         - require:
@@ -48,14 +74,6 @@ rabbitmq-server:
         - name: guest
         - require:
             - pkg: rabbitmq-server
-
-
-rabbitmq-old-repos:
-    pkgrepo.absent:
-        - names:
-            - deb https://dl.bintray.com/rabbitmq-erlang/debian buster erlang
-            - deb https://dl.bintray.com/rabbitmq/debian buster main
-        - keyid: 6B73A36E6026DFCA
 
 
 {% for family in ('ipv4', 'ipv6') %}

@@ -1,6 +1,6 @@
 # rabbitmq
 
-Install RabbitMQ 3.8 with Erland 23. There's a substate `rabbitmq.management` that will
+Install RabbitMQ and Erlang. There's a substate `rabbitmq.management` that will
 enable the management plugin and enable the users `admin` and `monitoring` with
 the respective tags. The state is designed to be run the management plugin behind a
 reverse proxy like nginx, and thus doesn't expose any services externally, but this can be
@@ -31,5 +31,6 @@ To specify a specific version:
 rabbitmq:
     # Can be 'latest' if you want it to always upgrade to the newest
     # version available
-    version: 3.8.22-1
+    version: 4.0.5-1
+    erlang_version: 1:27.2.4-1
 ```
