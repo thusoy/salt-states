@@ -6,25 +6,50 @@ include:
     - ca-certificates
 
 
-postgres-server-deps:
-    pkg.installed:
-        - name: apt-transport-https
+postgres-server-repo-key:
+    file.managed:
+        - name: /usr/share/keyrings/postgresql.gpg
+        - source: salt://postgres/release-key.gpg
 
-postgres-server:
-    pkgrepo.managed:
+
+postgres-server-repo-preferences:
+    file.managed:
+        - name: /etc/apt/preferences.d/postgresql
+        - contents: |
+            Package: *
+            Pin: origin apt.postgresql.org
+            Pin-Priority: 1
+
+            Package: postgresql* libpq5
+            Pin: origin apt.postgresql.org
+            Pin-Priority: 500
+
+
+postgres-server-repo:
+    file.managed:
         # Install from the archive by default since they have both new and older packages,
         # to enable pinning a specific version
-        - name: deb https://apt-archive.postgresql.org/pub/repos/apt/ {{ grains.oscodename }}-pgdg-archive main
-        - key_url: salt://postgres/release-key.asc
+        - name: /etc/apt/sources.list.d/postgresql.list
+        - contents: deb [signed-by=/usr/share/keyrings/postgresql.gpg] https://apt.postgresql.org/pub/repos/apt/ {{ grains.oscodename }}-pgdg main
         - require:
-            - pkg: postgres-server-deps
+            - file: postgres-server-repo-key
 
+    cmd.watch:
+        # Update only the relevant repos to keep this fast
+        - name: apt-get update -y -o Dir::Etc::sourcelist="sources.list.d/postgresql.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+        - file: postgres-server-repo
+        - file: postgres-server-repo-key
+        - file: postgres-server-repo-preferences
+
+
+postgres-server:
     pkg.installed:
         - pkgs:
             - postgresql-{{ version }}{{ '=' + postgres.patch_version if 'patch_version' in postgres else '' }}
             {% if version < 10 %}- postgresql-contrib-{{ version }}{% endif %}
         - require:
-            - pkgrepo: postgres-server
+            - file: postgres-server-repo-preferences
+            - cmd: postgres-server-repo
 
     file.managed:
         - name: /etc/postgresql/{{ version }}/main/pg_hba.conf
