@@ -27,6 +27,7 @@ iptables-rules:
         - apply: {{ iptables.get('apply', True) }}
 
 
+{% set all_users = salt['user.list_users']() %}
 {% for family in ('ipv4', 'ipv6') %}
 iptables-log-nonmatched-input-{{ family }}:
     firewall.append:
@@ -101,6 +102,25 @@ iptables-allow-outgoing-dns-for-root-{{ family }}-{{ protocol }}:
         - comment: "iptables: Allow outgoing DNS for root"
         - uid-owner: root
         - jump: ACCEPT
+
+
+# On systems using systemd-resolved we also need to allow the service user through
+{% if 'systemd-resolve' in all_users %}
+iptables-allow-outgoing-dns-for-systemd-resolved-{{ family }}-{{ protocol }}:
+    firewall.append:
+        - table: filter
+        - chain: OUTPUT
+        - family: {{ family }}
+        - proto: {{ protocol }}
+        - dport: 53
+        - destination: system_dns
+        - match:
+            - comment
+            - owner
+        - comment: "iptables: Allow outgoing DNS for systemd-resolved"
+        - uid-owner: systemd-resolve
+        - jump: ACCEPT
+{% endif %}
 {% endfor %}
 
 
