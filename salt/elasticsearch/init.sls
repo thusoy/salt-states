@@ -12,7 +12,7 @@ elasticsearch-deps:
 elasticsearch:
     # add repo to managed repositories
     pkgrepo.managed:
-        - name: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+        - name: deb https://artifacts.elastic.co/packages/{{ elasticsearch.version.split('.')[0] }}.x/apt stable main
         - key_url: salt://elasticsearch/release-key
         - require:
             - pkg: elasticsearch-deps
