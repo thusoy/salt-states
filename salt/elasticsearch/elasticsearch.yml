@@ -107,3 +107,9 @@ xpack.security.http.ssl.enabled: false
 xpack.security.enrollment.enabled: false
 xpack.security.autoconfiguration.enabled: false
 {% endif -%}
+#
+# Remote server whitelist for reindexing
+#
+{% if 'reindex_remote_whitelist' in elasticsearch -%}
+reindex.remote.whitelist: {{ elasticsearch.reindex_remote_whitelist | json }}
+{% endif -%}
