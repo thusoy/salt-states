@@ -110,11 +110,11 @@ elasticsearch-outbound-firewall-{{ family }}:
         - chain: OUTPUT
         - family: {{ family }}
         - protocol: tcp
-        - dport: 9300
+        - dports: 9200,9300
         - match:
             - comment
             - owner
-        - comment: 'elasticsearch: Allow outgoing traffic for internal comms'
+        - comment: 'elasticsearch: Allow outgoing traffic for http and internal comms'
         - uid-owner: elasticsearch
         - jump: ACCEPT
         - require:
