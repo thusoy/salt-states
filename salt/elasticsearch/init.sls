@@ -12,7 +12,7 @@ elasticsearch-deps:
 elasticsearch:
     # add repo to managed repositories
     pkgrepo.managed:
-        - name: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+        - name: deb https://artifacts.elastic.co/packages/{{ elasticsearch.version.split('.')[0] }}.x/apt stable main
         - key_url: salt://elasticsearch/release-key
         - require:
             - pkg: elasticsearch-deps
@@ -110,11 +110,11 @@ elasticsearch-outbound-firewall-{{ family }}:
         - chain: OUTPUT
         - family: {{ family }}
         - protocol: tcp
-        - dport: 9300
+        - dports: 9200,9300
         - match:
             - comment
             - owner
-        - comment: 'elasticsearch: Allow outgoing traffic for internal comms'
+        - comment: 'elasticsearch: Allow outgoing traffic for http and internal comms'
         - uid-owner: elasticsearch
         - jump: ACCEPT
         - require:
