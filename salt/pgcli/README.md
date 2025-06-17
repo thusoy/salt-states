@@ -1,0 +1,4 @@
+pgcli
+========
+
+Installs pgcli.

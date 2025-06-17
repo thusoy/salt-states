@@ -1,0 +1,2 @@
+pgcli:
+    pkg.installed
