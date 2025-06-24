@@ -196,9 +196,8 @@ iptables-output-log-unmatched-{{ family }}:
 
 {% endfor %} # end ipv4/ipv6
 
-{% if grains['osmajorrelease']|int < 12 %}
-# Split iptables related logs to /var/log/iptables.log if using rsyslog (not
-# installed by default on bookworm)
+{% if salt['pkg.version']('rsyslog') %}
+# Split iptables related logs to /var/log/iptables.log if using rsyslog
 iptables-rsyslog-config:
     file.managed:
         - name: /etc/rsyslog.d/11-iptables.conf
