@@ -1,7 +1,17 @@
-{% set otelcol_contrib = salt['grains.filter_by']({
-    'default': {
-        'version_info': '0.117.0 sha256=005bef5fcc133bd74a868fe1e9b86bc17dc6f4da85e31633c73b75fac2c47e7b',
-        'config': {},
-        'extra_capabilities': [],
+{% set otelcol_contrib = salt['grains.filter_by'](
+    {
+        'base': {
+            'config': {},
+            'extra_capabilities': [],
+        },
+        'default': {
+            'version_info': '0.117.0 sha256=005bef5fcc133bd74a868fe1e9b86bc17dc6f4da85e31633c73b75fac2c47e7b',
+        },
+        'arm64': {
+            'version_info': '0.117.0 sha256=15d4aa9fab23910e80d40e515bbe079b5d9bc736555388b62708eaf883f928ab',
+        },
     },
-}, merge=salt['pillar.get']('otelcol-contrib')) %}
+    base='base',
+    grain='osarch',
+    merge=salt['pillar.get']('otelcol-contrib'))
+%}

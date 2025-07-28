@@ -4,7 +4,7 @@
 otelcol-contrib:
     file.managed:
         - name: /usr/local/src/otelcol-contrib.deb
-        - source: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{ version }}/otelcol-contrib_{{ version }}_linux_amd64.deb
+        - source: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{ version }}/otelcol-contrib_{{ version }}_linux_{{ grains['osarch'] }}.deb
         - source_hash: {{ version_hash }}
 
     cmd.watch:
