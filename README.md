@@ -15,7 +15,7 @@ fileserver_backend:
     - git
 
 gitfs_remotes:
-    - https://github.com/thusoy/salt-states
+    - https://github.com/get-wrecked/salt-states
 
 gitfs_env_whitelist:
     - base
@@ -52,6 +52,12 @@ You're now logged onto a VM that has salt installed in masterless mode. To
 apply a state:
 
 `$ sudo salt-call state.sls <mystate>`
+
+Alternatively use the docker image (which will be easier to use on Apple silicon):
+
+    $ docker build -t salt-states .
+    $ docker run --rm -it salt-states <state> # applies the given state in a fresh base image using state.sls
+    $ docker run --rm -it --entrypoint /bin/bash salt-states # lets you run salt commands manually, useful if you want to test repeated invocations or injecting some changes between runs
 
 When adding a new state, include a README.md with a brief description and an
 overview of the options that can be configured through pillar. Look at some of
