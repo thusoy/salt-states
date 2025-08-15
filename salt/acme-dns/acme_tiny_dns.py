@@ -131,7 +131,7 @@ def get_crt(account_key, csr, skip_check=False, log=LOGGER, CA=PROD_CA, contact=
     log.info("{0}egistered: {1}".format("R" if code == 201 else "Already r", acct_headers['Location']))
     if contact is not None:
         account, _, _ = _send_signed_request(acct_headers['Location'], {"contact": contact}, "Error updating contact details")
-        log.info("Updated contact details:\n{0}".format("\n".join(account.get('contact', 'N/A'))))
+        log.info("Updated contact details:\n{0}".format("\n".join(account.get('contact', ['N/A']))))
 
     # create a new order
     log.info("Creating new order...")
