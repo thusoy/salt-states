@@ -147,37 +147,54 @@ class SlackHoneycombHandler(Laim):
         log(log_data, start_time, sender=self)
 
     def post_to_slack(self, recipients, message):
-        response = self.session.post(
+        initial_message = textwrap.dedent(
+            """\
+            `%s` received mail for %s
+            *From*: %s
+            *To*: %s
+            *Subject*: %s
+        """
+        ) % (
+            self.config["hostname"],
+            ", ".join(recipients),
+            message.get("From"),
+            message.get("To"),
+            message.get("Subject"),
+        )
+
+        initial_response = self.session.post(
             "https://slack.com/api/chat.postMessage",
             timeout=60,
             json={
                 "channel": self.channel_id,
-                "text": textwrap.dedent(
-                    """\
-                    `%s` received mail for %s
-                    *From*: %s
-                    *To*: %s
-                    *Subject*: %s
-
-                    %s
-                """
-                )
-                % (
-                    self.config["hostname"],
-                    ", ".join(recipients),
-                    message.get("From"),
-                    message.get("To"),
-                    message.get("Subject"),
-                    message.get_payload(),
-                ),
+                "text": initial_message,
             },
             headers={
                 "Authorization": "Bearer %s" % self.slack_token,
             },
         )
-        body = response.json()
-        if not body["ok"]:
-            raise ValueError("Failed to forward mail to slack, got %r", body)
+        initial_body = initial_response.json()
+        if not initial_body["ok"]:
+            raise ValueError("Failed to post initial message to slack, got %r", initial_body)
+
+        thread_ts = initial_body["message"]["ts"]
+
+        # Post the message content in the thread
+        content_response = self.session.post(
+            "https://slack.com/api/chat.postMessage",
+            timeout=60,
+            json={
+                "channel": self.channel_id,
+                "thread_ts": thread_ts,
+                "text": f"```\n{message.get_payload()}\n```",
+            },
+            headers={
+                "Authorization": "Bearer %s" % self.slack_token,
+            },
+        )
+        content_body = content_response.json()
+        if not content_body["ok"]:
+            raise ValueError("Failed to post message content to slack thread, got %r", content_body)
 
 
 def parse_package_upgrades(message):
