@@ -3,7 +3,13 @@
 {% set openssh_server = salt['grains.filter_by']({
     'base': {
         'port': 22,
+        # Hybrid post-quantum key exchange first. The names are those of
+        # OpenSSH 9.9 and later, so a release that ships something older
+        # needs its own list below; ssh and sshd reject a config naming an
+        # algorithm they don't know.
         'kex_algorithms': [
+            'mlkem768x25519-sha256',
+            'sntrup761x25519-sha512',
             'curve25519-sha256@libssh.org',
             'diffie-hellman-group-exchange-sha256',
         ],
@@ -41,7 +47,12 @@
         'listen_addresses': [],
         'use_deprecated_privilege_separation': False,
     },
-    'stretch': {
-        'use_deprecated_privilege_separation': True,
-    }
+    # OpenSSH 9.2: no ML-KEM, and sntrup761 only under its pre-IANA name.
+    'bookworm': {
+        'kex_algorithms': [
+            'sntrup761x25519-sha512@openssh.com',
+            'curve25519-sha256@libssh.org',
+            'diffie-hellman-group-exchange-sha256',
+        ],
+    },
 }, grain='oscodename', merge=pillar_get('openssh_server'), base='base') %}
