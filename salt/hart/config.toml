@@ -24,8 +24,12 @@ token = "{{ providers.vultr.token }}"
 {% if 'gce' in providers %}
 [providers.gce]
 project = "{{ providers.gce.project }}"
+{# Without these hart uses application default credentials, on a VM its
+   service account through the metadata server -#}
+{% if 'user_id' in providers.gce -%}
 user_id = "{{ providers.gce.user_id }}"
 key = """{{ providers.gce.key }}"""
+{% endif -%}
 {% endif -%}
 
 {% if 'config' in hart %}
