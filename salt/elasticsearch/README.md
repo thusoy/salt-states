@@ -13,6 +13,12 @@ elasticsearch:
         - 1.2.3.4
 ```
 
+Set `gcs_snapshot_egress: true` to let the elasticsearch user make outgoing HTTPS
+connections, which a GCS snapshot repository needs. The GCS credentials are not
+managed here: add them to the keystore by hand with
+`elasticsearch-keystore add-file gcs.client.<client>.credentials_file <file>`
+on every node, then call `POST _nodes/reload_secure_settings`.
+
 The state includes a default log config, but this can be overridden like this:
 
 ```yaml
