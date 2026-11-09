@@ -123,7 +123,7 @@ def chain_present(name, table='filter', family='ipv4', **kwargs):
     }
 
 
-def __get_cached_rule_file_for_family(family):
+def _get_cached_rule_file_for_family(family):
     cachedir = __opts__['cachedir']
     file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family)
     return file_target
