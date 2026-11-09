@@ -75,8 +75,10 @@ def _add_rule(target_file, key, rule):
 
 
 def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
-    assert family in ('ipv4', 'ipv6')
-    assert table in ('filter', 'nat')
+    if family not in ('ipv4', 'ipv6'):
+        raise ValueError('firewall family must be either ipv4 or ipv6')
+    if table not in ('filter', 'nat'):
+        raise ValueError('firewall table must be either filter or nat')
 
     destination = kwargs.get('destination')
     # Some convenience utilities for destinations here, first we allow specifying that the
@@ -93,7 +95,7 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
     partial_rule = __salt__['iptables.build_rule'](**kwargs)
     full_rule = '-A %s %s' % (chain, partial_rule)
 
-    file_target = get_cached_rule_file_for_family(family[-2:])
+    file_target = _get_cached_rule_file_for_family(family[-2:])
     _add_rule(file_target, '%s_rules' % table, full_rule)
 
     return {
@@ -105,10 +107,12 @@ def append(name, chain='INPUT', table='filter', family='ipv4', **kwargs):
 
 
 def chain_present(name, table='filter', family='ipv4', **kwargs):
-    assert table in ('filter', 'nat')
-    assert family in ('ipv4', 'ipv6')
+    if family not in ('ipv4', 'ipv6'):
+        raise ValueError('firewall family must be either ipv4 or ipv6')
+    if table not in ('filter', 'nat'):
+        raise ValueError('firewall table must be either filter or nat')
 
-    file_target = get_cached_rule_file_for_family(family[-2:])
+    file_target = _get_cached_rule_file_for_family(family[-2:])
     _add_rule(file_target, '%s_chains' % table, name)
 
     return {
@@ -119,8 +123,7 @@ def chain_present(name, table='filter', family='ipv4', **kwargs):
     }
 
 
-def get_cached_rule_file_for_family(family):
-    assert family in ('v4', 'v6')
+def __get_cached_rule_file_for_family(family):
     cachedir = __opts__['cachedir']
     file_target = os.path.join(cachedir, 'firewall-rules-%s.json' % family)
     return file_target
@@ -151,7 +154,7 @@ def apply(name, output_policy='ACCEPT', apply=True):
     changes = {}
     success = True
     for family in ('v4', 'v6'):
-        file_target = get_cached_rule_file_for_family(family)
+        file_target = _get_cached_rule_file_for_family(family)
 
         context = {
             'output_policy': output_policy,
